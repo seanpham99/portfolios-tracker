@@ -29,16 +29,35 @@ ENGINE = ReplacingMergeTree(ingested_at)
 ORDER BY (ticker, trading_date);
 
 -- Table: Quarterly Financial Ratios
+-- Updated Schema with new metrics
+DROP TABLE IF EXISTS market_dwh.fact_financial_ratios;
 CREATE TABLE IF NOT EXISTS market_dwh.fact_financial_ratios (
     ticker String,
     fiscal_date Date,
     year UInt16,
     quarter UInt8,
+    
+    -- VALUATION
     pe_ratio Float64,
     pb_ratio Float64,
+    ps_ratio Float64,           -- NEW (Price/Sales)
+    p_cashflow_ratio Float64,   -- NEW (Price/Cash Flow)
+    eps Float64,                -- NEW (Earnings Per Share)
+    bvps Float64,               -- NEW (Book Value Per Share)
+    market_cap Float64,         -- NEW (In Billion VND)
+    
+    -- EFFICIENCY & PROFITABILITY
     roe Float64,
+    roa Float64,
+    roic Float64,               -- NEW (Key for Researchers!)
     net_profit_margin Float64,
-    debt_to_equity Float64
+    
+    -- HEALTH & LEVERAGE
+    debt_to_equity Float64,
+    financial_leverage Float64, -- NEW
+    dividend_yield Float64,     -- NEW
+    
+    ingested_at DateTime DEFAULT now()
 )
 ENGINE = ReplacingMergeTree()
 ORDER BY (ticker, year, quarter);
@@ -106,7 +125,7 @@ ORDER BY (ticker, publish_date, news_id);
 -- ==========================================
 
 -- View 1: Master Daily Data (Joins Prices with Company Names)
-CREATE VIEW IF NOT EXISTS market_dwh.view_market_daily_master AS
+CREATE OR REPLACE VIEW market_dwh.view_market_daily_master AS
 SELECT
     f.ticker,
     d.organ_name AS company_name,
@@ -117,14 +136,19 @@ SELECT
     f.daily_return,
     f.ma_50,
     f.ma_200,
-    f.rsi_14
+    f.rsi_14,
+    r.market_cap AS market_cap_bn_vnd,
+    r.roic
 FROM market_dwh.fact_stock_daily AS f
 LEFT JOIN market_dwh.dim_stock_companies AS d 
-    ON f.ticker = d.symbol;
+    ON f.ticker = d.symbol
+ASOF LEFT JOIN market_dwh.fact_financial_ratios AS r
+    ON f.ticker = r.ticker
+    AND f.trading_date >= r.fiscal_date;
 
 -- View 2: Daily Valuation Tracker
 -- Logic: Uses ASOF JOIN to map Daily Prices to the most recent Quarterly Report
-CREATE VIEW IF NOT EXISTS market_dwh.view_valuation_daily AS
+CREATE OR REPLACE VIEW market_dwh.view_valuation_daily AS
 SELECT
     d.ticker,
     d.trading_date,

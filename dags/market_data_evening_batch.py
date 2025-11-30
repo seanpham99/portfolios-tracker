@@ -152,7 +152,16 @@ with DAG(
             "quarter",
             "pe_ratio",
             "pb_ratio",
+            "ps_ratio",
+            "p_cashflow_ratio",
+            "eps",
+            "bvps",
+            "market_cap",
             "roe",
+            "roa",
+            "roic",
+            "financial_leverage",
+            "dividend_yield",
             "net_profit_margin",
             "debt_to_equity",
         ]
@@ -281,7 +290,20 @@ with DAG(
                     row["fiscal_date"] = datetime.strptime(
                         row["fiscal_date"], "%Y-%m-%d"
                     ).date()
-                inc_tuples.append([row.get(col) for col in inc_cols])
+                # Handle None values for numeric columns (ClickHouse Decimal doesn't like None)
+                vals = []
+                for col in inc_cols:
+                    val = row.get(col)
+                    # If value is None and it's a metric column (not metadata), default to 0
+                    if val is None and col not in [
+                        "ticker",
+                        "fiscal_date",
+                        "year",
+                        "quarter",
+                    ]:
+                        val = 0
+                    vals.append(val)
+                inc_tuples.append(vals)
 
             client.insert(
                 "market_dwh.fact_income_statement",

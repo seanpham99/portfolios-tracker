@@ -99,59 +99,72 @@ def fetch_stock_price(symbol, start_date, end_date):
 
 
 def fetch_financial_ratios(symbol):
-    """
-    Fetches financial ratios.
-    """
     logging.info(f"Fetching ratios for {symbol}...")
     try:
         finance = Finance(symbol=symbol, source="VCI")
-        df = finance.ratio(report_range="quarterly", lang="en")
+        df = finance.ratio(period="quarter", lang="en", dropna=True)
 
         if df is None or df.empty:
             return pd.DataFrame()
 
-        if isinstance(df.columns, pd.MultiIndex):
-            df.columns = ["_".join(map(str, col)).strip() for col in df.columns.values]
+        # 2. FLATTEN THE MULTI-INDEX COLUMNS
+        # Your columns look like: ('Meta', 'ticker'), ('Chỉ tiêu...', 'P/E')
+        # We join them to make single strings: "Meta_ticker", "Chỉ tiêu định giá_P/E"
+        df.columns = ["_".join(map(str, col)).strip() for col in df.columns.values]  #
 
-        # Helper to find column case-insensitive
-        cols = df.columns.tolist()
+        # 3. HELPER: Find column by partial match (because "Chỉ tiêu..." is long and might change)
+        col_list = df.columns.tolist()
 
-        def get_col(name):
-            for c in cols:
-                if name.lower() in str(c).lower():
+        def get_col(keyword):
+            for c in col_list:
+                if keyword in c:
                     return c
             return None
 
+        # 4. MAP TO CLICKHOUSE SCHEMA
         out_df = pd.DataFrame()
-        out_df["ticker"] = [symbol] * len(df)
+        out_df["ticker"] = df[get_col("ticker")]  # Maps to 'Meta_ticker'
 
-        # Extract Year/Quarter
-        year_col = get_col("yearReport")
-        quarter_col = get_col("lengthReport")
+        # Meta Fields
+        out_df["year"] = df[get_col("yearReport")].astype(int)
+        out_df["quarter"] = df[get_col("lengthReport")].astype(int)
 
-        if not year_col or not quarter_col:
-            return pd.DataFrame()
+        # Valuation
+        out_df["pe_ratio"] = df[get_col("P/E")]
+        out_df["pb_ratio"] = df[get_col("P/B")]
+        out_df["ps_ratio"] = df[get_col("P/S")]
+        out_df["p_cashflow_ratio"] = df[get_col("P/Cash Flow")]
+        out_df["eps"] = df[get_col("EPS")]
+        out_df["bvps"] = df[get_col("BVPS")]
+        out_df["market_cap"] = df[get_col("Market Capital")]  #
 
-        out_df["year"] = df[year_col].fillna(0).astype(int)
-        out_df["quarter"] = df[quarter_col].fillna(0).astype(int)
+        # Efficiency
+        out_df["roe"] = df[get_col("ROE")]
+        out_df["roa"] = df[get_col("ROA")]
+        out_df["roic"] = df[get_col("ROIC")]  #
+        out_df["net_profit_margin"] = df[get_col("Net Profit Margin")]
 
-        # Extract Ratios
-        out_df["pe_ratio"] = df[get_col("P/E")].fillna(0) if get_col("P/E") else 0.0
-        out_df["pb_ratio"] = df[get_col("P/B")].fillna(0) if get_col("P/B") else 0.0
-        out_df["roe"] = df[get_col("ROE")].fillna(0) if get_col("ROE") else 0.0
-        out_df["net_profit_margin"] = (
-            df[get_col("Net Profit Margin")].fillna(0)
-            if get_col("Net Profit Margin")
-            else 0.0
-        )
-        out_df["debt_to_equity"] = (
-            df[get_col("Debt/Equity")].fillna(0) if get_col("Debt/Equity") else 0.0
-        )
+        # Health
+        out_df["debt_to_equity"] = df[get_col("Debt/Equity")]
+        out_df["financial_leverage"] = df[get_col("Financial Leverage")]
+        out_df["dividend_yield"] = df[get_col("Dividend yield")]
 
-        # Construct Date
+        # 5. Clean Decimal/NaN issues
+        # Exclude metadata columns from cleaning to prevent int -> float conversion
+        meta_cols = ["ticker", "year", "quarter", "fiscal_date"]
+        metric_cols = [c for c in out_df.columns if c not in meta_cols]
+        out_df = clean_decimal_cols(out_df, metric_cols)
+
+        # 6. Generate Fiscal Date (Quarter End)
         def get_quarter_end(row):
-            y = row["year"]
-            q = row["quarter"]
+            try:
+                # Robust casting: handle float, int, or string float "2025.0"
+                y = int(float(row["year"]))
+                q = int(float(row["quarter"]))
+            except (ValueError, TypeError) as e:
+                # logging.warning(f"Date parse error for {row.get('ticker')}: {e}")
+                return None
+
             if q == 1:
                 return pd.Timestamp(f"{y}-03-31").date()
             if q == 2:
@@ -163,12 +176,6 @@ def fetch_financial_ratios(symbol):
             return pd.Timestamp(f"{y}-01-01").date()
 
         out_df["fiscal_date"] = out_df.apply(get_quarter_end, axis=1)
-
-        # Clean Ratios - Ensure no NaNs or Inf
-        out_df = clean_decimal_cols(
-            out_df,
-            ["pe_ratio", "pb_ratio", "roe", "net_profit_margin", "debt_to_equity"],
-        )
 
         return out_df
 

@@ -5,6 +5,8 @@ x-airflow-common:
     &airflow-common-env
     AIRFLOW__CORE__EXECUTOR: LocalExecutor
     AIRFLOW__DATABASE__SQL_ALCHEMY_CONN: postgresql+psycopg2://airflow:airflow@postgres-airflow:5432/airflow
+    # Use Postgres for Webserver Rate Limiting to avoid in-memory warning
+    AIRFLOW__WEBSERVER__RATELIMIT_STORAGE_URI: postgresql+psycopg2://airflow:airflow@postgres-airflow:5432/airflow
     AIRFLOW__CORE__DAGS_ARE_PAUSED_AT_CREATION: 'true'
     AIRFLOW__CORE__LOAD_EXAMPLES: 'false'
     # point to the DWH container (ClickHouse)
@@ -14,6 +16,9 @@ x-airflow-common:
     CLICKHOUSE_PASSWORD: ''
     # Fix for pandas_ta/numba caching issue
     NUMBA_CACHE_DIR: /tmp
+    # Telegram Notifications
+    TELEGRAM_BOT_TOKEN: "${TELEGRAM_BOT_TOKEN}"
+    TELEGRAM_CHAT_ID: "${TELEGRAM_CHAT_ID}"
   volumes:
     - ./dags:/opt/airflow/dags
     - ./logs:/opt/airflow/logs

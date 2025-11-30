@@ -17,6 +17,10 @@ from etl_modules.fetcher import (
     fetch_dividends,
     fetch_income_stmt,
 )
+from etl_modules.notifications import (
+    send_success_notification,
+    send_failure_notification,
+)
 
 # CONFIG
 STOCKS = ["HPG", "VCB", "VNM", "FPT", "MWG"]
@@ -38,6 +42,8 @@ with DAG(
     start_date=datetime(2024, 1, 1),
     catchup=False,
     tags=["stock-price", "financials", "clickhouse", "evening-batch"],
+    on_success_callback=send_success_notification,
+    on_failure_callback=send_failure_notification,
 ) as dag:
     # --- TASK GROUP 1: PRICES ---
     @task

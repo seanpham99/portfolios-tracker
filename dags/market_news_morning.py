@@ -10,6 +10,10 @@ import sys
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from etl_modules.fetcher import fetch_news
+from etl_modules.notifications import (
+    send_success_notification,
+    send_failure_notification,
+)
 
 # CONFIG
 STOCKS = ["HPG", "VCB", "VNM", "FPT", "MWG"]
@@ -31,6 +35,8 @@ with DAG(
     start_date=datetime(2024, 1, 1),
     catchup=False,
     tags=["news", "clickhouse", "morning-brief"],
+    on_success_callback=send_success_notification,
+    on_failure_callback=send_failure_notification,
 ) as dag:
 
     @task

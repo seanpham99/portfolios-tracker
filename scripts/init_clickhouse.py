@@ -1,6 +1,5 @@
 import clickhouse_connect
 import os
-from vnstock import Listing
 
 CLICKHOUSE_HOST = os.getenv("CLICKHOUSE_HOST", "clickhouse-server")
 CLICKHOUSE_PORT = int(os.getenv("CLICKHOUSE_PORT", 8123))
@@ -77,25 +76,13 @@ def init_db():
     # 5. Enrich Data: Fetch Company List from vnstock
     print("Fetching company list from vnstock...")
     try:
-        listing = Listing(source="VCI")
-        # Get all symbols with exchange info
-        df_companies = listing.symbols_by_exchange()
+        import sys
 
-        # Select relevant columns and rename if necessary to match schema
-        # Expected columns from symbols_by_exchange: index, symbol, exchange, type, organ_short_name, organ_name, product_grp_id
-        # We need: symbol, organ_name, exchange
+        # Ensure project root is in path
+        sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+        from scripts.manual_load_data import update_company_dimension
 
-        if not df_companies.empty:
-            # Filter for stocks only if needed, but 'symbols_by_exchange' usually returns stocks
-            df_insert = df_companies[["symbol", "organ_name", "exchange"]].copy()
-
-            # Insert into ClickHouse
-            client.insert_df("market_dwh.dim_stock_companies", df_insert)
-            print(
-                f"Inserted {len(df_insert)} companies into market_dwh.dim_stock_companies"
-            )
-        else:
-            print("No company data fetched from vnstock.")
+        update_company_dimension(client)
 
     except Exception as e:
         print(f"Failed to fetch or insert company data: {e}")

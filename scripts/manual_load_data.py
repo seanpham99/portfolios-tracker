@@ -10,6 +10,12 @@ sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from dags.etl_modules.fetcher import fetch_stock_price, fetch_financial_ratios
 
+try:
+    from vnstock import Listing
+except ImportError:
+    logging.warning("vnstock not installed, company dimension update will fail.")
+    Listing = None
+
 # CONFIG
 STOCKS = ["HPG", "VCB", "VNM", "FPT", "MWG"]
 CLICKHOUSE_HOST = os.getenv(
@@ -96,6 +102,9 @@ def manual_load(start_date, end_date, price_only=False, ratios_only=False):
                 column_names=price_cols,
             )
             logging.info("Price insertion complete.")
+            # Force deduplication
+            client.command("OPTIMIZE TABLE market_dwh.fact_stock_daily FINAL")
+            logging.info("Optimized fact_stock_daily.")
         else:
             logging.warning("No price data fetched.")
 
@@ -127,14 +136,50 @@ def manual_load(start_date, end_date, price_only=False, ratios_only=False):
                 column_names=ratio_cols,
             )
             logging.info("Financial ratio insertion complete.")
+            # Force deduplication
+            client.command("OPTIMIZE TABLE market_dwh.fact_financial_ratios FINAL")
+            logging.info("Optimized fact_financial_ratios.")
         else:
             logging.warning("No financial ratio data fetched.")
 
 
+def update_company_dimension(client):
+    if not Listing:
+        logging.error("vnstock not available.")
+        return
+
+    logging.info("Fetching company list from vnstock...")
+    try:
+        listing = Listing(source="VCI")
+        df_companies = listing.symbols_by_exchange()
+
+        if not df_companies.empty:
+            # Filter out DELISTED companies (case-insensitive check)
+            df_companies = df_companies[
+                df_companies["exchange"].str.upper() != "DELISTED"
+            ]
+
+            df_insert = df_companies[["symbol", "organ_name", "exchange"]].copy()
+            # Handle potential None/NaN values in organ_name robustly
+            df_insert["organ_name"] = df_insert["organ_name"].apply(
+                lambda x: str(x) if pd.notnull(x) and x is not None else ""
+            )
+            client.insert_df("market_dwh.dim_stock_companies", df_insert)
+            logging.info(
+                f"Inserted {len(df_insert)} companies into market_dwh.dim_stock_companies"
+            )
+            # Force deduplication
+            client.command("OPTIMIZE TABLE market_dwh.dim_stock_companies FINAL")
+            logging.info("Optimized dim_stock_companies.")
+        else:
+            logging.warning("No company data fetched from vnstock.")
+
+    except Exception as e:
+        logging.error(f"Failed to fetch or insert company data: {e}")
+
+
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Manual Stock Data Loader")
-    parser.add_argument("--start", required=True, help="Start date (YYYY-MM-DD)")
-    parser.add_argument("--end", required=True, help="End date (YYYY-MM-DD)")
 
     # Mutually exclusive group for mode
     group = parser.add_mutually_exclusive_group()
@@ -145,6 +190,28 @@ if __name__ == "__main__":
         "--ratios-only", action="store_true", help="Fetch only financial ratios"
     )
 
+    parser.add_argument(
+        "--update-companies",
+        action="store_true",
+        help="Update company dimension table from vnstock",
+    )
+    parser.add_argument("--start", required=False, help="Start date (YYYY-MM-DD)")
+    parser.add_argument("--end", required=False, help="End date (YYYY-MM-DD)")
+
     args = parser.parse_args()
 
-    manual_load(args.start, args.end, args.price_only, args.ratios_only)
+    if args.update_companies:
+        # Create client just for this operation if running from CLI
+        try:
+            client = clickhouse_connect.get_client(
+                host=CLICKHOUSE_HOST,
+                port=CLICKHOUSE_PORT,
+                username=CLICKHOUSE_USER,
+                password=CLICKHOUSE_PASSWORD,
+            )
+            update_company_dimension(client)
+        except Exception as e:
+            logging.error(f"Failed to connect to ClickHouse: {e}")
+
+    if args.start and args.end:
+        manual_load(args.start, args.end, args.price_only, args.ratios_only)

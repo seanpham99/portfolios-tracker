@@ -234,10 +234,13 @@ def fetch_financial_ratios(symbol):
         roe_col = get_col("ROE", cols)
         npm_col = get_col("Net Profit Margin", cols) or get_col("Net Margin", cols)
 
+        debt_col = get_col("Debt/Equity", cols)
+
         out_df["pe_ratio"] = df[pe_col] if pe_col else 0.0
         out_df["pb_ratio"] = df[pb_col] if pb_col else 0.0
         out_df["roe"] = df[roe_col] if roe_col else 0.0
         out_df["net_profit_margin"] = df[npm_col] if npm_col else 0.0
+        out_df["debt_to_equity"] = df[debt_col] if debt_col else 0.0
 
         # Construct fiscal_date (end of quarter)
         def get_quarter_end(row):
@@ -254,9 +257,6 @@ def fetch_financial_ratios(symbol):
             return pd.Timestamp(f"{y}-01-01").date()  # Fallback
 
         out_df["fiscal_date"] = out_df.apply(get_quarter_end, axis=1)
-
-        # Debt to Equity needs Balance Sheet usually, but maybe in ratios?
-        out_df["debt_to_equity"] = 0.0  # Will fill from Balance Sheet or if found here
 
         return out_df
 

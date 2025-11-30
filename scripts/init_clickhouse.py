@@ -22,113 +22,34 @@ def init_db():
         print(f"Failed to connect to ClickHouse: {e}")
         raise
 
-    # 1. Create Database
-    client.command("CREATE DATABASE IF NOT EXISTS market_dwh")
-
-    # 2. Fact Table: Daily Price History
-    client.command("""
-    CREATE TABLE IF NOT EXISTS market_dwh.fact_stock_daily (
-        ticker String,
-        trading_date Date,
-        open Float64,
-        high Float64,
-        low Float64,
-        close Float64,
-        volume UInt64,
-        -- ENRICHED COLUMNS (Calculated by you)
-        ma_50 Float64 DEFAULT 0,
-        ma_200 Float64 DEFAULT 0,
-        rsi_14 Float64 DEFAULT 0,
-        daily_return Float64 DEFAULT 0,
-        source String DEFAULT 'vnstock',
-        ingested_at DateTime DEFAULT now()
-    ) 
-    ENGINE = ReplacingMergeTree(ingested_at)
-    ORDER BY (ticker, trading_date)
-    """)
-
-    # 3. Fact Table: Financial Ratios (Quarterly)
-    client.command("""
-    CREATE TABLE IF NOT EXISTS market_dwh.fact_financial_ratios (
-        ticker String,
-        fiscal_date Date,
-        year UInt16,
-        quarter UInt8,
-        pe_ratio Float64,
-        pb_ratio Float64,
-        roe Float64,
-        net_profit_margin Float64,
-        debt_to_equity Float64
+    # 1. Read and Execute Schema from SQL File
+    sql_file_path = os.path.join(
+        os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
+        "sql",
+        "init_schema.sql",
     )
-    ENGINE = ReplacingMergeTree()
-    ORDER BY (ticker, year, quarter)
-    """)
+    print(f"Reading schema from {sql_file_path}...")
 
-    # 4. Dimension Table: Stock Companies
-    client.command("""
-    CREATE TABLE IF NOT EXISTS market_dwh.dim_stock_companies (
-        symbol String,
-        organ_name String,
-        exchange String,
-        ingested_at DateTime DEFAULT now()
-    )
-    ENGINE = ReplacingMergeTree(ingested_at)
-    ORDER BY symbol
-    """)
+    try:
+        with open(sql_file_path, "r") as f:
+            sql_script = f.read()
 
-    # 5. Fact Table: Dividends
-    client.command("""
-    CREATE TABLE IF NOT EXISTS market_dwh.fact_dividends (
-        ticker String,
-        exercise_date Date,
-        cash_year UInt16,
-        cash_dividend_percentage Float64,
-        stock_dividend_percentage Float64,
-        issue_method String,
-        ingested_at DateTime DEFAULT now()
-    )
-    ENGINE = ReplacingMergeTree(ingested_at)
-    ORDER BY (ticker, exercise_date)
-    """)
+        # Split by semicolon to get individual commands
+        # Filter out empty strings/whitespace
+        commands = [cmd.strip() for cmd in sql_script.split(";") if cmd.strip()]
 
-    # 6. Fact Table: Income Statement (Key Metrics)
-    client.command("""
-    CREATE TABLE IF NOT EXISTS market_dwh.fact_income_statement (
-        ticker String,
-        fiscal_date Date,
-        year UInt16,
-        quarter UInt8,
-        revenue Float64,
-        cost_of_goods_sold Float64,
-        gross_profit Float64,
-        operating_profit Float64,
-        net_profit_post_tax Float64,
-        ingested_at DateTime DEFAULT now()
-    )
-    ENGINE = ReplacingMergeTree(ingested_at)
-    ORDER BY (ticker, year, quarter)
-    """)
+        for command in commands:
+            print(f"Executing: {command[:50]}...")
+            client.command(command)
 
-    # 7. Fact Table: News
-    client.command("""
-    CREATE TABLE IF NOT EXISTS market_dwh.fact_news (
-        ticker String,
-        publish_date DateTime,
-        title String,
-        source String,
-        price_at_publish Float64,
-        price_change Float64,
-        price_change_ratio Float64,
-        rsi Float64,
-        rs Float64,
-        news_id UInt64,
-        ingested_at DateTime DEFAULT now()
-    )
-    ENGINE = ReplacingMergeTree(ingested_at)
-    ORDER BY (ticker, publish_date, news_id)
-    """)
+        print("ClickHouse Schema Initialized.")
 
-    print("ClickHouse Schema Initialized.")
+    except FileNotFoundError:
+        print(f"Error: SQL file not found at {sql_file_path}")
+        raise
+    except Exception as e:
+        print(f"Error executing schema script: {e}")
+        raise
 
     # 5. Enrich Data: Fetch Company List from vnstock
     print("Fetching company list from vnstock...")

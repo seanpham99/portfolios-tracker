@@ -24,6 +24,7 @@ x-airflow-common:
     - ./logs:/opt/airflow/logs
     - ./plugins:/opt/airflow/plugins
     - ./scripts:/opt/airflow/scripts
+    - ./sql:/opt/airflow/sql
   user: "${AIRFLOW_UID:-5000}:0"
   depends_on:
     postgres-airflow:

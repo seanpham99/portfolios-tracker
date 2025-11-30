@@ -140,7 +140,9 @@ def fetch_financial_ratios(symbol):
         out_df["pb_ratio"] = df[get_col("P/B")].fillna(0) if get_col("P/B") else 0.0
         out_df["roe"] = df[get_col("ROE")].fillna(0) if get_col("ROE") else 0.0
         out_df["net_profit_margin"] = (
-            df[get_col("Net Margin")].fillna(0) if get_col("Net Margin") else 0.0
+            df[get_col("Net Profit Margin")].fillna(0)
+            if get_col("Net Profit Margin")
+            else 0.0
         )
         out_df["debt_to_equity"] = (
             df[get_col("Debt/Equity")].fillna(0) if get_col("Debt/Equity") else 0.0

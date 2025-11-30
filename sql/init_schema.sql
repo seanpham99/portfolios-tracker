@@ -157,7 +157,7 @@ WITH metrics_with_lag AS (
         revenue,
         net_profit_post_tax,
         gross_profit,
-        -- Look back 4 rows (1 year) within the same ticker
+        -- Look back 4 rows (1 year)
         lag(revenue, 4) OVER (PARTITION BY ticker ORDER BY fiscal_date) as revenue_last_year,
         lag(net_profit_post_tax, 4) OVER (PARTITION BY ticker ORDER BY fiscal_date) as profit_last_year
     FROM market_dwh.fact_income_statement
@@ -171,14 +171,12 @@ SELECT
     m.revenue,
     m.net_profit_post_tax,
     m.gross_profit,
-    -- Ratios (Joined from ratio table)
+    -- Ratios
     r.roe,
     r.net_profit_margin,
     r.debt_to_equity,
-    -- Growth Calculation with Safety Checks
-    -- NULLIF(x, 0) returns NULL if x is 0, preventing "Division by Zero" crashes
-    (m.revenue - m.revenue_last_year) / abs(NULLIF(m.revenue_last_year, 0)) * 100 AS revenue_growth_yoy,
-    (m.net_profit_post_tax - m.profit_last_year) / abs(NULLIF(m.profit_last_year, 0)) * 100 AS profit_growth_yoy
+    toFloat64(m.revenue - m.revenue_last_year) / abs(toFloat64(NULLIF(m.revenue_last_year, 0))) * 100 AS revenue_growth_yoy,
+    toFloat64(m.net_profit_post_tax - m.profit_last_year) / abs(toFloat64(NULLIF(m.profit_last_year, 0))) * 100 AS profit_growth_yoy
 FROM metrics_with_lag AS m
 LEFT JOIN market_dwh.fact_financial_ratios AS r 
     ON m.ticker = r.ticker AND m.fiscal_date = r.fiscal_date

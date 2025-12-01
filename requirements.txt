@@ -3,11 +3,9 @@ python-telegram-bot[job-queue]
 requests
 dotenv
 websockets
-apache-airflow-providers-postgres
 yfinance
 pandas
-matplotlib
 numpy
-sqlalchemy
-psycopg2-binary
-requests
+vnstock
+clickhouse-connect
+pandas_ta

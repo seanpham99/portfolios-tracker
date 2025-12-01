@@ -5,14 +5,26 @@ x-airflow-common:
     &airflow-common-env
     AIRFLOW__CORE__EXECUTOR: LocalExecutor
     AIRFLOW__DATABASE__SQL_ALCHEMY_CONN: postgresql+psycopg2://airflow:airflow@postgres-airflow:5432/airflow
+    # Use Postgres for Webserver Rate Limiting to avoid in-memory warning
+    AIRFLOW__WEBSERVER__RATELIMIT_STORAGE_URI: postgresql+psycopg2://airflow:airflow@postgres-airflow:5432/airflow
     AIRFLOW__CORE__DAGS_ARE_PAUSED_AT_CREATION: 'true'
     AIRFLOW__CORE__LOAD_EXAMPLES: 'false'
-    # point to the DWH container
-    AIRFLOW_CONN_POSTGRES_MARKET_DB: postgresql://admin:admin_password@postgres-dw:5432/market_data_db
+    # point to the DWH container (ClickHouse)
+    CLICKHOUSE_HOST: clickhouse-server
+    CLICKHOUSE_PORT: 8123
+    CLICKHOUSE_USER: default
+    CLICKHOUSE_PASSWORD: ''
+    # Fix for pandas_ta/numba caching issue
+    NUMBA_CACHE_DIR: /tmp
+    # Telegram Notifications
+    TELEGRAM_BOT_TOKEN: "${TELEGRAM_BOT_TOKEN}"
+    TELEGRAM_CHAT_ID: "${TELEGRAM_CHAT_ID}"
   volumes:
     - ./dags:/opt/airflow/dags
     - ./logs:/opt/airflow/logs
     - ./plugins:/opt/airflow/plugins
+    - ./scripts:/opt/airflow/scripts
+    - ./sql:/opt/airflow/sql
   user: "${AIRFLOW_UID:-5000}:0"
   depends_on:
     postgres-airflow:
@@ -28,24 +40,32 @@ services:
       POSTGRES_DB: airflow
     volumes:
       - postgres-airflow-data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432" # Expose for debugging if needed, though usually internal
     healthcheck:
       test: ["CMD", "pg_isready", "-U", "airflow"]
       interval: 5s
       retries: 5
+    restart: always
 
-  # 2. DATA WAREHOUSE
-  postgres-dw:
-    image: postgres:alpine
-    environment:
-      POSTGRES_USER: admin
-      POSTGRES_PASSWORD: admin_password
-      POSTGRES_DB: market_data_db
+  # 2. CLICKHOUSE SERVER (The DWH)
+  clickhouse-server:
+    image: clickhouse/clickhouse-server:latest
     ports:
-      - "5435:5432" # Exposed to host on 5435 to avoid conflict
+      - "8123:8123" # HTTP Port
+      - "9000:9000" # Native Port
+    environment:
+      - CLICKHOUSE_DB=market_dwh
+      - CLICKHOUSE_USER=default
+      - CLICKHOUSE_DEFAULT_ACCESS_MANAGEMENT=1
+    ulimits:
+      nofile:
+        soft: 262144
+        hard: 262144
     volumes:
-      - postgres-dw-data:/var/lib/postgresql/data
+      - clickhouse_data:/var/lib/clickhouse
     healthcheck:
-      test: ["CMD", "pg_isready", "-U", "admin"]
+      test: ["CMD", "wget", "--spider", "-q", "http://localhost:8123/ping"]
       interval: 5s
       retries: 5
 
@@ -61,12 +81,22 @@ services:
       timeout: 10s
       retries: 5
     restart: always
+    depends_on:
+      postgres-airflow:
+        condition: service_healthy
+      clickhouse-server:
+        condition: service_healthy
 
   # 4. AIRFLOW SCHEDULER
   airflow-scheduler:
     <<: *airflow-common
     command: scheduler
     restart: always
+    depends_on:
+      postgres-airflow:
+        condition: service_healthy
+      clickhouse-server:
+        condition: service_healthy
 
   # 5. INITIALIZATION SERVICE
   airflow-init:
@@ -82,19 +112,15 @@ services:
       postgres-airflow:
         condition: service_healthy
 
-  # 6. DWH INITIALIZATION
-  postgres-dw-init:
-    build: ./dwh
-    environment:
-      POSTGRES_HOST: postgres-dw
-      POSTGRES_PORT: 5432
-      POSTGRES_DB: market_data_db
-      POSTGRES_USER: admin
-      POSTGRES_PASSWORD: admin_password
+  # 6. CLICKHOUSE INIT SCRIPT
+  clickhouse-init:
+    <<: *airflow-common
+    command: python /opt/airflow/scripts/init_clickhouse.py
+    restart: on-failure
     depends_on:
-      postgres-dw:
+      clickhouse-server:
         condition: service_healthy
 
 volumes:
   postgres-airflow-data:
-  postgres-dw-data:
+  clickhouse_data:

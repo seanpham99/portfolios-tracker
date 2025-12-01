@@ -125,6 +125,9 @@ SELECT
     d.sector AS sector,
     d.industry AS industry,
     f.trading_date AS trading_date,
+    f.open AS open,
+    f.high AS high,
+    f.low AS low,
     f.close AS
 close,
 f.volume AS volume,
@@ -132,6 +135,9 @@ f.daily_return AS daily_return,
 f.ma_50 AS ma_50,
 f.ma_200 AS ma_200,
 f.rsi_14 AS rsi_14,
+f.macd AS macd,
+f.macd_signal AS macd_signal,
+f.macd_hist AS macd_hist,
 
 -- STATIC Fundamental Context (Okay to be snapshot here for general context)
 r.market_cap AS market_cap_snapshot, r.roic AS roic,

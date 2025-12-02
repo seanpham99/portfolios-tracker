@@ -1,6 +1,7 @@
 from airflow import DAG
 from airflow.decorators import task
 from datetime import datetime, timedelta
+from pendulum import timezone
 import pandas as pd
 import clickhouse_connect
 import os
@@ -28,11 +29,14 @@ default_args = {
     "retry_delay": timedelta(minutes=5),
 }
 
+# Set timezone to Vietnam (UTC+7)
+local_tz = timezone("Asia/Bangkok")
+
 with DAG(
     dag_id="market_news_morning",
     default_args=default_args,
-    schedule_interval="0 7 * * 1-5",  # 7 AM Mon-Fri
-    start_date=datetime(2024, 1, 1),
+    schedule_interval="0 7 * * 1-5",  # 7 AM Vietnam Time Mon-Fri
+    start_date=datetime(2024, 1, 1, tzinfo=local_tz),
     catchup=False,
     tags=["news", "clickhouse", "morning-brief"],
     on_success_callback=send_success_notification,

@@ -3,6 +3,7 @@ from airflow.decorators import task
 from airflow.utils.task_group import TaskGroup
 from airflow.operators.empty import EmptyOperator
 from datetime import datetime, timedelta
+from pendulum import timezone
 import pandas as pd
 import clickhouse_connect
 import os
@@ -35,11 +36,14 @@ default_args = {
     "retry_delay": timedelta(minutes=2),
 }
 
+# Set timezone to Vietnam (UTC+7)
+local_tz = timezone("Asia/Bangkok")
+
 with DAG(
     dag_id="market_data_evening_batch",
     default_args=default_args,
-    schedule_interval="0 18 * * 1-5",  # 6 PM Mon-Fri
-    start_date=datetime(2024, 1, 1),
+    schedule_interval="0 18 * * 1-5",  # 6 PM Vietnam Time Mon-Fri
+    start_date=datetime(2024, 1, 1, tzinfo=local_tz),
     catchup=False,
     tags=["stock-price", "financials", "clickhouse", "evening-batch"],
     on_success_callback=send_success_notification,

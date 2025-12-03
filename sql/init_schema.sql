@@ -1,11 +1,55 @@
--- ==========================================
--- 1. DATABASE SETUP
--- ==========================================
 CREATE DATABASE IF NOT EXISTS market_dwh;
 
--- ==========================================
--- 2. FACT TABLES (The "Silver" Layer)
--- ==========================================
+CREATE DATABASE IF NOT EXISTS market_dwh;
+
+-- Table: Date Dimension
+CREATE TABLE IF NOT EXISTS market_dwh.dim_date (
+    date Date,
+    year UInt16,
+    quarter UInt8,
+    month UInt8,
+    day UInt8,
+    day_of_week UInt8,
+    is_weekend UInt8,
+    quarter_label String,
+    month_name String,
+    day_name String
+) ENGINE = ReplacingMergeTree ()
+ORDER BY date;
+
+INSERT INTO
+    market_dwh.dim_date
+SELECT *
+FROM (
+        WITH
+            toDate ('2015-01-01') as start_date, toDate ('2035-12-31') as end_date
+        SELECT
+            date, toYear (date) as year, toQuarter (date) as quarter, toMonth (date) as month, toDayOfMonth (date) as day, toDayOfWeek (date) as day_of_week, if (toDayOfWeek (date) >= 6, 1, 0) as is_weekend, concat(
+                'Q', toString (toQuarter (date)), ' ', toString (toYear (date))
+            ) as quarter_label, monthName (date) as month_name, CASE toDayOfWeek (date)
+                WHEN 1 THEN 'Monday'
+                WHEN 2 THEN 'Tuesday'
+                WHEN 3 THEN 'Wednesday'
+                WHEN 4 THEN 'Thursday'
+                WHEN 5 THEN 'Friday'
+                WHEN 6 THEN 'Saturday'
+                WHEN 7 THEN 'Sunday'
+                ELSE ''
+            END as day_name
+        FROM (
+                SELECT arrayJoin (
+                        range (
+                            toUInt32 (end_date) - toUInt32 (start_date) + 1
+                        )
+                    ) + start_date AS date
+            )
+    )
+WHERE
+    date NOT IN (
+        SELECT date
+        FROM market_dwh.dim_date
+    );
+-- Idempotency check
 
 -- Table: Daily Stock Prices
 CREATE TABLE IF NOT EXISTS market_dwh.fact_stock_daily (
@@ -43,11 +87,10 @@ p_cashflow_ratio Float64,
 eps Float64,
 bvps Float64,
 market_cap Float64,
-
--- EFFICIENCY & PROFITABILITY
-roe Float64, roa Float64, roic Float64, net_profit_margin Float64,
-
--- HEALTH & LEVERAGE
+roe Float64,
+roa Float64,
+roic Float64,
+net_profit_margin Float64,
 debt_to_equity Float64,
 financial_leverage Float64,
 dividend_yield Float64,
@@ -113,7 +156,7 @@ CREATE TABLE IF NOT EXISTS market_dwh.fact_news (
 ORDER BY (ticker, publish_date, news_id);
 
 -- ==========================================
--- 3. ANALYTICAL VIEWS (The "Gold" Layer)
+-- ANALYTICAL VIEWS
 -- ==========================================
 
 -- View 1: Master Daily Data (Joins Prices with Company Names)
@@ -138,11 +181,8 @@ f.rsi_14 AS rsi_14,
 f.macd AS macd,
 f.macd_signal AS macd_signal,
 f.macd_hist AS macd_hist,
-
--- STATIC Fundamental Context (Okay to be snapshot here for general context)
-r.market_cap AS market_cap_snapshot, r.roic AS roic,
-
--- MOMENTUM (Restored)
+r.market_cap AS market_cap_snapshot,
+r.roic AS roic,
 toFloat64 (
     f.close - lagInFrame (f.close, 20) OVER (
         PARTITION BY

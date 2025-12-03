@@ -23,7 +23,7 @@ except ImportError:
     Listing = None
 
 # CONFIG
-STOCKS = ["HPG", "VCB", "VNM", "FPT", "MWG"]
+STOCKS = ["HPG", "VCB", "VNM", "FPT", "MWG", "VIC"]
 CLICKHOUSE_HOST = os.getenv(
     "CLICKHOUSE_HOST", "localhost"
 )  # Default to localhost for manual script
@@ -145,7 +145,7 @@ def manual_load(start_date, end_date, price_only=False, ratios_only=False):
         client.insert("market_dwh.fact_stock_daily", data, column_names=price_cols)
         client.command("OPTIMIZE TABLE market_dwh.fact_stock_daily FINAL")
 
-    # 2. LOAD RATIOS (Added New Metrics)
+    # 2. LOAD RATIOS
     if ratio_data:
         df = pd.concat(ratio_data, ignore_index=True)
 

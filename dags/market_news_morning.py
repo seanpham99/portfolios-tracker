@@ -18,7 +18,7 @@ from etl_modules.notifications import (
 )
 
 # CONFIG
-STOCKS = ["HPG", "VCB", "VNM", "FPT", "MWG"]
+STOCKS = ["HPG", "VCB", "VNM", "FPT", "MWG", "VIC"]
 CLICKHOUSE_HOST = os.getenv("CLICKHOUSE_HOST", "clickhouse-server")
 CLICKHOUSE_PORT = int(os.getenv("CLICKHOUSE_PORT", 8123))
 CLICKHOUSE_USER = os.getenv("CLICKHOUSE_USER", "default")

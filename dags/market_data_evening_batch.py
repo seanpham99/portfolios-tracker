@@ -42,7 +42,7 @@ local_tz = timezone("Asia/Bangkok")
 with DAG(
     dag_id="market_data_evening_batch",
     default_args=default_args,
-    schedule_interval="0 18 * * 1-5",  # 6 PM Vietnam Time Mon-Fri
+    schedule="0 18 * * 1-5",  # 6 PM Vietnam Time Mon-Fri
     start_date=datetime(2024, 1, 1, tzinfo=local_tz),
     catchup=False,
     tags=["stock-price", "financials", "clickhouse", "evening-batch"],

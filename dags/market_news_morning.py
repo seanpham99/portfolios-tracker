@@ -36,7 +36,7 @@ local_tz = timezone("Asia/Bangkok")
 with DAG(
     dag_id="market_news_morning",
     default_args=default_args,
-    schedule_interval="0 7 * * 1-5",  # 7 AM Vietnam Time Mon-Fri
+    schedule="0 7 * * 1-5",  # 7 AM Vietnam Time Mon-Fri
     start_date=datetime(2024, 1, 1, tzinfo=local_tz),
     catchup=False,
     tags=["news", "clickhouse", "morning-brief"],

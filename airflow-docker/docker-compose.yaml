@@ -46,11 +46,11 @@
 ---
 x-airflow-common: &airflow-common # Build custom image with your dependencies
   build:
-    context: .
+    context: ..
     dockerfile: Dockerfile
   image: fin-sight-airflow:latest
   env_file:
-    - ${ENV_FILE_PATH:-.env}
+    - ${ENV_FILE_PATH:-../.env}
   environment: &airflow-common-env
     AIRFLOW__CORE__EXECUTOR: CeleryExecutor
     AIRFLOW__CORE__AUTH_MANAGER: airflow.providers.fab.auth_manager.fab_auth_manager.FabAuthManager
@@ -75,12 +75,12 @@ x-airflow-common: &airflow-common # Build custom image with your dependencies
     TELEGRAM_CHAT_ID: "${TELEGRAM_CHAT_ID}"
     GEMINI_API_KEY: "${GEMINI_API_KEY}"
   volumes:
-    - ${AIRFLOW_PROJ_DIR:-.}/dags:/opt/airflow/dags
-    - ${AIRFLOW_PROJ_DIR:-.}/logs:/opt/airflow/logs
-    - ${AIRFLOW_PROJ_DIR:-.}/config:/opt/airflow/config
-    - ${AIRFLOW_PROJ_DIR:-.}/plugins:/opt/airflow/plugins
-    - ${AIRFLOW_PROJ_DIR:-.}/scripts:/opt/airflow/scripts
-    - ${AIRFLOW_PROJ_DIR:-.}/sql:/opt/airflow/sql
+    - ${AIRFLOW_PROJ_DIR:-..}/dags:/opt/airflow/dags
+    - ${AIRFLOW_PROJ_DIR:-..}/logs:/opt/airflow/logs
+    - ${AIRFLOW_PROJ_DIR:-..}/config:/opt/airflow/config
+    - ${AIRFLOW_PROJ_DIR:-..}/plugins:/opt/airflow/plugins
+    - ${AIRFLOW_PROJ_DIR:-..}/scripts:/opt/airflow/scripts
+    - ${AIRFLOW_PROJ_DIR:-..}/sql:/opt/airflow/sql
   user: "${AIRFLOW_UID:-50000}:0"
   depends_on: &airflow-common-depends-on
     redis:
@@ -202,7 +202,7 @@ services:
     <<: *airflow-common
     command: api-server
     ports:
-      - "8181:8080"
+      - "8080:8080"
     healthcheck:
       test: ["CMD", "curl", "--fail", "http://localhost:8080/api/v2/version"]
       interval: 30s

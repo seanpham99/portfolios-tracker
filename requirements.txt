@@ -1,11 +1,19 @@
-python-telegram-bot
-python-telegram-bot[job-queue]
-requests
-dotenv
-websockets
+# Core Airflow Providers
+apache-airflow-providers-postgres
+apache-airflow-providers-telegram
+apache-airflow-providers-common-sql
+
+# Database Drivers
+psycopg2-binary
+clickhouse-connect
+asyncpg
+
+# Financial & Data Tools
 yfinance
+vnstock
 pandas
 numpy
-vnstock
-clickhouse-connect
 pandas_ta
+python-dotenv
+requests
+websockets

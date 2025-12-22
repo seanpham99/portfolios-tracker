@@ -5,6 +5,7 @@ __pycache__/
 
 # Virtual Environment
 venv/
+.venv/
 env/
 .env
 
@@ -38,8 +39,10 @@ logs/
 
 # Testing
 .coverage
+.coveragerc
 htmlcov/
 .pytest_cache/
+coverage.xml
 
 # data
 data/

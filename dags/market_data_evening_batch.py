@@ -1,6 +1,5 @@
 from airflow import DAG
-from airflow.decorators import task
-from airflow.sdk import TaskGroup
+from airflow.sdk import TaskGroup, task
 from airflow.providers.standard.operators.empty import EmptyOperator
 from datetime import datetime, timedelta
 from pendulum import timezone

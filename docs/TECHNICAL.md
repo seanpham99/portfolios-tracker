@@ -686,15 +686,17 @@ docker-compose logs -f
 **Expected Output:**
 
 ```
-✓ Network fin-sight_default          Created
-✓ Volume fin-sight_postgres-db-volume Created
-✓ Volume fin-sight_clickhouse-data   Created
-✓ Container fin-sight-postgres-1     Healthy
-✓ Container fin-sight-redis-1        Healthy
-✓ Container fin-sight-clickhouse-server-1 Healthy
-✓ Container fin-sight-airflow-init-1      Started
-✓ Container fin-sight-clickhouse-init-1   Started
-✓ Container fin-sight-airflow-webserver-1 Started
+✔ Network fin-sight_default Created
+ ✔ Container fin-sight-postgres-1 Healthy
+ ✔ Container fin-sight-redis-1 Healthy
+ ✔ Container fin-sight-clickhouse-server-1 Healthy
+ ✔ Container fin-sight-airflow-init-1 Exited
+ ✔ Container fin-sight-clickhouse-init-1 Exited
+ ✔ Container fin-sight-airflow-dag-processor-1 Started
+ ✔ Container fin-sight-airflow-triggerer-1 Started
+ ✔ Container fin-sight-airflow-scheduler-1 Started
+ ✔ Container fin-sight-airflow-apiserver-1 Healthy
+ ✔ Container fin-sight-airflow-worker-1 Started
 ```
 
 #### 5. Verify Initialization

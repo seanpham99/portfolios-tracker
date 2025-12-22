@@ -1,5 +1,5 @@
 from airflow import DAG
-from airflow.decorators import task
+from airflow.sdk import task
 from datetime import datetime, timedelta
 from pendulum import timezone
 import pandas as pd

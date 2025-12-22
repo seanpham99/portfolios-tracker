@@ -13,7 +13,7 @@ yfinance
 vnstock
 pandas
 numpy
-pandas_ta
+pandas_ta==0.4.71b0
 python-dotenv
 requests
 websockets

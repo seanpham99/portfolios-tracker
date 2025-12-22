@@ -3,6 +3,7 @@ import pandas_ta as ta
 import logging
 import numpy as np
 from vnstock import Quote, Finance, Company
+from urllib.parse import urlparse
 
 
 def clean_decimal_cols(df, cols):
@@ -295,15 +296,56 @@ def fetch_dividends(symbol):
 
 def fetch_news(symbol):
     try:
-        company = Company(symbol=symbol, source="TCBS")
+        # TCBS public API has been deprecated; switch to VCI
+        company = Company(symbol=symbol, source="VCI")
         df = company.news(page_size=50)
         if df is None or df.empty:
             return pd.DataFrame()
 
         df["ticker"] = symbol
-        df.rename(columns={"id": "news_id", "price": "price_at_publish"}, inplace=True)
+
+        # Normalize column names between providers
+        if "public_date" in df.columns:
+            df.rename(columns={"public_date": "publish_date"}, inplace=True)
+        if "news_title" in df.columns:
+            df.rename(columns={"news_title": "title"}, inplace=True)
+
+        # Only rename id -> news_id if news_id doesn't already exist
+        if "id" in df.columns and "news_id" not in df.columns:
+            df.rename(columns={"id": "news_id"}, inplace=True)
+
+        # Map price columns
+        if "price" in df.columns and "price_at_publish" not in df.columns:
+            df.rename(columns={"price": "price_at_publish"}, inplace=True)
+        elif "close_price" in df.columns:
+            df["price_at_publish"] = pd.to_numeric(df["close_price"], errors="coerce")
+
+        # Price change metrics
+        if "ref_price" in df.columns and "close_price" in df.columns:
+            df["price_change"] = pd.to_numeric(df["close_price"], errors="coerce") - pd.to_numeric(
+                df["ref_price"], errors="coerce"
+            )
+        if "price_change_pct" in df.columns:
+            df["price_change_ratio"] = pd.to_numeric(df["price_change_pct"], errors="coerce")
+
+        # Derive source from link if available
+        if "source" not in df.columns and "news_source_link" in df.columns:
+            try:
+                df["source"] = df["news_source_link"].apply(
+                    lambda x: (urlparse(x).netloc if isinstance(x, str) else None)
+                )
+            except Exception:
+                df["source"] = None
+
+        # Publish date to datetime (VCI returns epoch ms)
         if "publish_date" in df.columns:
-            df["publish_date"] = pd.to_datetime(df["publish_date"])
+            try:
+                if pd.api.types.is_numeric_dtype(df["publish_date"]):
+                    df["publish_date"] = pd.to_datetime(df["publish_date"], unit="ms", errors="coerce")
+                else:
+                    df["publish_date"] = pd.to_datetime(df["publish_date"], errors="coerce")
+            except Exception:
+                df["publish_date"] = pd.to_datetime(df["publish_date"], errors="coerce")
 
         required_cols = [
             "ticker",

@@ -223,6 +223,7 @@ graph TB
 **Data Source Integration:**
 
 - Uses `vnstock` library with VCI and TCBS data sources
+- News provider update: TCBS public news API has been deprecated. `fetch_news()` now uses VCI and normalizes fields (e.g., `news_title`→`title`, `public_date` epoch ms→`publish_date`, `close_price`→`price_at_publish`, `price_change_pct`→`price_change_ratio`).
 - Implements fallback error handling for API failures
 - Handles MultiIndex DataFrames and column name normalization
 
@@ -283,7 +284,8 @@ graph TB
 #### 4. **Data Source Layer (vnstock)**
 
 - **Library**: `vnstock` (Vietnamese stock market data API wrapper)
-- **Sources**: VCI (prices/ratios), TCBS (news/dividends)
+- **Sources**: VCI (prices/ratios/news), TCBS (dividends)
+- **Note**: As of Dec 2025, TCBS public news endpoints require migration; the project fetches news via VCI and applies schema normalization.
 - **Coverage**: HOSE, HNX, UPCOM exchanges
 
 #### 5. **Infrastructure Layer (Docker)**
@@ -786,9 +788,12 @@ docker exec -it fin-sight-airflow-worker-1 \
 
 ### Current Testing Status
 
-**⚠️ No automated test suite currently implemented.**
+Automated pytest suite is implemented and running in CI.
 
-The repository includes pytest cache references (`.gitignore` contains `.pytest_cache/`) but no test files exist in the codebase.
+- Unit tests cover `fetcher.py` and `notifications.py` core flows (prices, ratios, income, dividends, news, Telegram, Gemini) with API calls mocked.
+- Current run: 45 unit tests passed; total coverage ~52% (fetcher ~80%, notifications ~94%).
+- Tooling: `pytest`, `pytest-mock`, `pytest-cov`, `responses`, `freezegun`.
+- Execution: locally via `./run_tests.sh --unit`, and on GitHub Actions in [/.github/workflows/test.yml](.github/workflows/test.yml).
 
 ### Recommended Testing Implementation
 

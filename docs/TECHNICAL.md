@@ -26,46 +26,159 @@
 
 The system follows a layered architecture with clear separation of concerns:
 
-```
-┌─────────────────────────────────────────────────────────────┐
-│                    Presentation Layer                       │
-│            (Telegram Bot, Metabase Dashboards)              │
-└─────────────────────────────────────────────────────────────┘
-                              ▲
-                              │
-┌─────────────────────────────────────────────────────────────┐
-│                   Orchestration Layer                       │
-│              (Apache Airflow - Scheduler/Worker)            │
-│    ┌──────────────────┐         ┌──────────────────┐       │
-│    │ Evening Batch    │         │ Morning News     │       │
-│    │ (6 PM Mon-Fri)   │         │ (7 AM Mon-Fri)   │       │
-│    └──────────────────┘         └──────────────────┘       │
-└─────────────────────────────────────────────────────────────┘
-                              ▲
-                              │
-┌─────────────────────────────────────────────────────────────┐
-│                     Data Processing Layer                   │
-│                    (ETL Modules - Python)                   │
-│  ┌──────────┐  ┌──────────┐  ┌──────────┐  ┌──────────┐   │
-│  │ Fetcher  │  │Transform │  │Indicators│  │ Notifier │   │
-│  │ (vnstock)│  │ Cleaner  │  │pandas_ta │  │ Telegram │   │
-│  └──────────┘  └──────────┘  └──────────┘  └──────────┘   │
-└─────────────────────────────────────────────────────────────┘
-                              ▲
-                              │
-┌─────────────────────────────────────────────────────────────┐
-│                      Data Storage Layer                     │
-│         ┌─────────────────────┬─────────────────────┐       │
-│         │   ClickHouse DWH    │   PostgreSQL        │       │
-│         │   (Analytical)      │   (Airflow Metadata)│       │
-│         └─────────────────────┴─────────────────────┘       │
-└─────────────────────────────────────────────────────────────┘
-                              ▲
-                              │
-┌─────────────────────────────────────────────────────────────┐
-│                       Data Source Layer                     │
-│              (vnstock API - VCI, TCBS sources)              │
-└─────────────────────────────────────────────────────────────┘
+```mermaid
+graph TB
+    subgraph external["External Systems"]
+        vnstock["vnstock API<br/>(VCI/TCBS)"]
+        gemini["Google Gemini AI<br/>(2.0 Flash)"]
+        telegram["Telegram Bot API"]
+    end
+
+    subgraph docker["Docker Infrastructure Layer"]
+        subgraph airflow_cluster["Airflow Services (CeleryExecutor)"]
+            webserver["Webserver<br/>:8181"]
+            scheduler["Scheduler<br/>(DAG Trigger)"]
+            dagprocessor["DAG Processor<br/>(File Parser)"]
+            worker["Worker<br/>(Task Executor)"]
+            triggerer["Triggerer<br/>(Async Tasks)"]
+            apiserver["API Server<br/>:8080"]
+        end
+        
+        subgraph support["Support Services"]
+            redis["Redis<br/>(Celery Broker)<br/>:6379"]
+            postgres["PostgreSQL<br/>(Airflow Metadata)"]
+        end
+        
+        subgraph dwh["Data Warehouse"]
+            clickhouse["ClickHouse<br/>(market_dwh)<br/>:8123, :9000"]
+        end
+    end
+
+    subgraph dags["Orchestration Layer - DAGs"]
+        subgraph evening["market_data_evening_batch<br/>(6 PM Mon-Fri)"]
+            price_pipeline["Price Pipeline<br/>(extract → load)"]
+            ratio_pipeline["Ratio Pipeline<br/>(extract → load)"]
+            fund_pipeline["Fundamental Pipeline<br/>(extract → load)"]
+        end
+        
+        subgraph morning["market_news_morning<br/>(7 AM Mon-Fri)"]
+            news_extract["Extract News"]
+            news_load["Load News"]
+            news_notify["AI Summary & Notify"]
+        end
+    end
+
+    subgraph etl["Data Processing Layer - ETL Modules"]
+        subgraph fetcher_module["fetcher.py"]
+            fetch_price["fetch_stock_price()<br/>(OHLCV + Indicators)"]
+            fetch_ratio["fetch_financial_ratios()<br/>(P/E, ROE, etc.)"]
+            fetch_fund["fetch_income_stmt()<br/>fetch_dividends()"]
+            fetch_news["fetch_news()<br/>(Market News)"]
+        end
+        
+        subgraph notif_module["notifications.py"]
+            telegram_notif["send_telegram_news_summary()"]
+            gemini_sum["summarize_news_with_gemini()"]
+            get_data["get_latest_stock_data()"]
+        end
+    end
+
+    subgraph db_schema["ClickHouse Schema"]
+        subgraph facts["Fact Tables"]
+            fact_daily["fact_stock_daily<br/>(OHLCV + Technical)"]
+            fact_ratios["fact_financial_ratios<br/>(Quarterly)"]
+            fact_income["fact_income_statement"]
+            fact_div["fact_dividends"]
+            fact_news_tbl["fact_news"]
+        end
+        
+        subgraph dims["Dimension Tables"]
+            dim_date["dim_date<br/>(2015-2035)"]
+            dim_stocks["dim_stock_companies<br/>(1800+ companies)"]
+        end
+        
+        subgraph views["Analytical Views"]
+            view_master["view_market_daily_master"]
+            view_valuation["view_valuation_daily"]
+            view_health["view_fundamental_health"]
+        end
+    end
+
+    %% Data Source to ETL
+    vnstock -->|Price Data| fetch_price
+    vnstock -->|Ratios| fetch_ratio
+    vnstock -->|Fundamentals| fetch_fund
+    vnstock -->|News| fetch_news
+
+    %% ETL to DAG Tasks
+    fetch_price -->|250 days<br/>filter 7 days| price_pipeline
+    fetch_ratio -->|Quarterly| ratio_pipeline
+    fetch_fund -->|Historical| fund_pipeline
+    fetch_news -->|Last 50| news_extract
+
+    %% Worker executes ETL
+    worker -.->|Executes| etl
+
+    %% DAG orchestration
+    scheduler -->|Triggers| evening
+    scheduler -->|Triggers| morning
+    dagprocessor -.->|Parses| dags
+    
+    %% Parallel execution in evening batch
+    price_pipeline -.->|Parallel| ratio_pipeline
+    ratio_pipeline -.->|Parallel| fund_pipeline
+
+    %% Sequential flow in morning
+    news_extract --> news_load
+    news_load --> news_notify
+
+    %% Load to ClickHouse
+    price_pipeline -->|Insert + OPTIMIZE| fact_daily
+    ratio_pipeline --> fact_ratios
+    fund_pipeline --> fact_income
+    fund_pipeline --> fact_div
+    news_load --> fact_news_tbl
+
+    %% Facts to Views
+    fact_daily --> view_master
+    fact_ratios --> view_master
+    dim_stocks --> view_master
+    fact_daily --> view_valuation
+    fact_ratios --> view_valuation
+    fact_income --> view_health
+
+    %% AI Enhancement Flow
+    news_notify --> get_data
+    get_data -->|Query Views| views
+    views --> gemini_sum
+    fact_news_tbl --> gemini_sum
+    gemini_sum -->|API Call| gemini
+    gemini --> telegram_notif
+    telegram_notif -->|Markdown Message| telegram
+
+    %% Airflow Infrastructure
+    redis -->|Task Queue| worker
+    postgres -->|Metadata| scheduler
+    postgres -->|State| worker
+    webserver -.->|UI| scheduler
+    apiserver -.->|REST API| scheduler
+
+    %% Notification callbacks
+    evening -.->|Success/Fail| telegram
+    morning -.->|Success/Fail| telegram
+
+    %% Styling
+    classDef airflowStyle fill:#fff4e1,stroke:#ff9800,stroke-width:2px
+    classDef storageStyle fill:#fce4ec,stroke:#e91e63,stroke-width:2px
+    classDef etlStyle fill:#e8f5e9,stroke:#4caf50,stroke-width:2px
+    classDef externalStyle fill:#f3e5f5,stroke:#9c27b0,stroke-width:2px
+    classDef dagStyle fill:#e3f2fd,stroke:#2196f3,stroke-width:2px
+    
+    class webserver,scheduler,dagprocessor,worker,triggerer,apiserver,redis,postgres airflowStyle
+    class clickhouse,fact_daily,fact_ratios,fact_income,fact_div,fact_news_tbl,dim_date,dim_stocks,view_master,view_valuation,view_health storageStyle
+    class fetch_price,fetch_ratio,fetch_fund,fetch_news,telegram_notif,gemini_sum,get_data etlStyle
+    class vnstock,gemini,telegram externalStyle
+    class price_pipeline,ratio_pipeline,fund_pipeline,news_extract,news_load,news_notify dagStyle
 ```
 
 ### Key Components and Responsibilities
@@ -588,7 +701,7 @@ docker-compose logs -f
 
 ```bash
 # Check all services are healthy
-docker-compose ps
+docker compose ps
 
 # Expected: All services show "healthy" or "running"
 ```
@@ -640,14 +753,14 @@ docker exec -it fin-sight-airflow-worker-1 bash -c \
 sudo chown -R $UID:$UID logs/ dags/ plugins/ config/
 
 # Restart services
-docker-compose restart
+docker compose restart
 ```
 
 #### Issue: ClickHouse initialization fails
 
 ```bash
 # Check logs
-docker-compose logs clickhouse-init
+docker compose logs clickhouse-init
 
 # Manually run init script
 docker exec -it fin-sight-airflow-worker-1 \
@@ -658,7 +771,7 @@ docker exec -it fin-sight-airflow-worker-1 \
 
 ```bash
 # Restart DAG processor
-docker-compose restart airflow-dag-processor
+docker compose restart airflow-dag-processor
 
 # Check for syntax errors
 docker exec -it fin-sight-airflow-worker-1 \

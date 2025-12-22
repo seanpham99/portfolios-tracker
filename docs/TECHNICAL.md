@@ -200,7 +200,7 @@ graph TB
 
 #### 2. **Data Processing Layer (ETL Modules)**
 
-**Location:** `/dags/etl_modules/`
+**Location:** `/services/data-pipelines/dags/etl_modules/`
 
 ##### `fetcher.py` - Data Extraction Module
 
@@ -547,7 +547,7 @@ Telegram Success Notification
   - **Volumes**: Persistent storage for databases and logs
   - **Health Checks**: Automated dependency management
 - **Rationale**:
-  - Single-command deployment (`docker-compose up -d`)
+  - Single-command deployment (`docker compose up -d`)
   - Environment parity (dev/prod consistency)
   - Easy horizontal scaling (add more Celery workers)
 
@@ -617,10 +617,11 @@ cd fin-sight
 
 #### 2. Configure Environment Variables
 
-Create `.env` file from template:
+Create `.env` file in the data pipelines folder:
 
 ```bash
-cp .env.template .env
+cd services/data-pipelines
+[ -f .env.template ] && cp .env.template .env || printf "TELEGRAM_BOT_TOKEN=\nTELEGRAM_CHAT_ID=\nGEMINI_API_KEY=\nCLICKHOUSE_HOST=clickhouse-server\nCLICKHOUSE_PORT=8123\nCLICKHOUSE_USER=default\nCLICKHOUSE_PASSWORD=\nAIRFLOW_UID=$(id -u)\n" > .env
 ```
 
 Edit `.env` with your credentials:
@@ -661,28 +662,27 @@ AIRFLOW_UID=1001
 #### 3. Set Correct Permissions (Linux/macOS)
 
 ```bash
-# Get your user ID
-echo $UID
+cd services/data-pipelines
+# Get your user and group IDs
+echo "AIRFLOW_UID=$(id -u)" >> .env
 
-# Update AIRFLOW_UID in .env
-sed -i "s/AIRFLOW_UID=1001/AIRFLOW_UID=$UID/" .env
-
-# Create directories with correct ownership
+# Create runtime directories with correct ownership
 mkdir -p logs dags plugins config
-sudo chown -R $UID:$UID logs dags plugins config
+sudo chown -R $(id -u):$(id -g) logs dags plugins config
 ```
 
 #### 4. Build and Start Services
 
 ```bash
+cd services/data-pipelines
 # Build custom Airflow image with dependencies
-docker-compose build
+docker compose build
 
 # Start all services in detached mode
-docker-compose up -d
+docker compose up -d
 
 # Monitor logs during initialization (Ctrl+C to exit)
-docker-compose logs -f
+docker compose logs -f
 ```
 
 **Expected Output:**
@@ -732,9 +732,9 @@ docker compose ps
 Load 5 years of historical data:
 
 ```bash
-docker exec -it fin-sight-airflow-worker-1 bash -c \
-  "python /opt/airflow/scripts/manual_load_data.py \
-   --start 2020-01-01 --end $(date +%Y-%m-%d)"
+cd services/data-pipelines
+docker compose exec airflow-worker bash -c \
+  "python /opt/airflow/scripts/manual_load_data.py --start 2020-01-01 --end $(date +%Y-%m-%d)"
 ```
 
 **Note**: This will take 10-15 minutes and insert ~50,000+ rows.
@@ -753,8 +753,9 @@ docker exec -it fin-sight-airflow-worker-1 bash -c \
 #### Issue: "Permission denied" errors
 
 ```bash
+cd services/data-pipelines
 # Fix ownership
-sudo chown -R $UID:$UID logs/ dags/ plugins/ config/
+sudo chown -R $(id -u):$(id -g) logs/ dags/ plugins/ config/
 
 # Restart services
 docker compose restart
@@ -767,7 +768,7 @@ docker compose restart
 docker compose logs clickhouse-init
 
 # Manually run init script
-docker exec -it fin-sight-airflow-worker-1 \
+docker compose exec airflow-worker \
   python /opt/airflow/scripts/init_clickhouse.py
 ```
 
@@ -778,7 +779,7 @@ docker exec -it fin-sight-airflow-worker-1 \
 docker compose restart airflow-dag-processor
 
 # Check for syntax errors
-docker exec -it fin-sight-airflow-worker-1 \
+docker compose exec airflow-worker \
   airflow dags list
 ```
 
@@ -930,11 +931,11 @@ def test_technical_indicators_calculated(clickhouse_client):
 
 ```bash
 # Test DAG for syntax errors
-docker exec -it fin-sight-airflow-worker-1 \
+docker compose exec airflow-worker \
   airflow dags test market_data_evening_batch 2024-01-01
 
 # Test individual task
-docker exec -it fin-sight-airflow-worker-1 \
+docker compose exec airflow-worker \
   airflow tasks test market_data_evening_batch \
   price_pipeline.extract_prices 2024-01-01
 ```
@@ -1349,5 +1350,5 @@ ORDER BY revenue_growth_yoy DESC;
 
 ---
 
-**Document Version**: 1.0  
-**Last Updated**: December 3, 2025
+**Document Version**: 1.1  
+**Last Updated**: December 22, 2025

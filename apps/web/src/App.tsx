@@ -374,8 +374,6 @@ export default function FinsightTracker() {
               {showAnalytics && <Circle size={6} className="fill-indigo-500 text-indigo-500" />}
               Portfolio Intelligence
             </button>
-            <button className="hover:text-white transition-colors">Yields</button>
-            <button className="hover:text-white transition-colors">Team</button>
           </div>
 
           <div className="flex items-center gap-3 bg-zinc-900/80 px-4 py-2 rounded-full border border-zinc-800/50 backdrop-blur-md hover:border-zinc-700 transition-colors cursor-default">

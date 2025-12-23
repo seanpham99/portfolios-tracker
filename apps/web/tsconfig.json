@@ -9,6 +9,7 @@
     }
   ],
   "compilerOptions": {
+    "rootDirs": [".", "./.react-router/types"],
     "paths": {
       "@/*": ["./src/*"]
     }

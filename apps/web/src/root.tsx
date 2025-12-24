@@ -5,7 +5,7 @@ import {
     Scripts,
     ScrollRestoration,
 } from "react-router";
-import "./index.css";
+import "@repo/ui/styles/globals.css";
 
 export function Layout({
     children,

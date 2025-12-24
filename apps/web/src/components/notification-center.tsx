@@ -3,7 +3,7 @@
 import { useState } from "react"
 import { motion, AnimatePresence } from "framer-motion"
 import { Bell, X, Check, TrendingUp, Wallet, BarChart3, Info } from "lucide-react"
-import { cn } from "@/lib/utils"
+import { cn } from "@repo/ui/lib/utils"
 import { useNotifications, portfolioStore, type Notification } from "@/stores/portfolio-store"
 import { GlassCard } from "./glass-card"
 

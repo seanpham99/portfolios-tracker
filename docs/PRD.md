@@ -258,30 +258,44 @@ Frontend Form → API POST /transactions → Validate → PostgreSQL Insert → 
 
 **Business Logic:**
 
-```python
-def calculate_net_worth(user_id, base_currency):
-    # 1. Get all user transactions (PostgreSQL)
-    transactions = fetch_user_transactions(user_id)
+```typescript
+// Shared type from @repo/types
+import { NetWorthCalculation, Database } from '@repo/types';
+import { SupabaseService } from '@repo/database';
 
-    # 2. Group by ticker, calculate holdings
-    holdings = aggregate_holdings(transactions)  # {ticker: net_quantity}
+async calculateNetWorth(userId: string, baseCurrency: string): Promise<NetWorthCalculation> {
+  // 1. Get all user transactions (Supabase with auto-generated types)
+  const { data: transactions } = await this.supabase
+    .from('transactions')
+    .select('*')
+    .eq('user_id', userId)
+    .order('transaction_date', { ascending: true });
 
-    # 3. Fetch current prices (ClickHouse)
-    prices = fetch_latest_prices(holdings.keys())
+  // 2. Group by ticker, calculate holdings
+  const holdings = this.aggregateHoldings(transactions);
 
-    # 4. Calculate value
-    total_value = sum(
-        holding.quantity * prices[ticker] * exchange_rate(ticker_currency, base_currency)
-        for ticker, holding in holdings.items()
-    )
+  // 3. Fetch current prices (ClickHouse via @repo/database)
+  const tickers = Object.keys(holdings);
+  const prices = await this.marketService.getLatestPrices(tickers);
 
-    # 5. Calculate returns
-    total_cost_basis = sum(txn.quantity * txn.price for txn in transactions if txn.type == 'BUY')
-    return {
-        'net_worth': total_value,
-        'total_return': total_value - total_cost_basis,
-        'total_return_pct': (total_value - total_cost_basis) / total_cost_basis * 100
-    }
+  // 4. Calculate value with currency conversion
+  const totalValue = Object.entries(holdings).reduce((sum, [ticker, holding]) => {
+    const price = prices[ticker];
+    const rate = this.exchangeRate(price.currency, baseCurrency);
+    return sum + holding.quantity * price.value * rate;
+  }, 0);
+
+  // 5. Calculate returns
+  const totalCostBasis = transactions
+    .filter(t => t.transactionType === 'BUY')
+    .reduce((sum, t) => sum + t.quantity * t.pricePerUnit, 0);
+
+  return {
+    netWorth: totalValue,
+    totalReturn: totalValue - totalCostBasis,
+    totalReturnPct: ((totalValue - totalCostBasis) / totalCostBasis) * 100
+  };
+}
 ```
 
 ---
@@ -466,8 +480,8 @@ graph TB
     end
 
     subgraph Application["APPLICATION LAYER"]
-        API["API Gateway<br/>(FastAPI or Supabase Edge Functions)"]
-        API_Details["• Authentication (JWT validation)<br/>• Business Logic (Portfolio calculations)<br/>• Query Orchestration (Postgres + ClickHouse)<br/>• Response Caching (Redis)"]
+        API["API Gateway<br/>(Node.js/NestJS)"]
+        API_Details["• Authentication (Supabase Auth + JWT)<br/>• Business Logic (Portfolio calculations)<br/>• Query Orchestration (Supabase + ClickHouse)<br/>• Response Caching (Redis)"]
     end
 
     subgraph Data["DATA LAYER"]
@@ -573,24 +587,26 @@ User Request → API Gateway → Decision Tree:
 
 ---
 
-#### 5.3.2 API Layer (Recommendation: FastAPI)
+#### 5.3.2 API Layer (Node.js/NestJS)
 
-| Component             | Technology         | Rationale                                                   |
-| --------------------- | ------------------ | ----------------------------------------------------------- |
-| **Framework**         | FastAPI            | Async support, automatic OpenAPI docs, 3x faster than Flask |
-| **Language**          | Python 3.12        | Consistency with existing Airflow pipeline                  |
-| **Validation**        | Pydantic           | Type-safe request/response models                           |
-| **ORM**               | SQLAlchemy         | PostgreSQL abstraction, connection pooling                  |
-| **ClickHouse Client** | clickhouse-connect | Same as existing pipeline                                   |
-| **Caching**           | Redis              | Sub-10ms reads, TTL support                                 |
-| **Authentication**    | Supabase Auth SDK  | OAuth delegation, JWT validation                            |
+| Component             | Technology              | Rationale                                                      |
+| --------------------- | ----------------------- | -------------------------------------------------------------- |
+| **Framework**         | NestJS                  | Enterprise-grade, dependency injection, modular architecture   |
+| **Language**          | TypeScript 5.x          | End-to-end type safety with frontend, better DX                |
+| **Validation**        | class-validator + Zod   | Runtime validation, shared schemas with frontend               |
+| **Database Client**   | Supabase JS             | Type-safe client, auto-generated types, RLS, real-time support |
+| **ClickHouse Client** | @clickhouse/client      | Official Node.js driver, connection pooling                    |
+| **Caching**           | ioredis                 | High-performance Redis client, cluster support                 |
+| **Authentication**    | Supabase Auth + NestJS  | JWT validation, OAuth providers, magic links, RLS integration  |
+| **API Docs**          | @nestjs/swagger         | Auto-generated OpenAPI specs from decorators                   |
 
-**Alternative: Supabase Edge Functions**
+**Why NestJS over Express/Fastify:**
 
-- **Pros**: Serverless (no container management), tight integration with Supabase Auth
-- **Cons**: Vendor lock-in, cold start latency (100-300ms), limited Python ecosystem
-
-**Recommendation:** Use FastAPI for MVP, evaluate Edge Functions for V1.5
+- **Dependency Injection**: Testable, maintainable code through IoC container
+- **Modular Architecture**: Clear separation of concerns (modules, controllers, services)
+- **Built-in Features**: Guards, interceptors, pipes for cross-cutting concerns
+- **TypeScript-First**: Decorators and metadata for cleaner code
+- **Scalability**: Microservices support for future growth
 
 ---
 

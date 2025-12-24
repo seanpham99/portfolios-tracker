@@ -3,7 +3,7 @@
 import { Sparkline } from "./sparkline"
 import { GlassCard } from "./glass-card"
 import { TrendingUp, TrendingDown } from "lucide-react"
-import { cn } from "@/lib/utils"
+import { cn } from "@repo/ui/lib/utils"
 
 export interface Asset {
   id: string

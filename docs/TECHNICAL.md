@@ -1,8 +1,8 @@
-# Finsight Technical Documentation v2.0
+# Technical Documentation
 
 ## Overview and Purpose
 
-**Finsight** is a full-stack portfolio intelligence platform built on the Fin-Sight data engineering pipeline. The system extends the existing ELT architecture (Airflow + ClickHouse) with a three-tier web application: React 19 frontend, FastAPI middle layer, and hybrid PostgreSQL/ClickHouse backend.
+**Finsight** is a full-stack portfolio intelligence platform built on the Fin-Sight data engineering pipeline. The system extends the existing ELT architecture (Airflow + ClickHouse) with a three-tier web application: React 19 frontend, Node.js/NestJS API layer, and hybrid PostgreSQL/ClickHouse backend, all organized in a Turborepo monorepo.
 
 **Problem Statement:** Vietnamese investors lack a unified platform that combines local market data with global assets (US stocks, crypto, commodities) in an elegant, decision-ready interface.
 
@@ -16,7 +16,8 @@
 **System Status:**
 
 - **Data Pipeline:** Production-ready (Airflow 3.1.3 + ClickHouse)
-- **Web Application:** Development phase (React 19 RC + FastAPI)
+- **Web Application:** Development phase (React 19 + NestJS)
+- **Monorepo:** Turborepo with pnpm workspaces
 - **Deployment:** Docker Compose (dev), Kubernetes planned (production)
 
 ---
@@ -118,13 +119,13 @@ User fills form → Frontend validation (React Hook Form + Zod)
     ↓
 POST /api/v1/portfolios/{id}/transactions
     ↓
-FastAPI validates request (Pydantic)
+NestJS validates request (class-validator + DTO)
     ↓
-Check authorization (JWT → user owns portfolio?)
+Check authorization (JWT Guard → user owns portfolio?)
     ↓
 Validate ticker exists (Query ClickHouse dim_stock_companies)
     ↓
-Insert to PostgreSQL transactions table
+Insert to PostgreSQL transactions table (Supabase JS)
     ↓
 Invalidate Redis cache: portfolio_summary:{portfolio_id}
     ↓
@@ -148,8 +149,20 @@ Background: Recalculate portfolio snapshot → ClickHouse fact_user_holdings
 ```
 User navigates to dashboard → GET /api/v1/portfolios/{id}/summary
     ↓
-FastAPI checks Redis: portfolio_summary:{portfolio_id}
+NestJS checks Redis: portfolio_summary:{portfolio_id}
     ├─ [CACHE HIT] Return cached JSON (10ms)
+    └─ [CACHE MISS] Query PostgreSQL + ClickHouse
+           ↓
+       Supabase: Get transactions for portfolio (with RLS)
+           ↓
+       ClickHouse: Get latest prices (materialized view)
+           ↓
+       Calculate holdings & returns (TypeScript service)
+           ↓
+       Store in Redis (TTL: 60s)
+           ↓
+       Return JSON to frontend (Total: ~70ms first load, 10ms subsequent)
+```
     └─ [CACHE MISS] Execute query orchestration:
         ↓
     1. Query PostgreSQL: Get user's transactions
@@ -218,14 +231,155 @@ FastAPI checks Redis: ohlc:{ticker}:1y
 
 ---
 
-### 1.3 Architectural Principles
+### 1.3 Monorepo Structure (Turborepo)
 
-#### 1.3.1 Separation of Concerns
+**Workspace Organization:**
+
+```
+fin-sight/
+├── apps/
+│   ├── web/                    # React 19 + Vite frontend
+│   │   ├── src/
+│   │   ├── package.json
+│   │   └── vite.config.ts
+│   └── api/                    # NestJS backend
+│       ├── src/
+│       │   ├── modules/        # Feature modules
+│       │   │   ├── auth/
+│       │   │   ├── portfolio/
+│       │   │   ├── market/
+│       │   │   └── user/
+│       │   ├── common/         # Shared guards, interceptors
+│       │   ├── main.ts
+│       │   └── app.module.ts
+│       ├── package.json
+│       └── tsconfig.json
+│
+├── packages/
+│   ├── database/               # @repo/database
+│   │   ├── src/
+│   │   │   ├── supabase.service.ts
+│   │   │   └── clickhouse.service.ts
+│   │   └── package.json
+│   │
+│   ├── types/                  # @repo/types
+│   │   ├── src/
+│   │   │   ├── supabase.ts     # Auto-generated from Supabase
+│   │   │   ├── clickhouse.ts   # ClickHouse result types
+│   │   │   ├── dtos/           # Request/response types
+│   │   │   └── schemas/        # Zod validation schemas
+│   │   └── package.json
+│   │
+│   ├── ui/                     # @repo/ui
+│   │   ├── src/
+│   │   │   ├── components/     # Shared React components
+│   │   │   └── hooks/          # Custom hooks
+│   │   └── package.json
+│   │
+│   ├── utils/                  # @repo/utils
+│   │   ├── src/
+│   │   │   ├── date.ts         # Date formatting
+│   │   │   ├── currency.ts     # Currency conversion
+│   │   │   └── calculations.ts # Portfolio math
+│   │   └── package.json
+│   │
+│   ├── typescript-config/      # @repo/typescript-config
+│   │   ├── base.json
+│   │   ├── nextjs.json
+│   │   └── react.json
+│   │
+│   ├── eslint-config/          # @repo/eslint-config
+│   │   ├── base.js
+│   │   └── react.js
+│   │
+│   └── vitest-config/          # @repo/vitest-config
+│       └── vitest.config.ts
+│
+├── services/
+│   └── data-pipeline/          # Existing Airflow DAGs
+│
+├── turbo.json                  # Turborepo pipeline config
+├── pnpm-workspace.yaml         # pnpm workspace definition
+└── package.json                # Root package.json
+```
+
+**Turborepo Configuration:**
+
+```json
+// turbo.json
+{
+  "$schema": "https://turbo.build/schema.json",
+  "pipeline": {
+    "build": {
+      "dependsOn": ["^build"],
+      "outputs": ["dist/**", ".next/**", "build/**"]
+    },
+    "dev": {
+      "cache": false,
+      "persistent": true
+    },
+    "lint": {
+      "dependsOn": ["^lint"]
+    },
+    "test": {
+      "dependsOn": ["^build"],
+      "outputs": ["coverage/**"]
+    }
+  }
+}
+```
+
+**Package Manager Configuration:**
+
+```yaml
+# pnpm-workspace.yaml
+packages:
+  - 'apps/*'
+  - 'packages/*'
+```
+
+**Shared Package Benefits:**
+
+- **@repo/types**: Single source of truth for TypeScript types (Supabase auto-generated + ClickHouse), shared between frontend and backend
+- **@repo/database**: Centralized Supabase client and ClickHouse connections prevent multiple instances
+- **@repo/ui**: Shared components ensure consistent UI across potential future apps
+- **@repo/utils**: Shared business logic (calculations, formatters) used by both web and api
+- **@repo/typescript-config**: Consistent TypeScript configurations across all packages
+- **@repo/eslint-config**: Unified code style and linting rules
+- **@repo/vitest-config**: Shared test configuration for consistency
+
+**Internal Package Installation:**
+
+```json
+// apps/api/package.json
+{
+  "dependencies": {
+    "@repo/database": "workspace:*",
+    "@repo/types": "workspace:*",
+    "@repo/utils": "workspace:*"
+  }
+}
+
+// apps/web/package.json
+{
+  "dependencies": {
+    "@repo/ui": "workspace:*",
+    "@repo/types": "workspace:*",
+    "@repo/utils": "workspace:*"
+  }
+}
+```
+
+---
+
+### 1.4 Architectural Principles
+
+#### 1.4.1 Separation of Concerns
 
 | Layer                       | Responsibility                                      | NOT Responsible For                               |
 | --------------------------- | --------------------------------------------------- | ------------------------------------------------- |
 | **Frontend (React)**        | UI rendering, user interactions, optimistic updates | Data validation, business logic, direct DB access |
-| **API (FastAPI)**           | Authentication, business logic, query orchestration | UI rendering, long-running tasks                  |
+| **API (NestJS)**            | Authentication, business logic, query orchestration | UI rendering, long-running tasks                  |
 | **Data Pipeline (Airflow)** | ETL, technical indicators, AI summaries             | User-facing queries, real-time requests           |
 | **PostgreSQL**              | User data (ACID guarantees)                         | Analytical queries, time-series data              |
 | **ClickHouse**              | Market data (OLAP queries)                          | Transactional updates, foreign keys               |
@@ -233,7 +387,7 @@ FastAPI checks Redis: ohlc:{ticker}:1y
 
 ---
 
-#### 1.3.2 Query Optimization Strategy
+#### 1.4.2 Query Optimization Strategy
 
 **Problem:** Joining PostgreSQL (user transactions) + ClickHouse (market prices) is slow (200ms+)
 
@@ -271,7 +425,7 @@ def calculate_user_holdings():
 
 ---
 
-#### 1.3.3 Security Model
+#### 1.4.3 Security Model
 
 **Authentication Flow (OAuth2 + JWT):**
 
@@ -372,53 +526,98 @@ async def get_portfolio_summary(
 
 ---
 
-### 2.2 API Layer Stack
+### 2.2 API Layer Stack (NestJS)
 
-| Category       | Technology         | Version | Justification                                                                |
-| -------------- | ------------------ | ------- | ---------------------------------------------------------------------------- |
-| **Framework**  | FastAPI            | 0.109.0 | Async support (3x faster than Flask), auto OpenAPI docs, Pydantic validation |
-| **Language**   | Python             | 3.12.1  | Latest stable, 20% faster than 3.10 (PEP 669 optimizations)                  |
-| **ORM**        | SQLAlchemy         | 2.0.25  | AsyncIO support, connection pooling, query builder                           |
-| **Validation** | Pydantic           | 2.5.3   | Type-safe models, auto JSON schema generation                                |
-| **Auth**       | Supabase Auth SDK  | 2.0.2   | JWT validation, OAuth delegation                                             |
-| **ClickHouse** | clickhouse-connect | 0.6.23  | Official driver, connection pooling, async support                           |
-| **Redis**      | redis-py           | 5.0.1   | Async support, connection pooling                                            |
-| **Testing**    | pytest             | 7.4.4   | Async test support, fixtures, 80% code coverage target                       |
+| Category            | Technology                | Version | Justification                                                         |
+| ------------------- | ------------------------- | ------- | --------------------------------------------------------------------- |
+| **Framework**       | NestJS                    | 10.3.0  | Enterprise architecture, dependency injection, modular design         |
+| **Language**        | TypeScript                | 5.3.3   | End-to-end type safety with frontend, compile-time error detection    |
+| **Runtime**         | Node.js                   | 20 LTS  | Stable, performant, extensive ecosystem                               |
+| **Database Client** | Supabase JS               | 2.39.0  | Auto-generated types, RLS, real-time subscriptions, built-in auth     |
+| **Validation**      | class-validator + Zod     | Latest  | Decorator-based validation (NestJS) + shared schemas (frontend)       |
+| **Auth**            | Supabase Auth + NestJS    | 2.39.0  | JWT validation, OAuth providers, magic links, RLS integration         |
+| **ClickHouse**      | @clickhouse/client        | 0.2.10  | Official Node.js driver, connection pooling, TypeScript support       |
+| **Caching**         | @nestjs/cache-manager     | 2.2.0   | Redis integration, TTL support, cache interceptors                    |
+| **API Docs**        | @nestjs/swagger           | 7.1.17  | Auto-generated OpenAPI, decorators for documentation                  |
+| **Testing**         | Jest + Supertest          | 29.7.0  | Unit tests, integration tests, e2e tests                              |
 
 **Critical Configuration:**
 
-```python
-# config.py - Production settings
-from pydantic_settings import BaseSettings
+```typescript
+// apps/api/src/config/configuration.ts
+import { registerAs } from '@nestjs/config';
 
-class Settings(BaseSettings):
-    # Database
-    POSTGRES_URI: str = "postgresql+asyncpg://user:pass@postgres:5432/finsight"
-    CLICKHOUSE_HOST: str = "clickhouse-server"
-    CLICKHOUSE_PORT: int = 8123
-    REDIS_URL: str = "redis://redis:6379/0"
+export default registerAs('app', () => ({
+  // Database
+  database: {
+    url: process.env.DATABASE_URL || 'postgresql://user:pass@postgres:5432/finsight',
+  },
+  clickhouse: {
+    host: process.env.CLICKHOUSE_HOST || 'clickhouse-server',
+    port: parseInt(process.env.CLICKHOUSE_PORT, 10) || 8123,
+    database: 'market_dwh',
+  },
+  redis: {
+    host: process.env.REDIS_HOST || 'redis',
+    port: parseInt(process.env.REDIS_PORT, 10) || 6379,
+    ttl: {
+      portfolioSummary: 60,      // 1 minute
+      latestPrices: 30,          // 30 seconds
+      ohlc: 3600,                // 1 hour
+    },
+  },
 
-    # Auth
-    SUPABASE_URL: str
-    SUPABASE_JWT_SECRET: str
+  // Auth
+  auth: {
+    supabaseUrl: process.env.SUPABASE_URL,
+    supabaseJwtSecret: process.env.SUPABASE_JWT_SECRET,
+    jwtExpiresIn: '1h',
+  },
 
-    # Performance
-    DB_POOL_SIZE: int = 20
-    DB_MAX_OVERFLOW: int = 10
-    REDIS_MAX_CONNECTIONS: int = 50
+  // Performance
+  throttle: {
+    ttl: 60,                     // Time window (seconds)
+    limit: 100,                  // Max requests per window
+  },
+}));
+```
 
-    # Caching TTLs (seconds)
-    CACHE_TTL_PORTFOLIO_SUMMARY: int = 60
-    CACHE_TTL_LATEST_PRICES: int = 30
-    CACHE_TTL_OHLC: int = 3600
+**NestJS Module Structure:**
 
-    # Rate Limiting
-    RATE_LIMIT_PER_MINUTE: int = 100
+```typescript
+// apps/api/src/app.module.ts
+import { Module } from '@nestjs/common';
+import { ConfigModule } from '@nestjs/config';
+import { ThrottlerModule } from '@nestjs/throttler';
+import { CacheModule } from '@nestjs/cache-manager';
+import { DatabaseModule } from '@repo/database';
+import { AuthModule } from './modules/auth/auth.module';
+import { PortfolioModule } from './modules/portfolio/portfolio.module';
+import { MarketModule } from './modules/market/market.module';
+import { UserModule } from './modules/user/user.module';
+import configuration from './config/configuration';
 
-    class Config:
-        env_file = ".env"
-
-settings = Settings()
+@Module({
+  imports: [
+    ConfigModule.forRoot({
+      isGlobal: true,
+      load: [configuration],
+    }),
+    ThrottlerModule.forRoot([{
+      ttl: 60000,
+      limit: 100,
+    }]),
+    CacheModule.register({
+      isGlobal: true,
+    }),
+    DatabaseModule,
+    AuthModule,
+    PortfolioModule,
+    MarketModule,
+    UserModule,
+  ],
+})
+export class AppModule {}
 ```
 
 ---
@@ -642,6 +841,190 @@ CREATE INDEX idx_transactions_notes_fts ON transactions USING gin(to_tsvector('e
 **Index Rationale:**
 
 - `idx_transactions_portfolio_date`: Dashboard query fetches all transactions for portfolio, sorted by date
+- `idx_transactions_ticker`: Used in "Holdings by Ticker" aggregation
+- Multi-column indexes follow "equality first, range second" rule
+
+---
+
+#### 3.1.3 Supabase Type Generation
+
+**Workflow:**
+
+```bash
+# 1. Link Supabase project (first time)
+supabase link --project-ref your-project-ref
+
+# 2. After schema changes in Supabase, regenerate types
+supabase gen types typescript --linked > packages/types/src/supabase.ts
+
+# Or use the npm script
+pnpm db:types
+```
+
+**Generated Types Location:** `packages/types/src/supabase.ts`
+
+The Supabase CLI generates TypeScript types from your database schema automatically:
+
+```typescript
+// Auto-generated by Supabase CLI
+export type Json = string | number | boolean | null | { [key: string]: Json | undefined } | Json[]
+
+export interface Database {
+  public: {
+    Tables: {
+      users: {
+        Row: {
+          id: string
+          email: string
+          display_name: string | null
+          avatar_url: string | null
+          base_currency: string
+          notification_preferences: Json
+          created_at: string
+          last_login: string | null
+          is_active: boolean
+        }
+        Insert: {
+          id: string
+          email: string
+          display_name?: string | null
+          avatar_url?: string | null
+          base_currency?: string
+          notification_preferences?: Json
+          created_at?: string
+          last_login?: string | null
+          is_active?: boolean
+        }
+        Update: {
+          id?: string
+          email?: string
+          display_name?: string | null
+          avatar_url?: string | null
+          base_currency?: string
+          notification_preferences?: Json
+          created_at?: string
+          last_login?: string | null
+          is_active?: boolean
+        }
+      }
+      portfolios: {
+        Row: {
+          id: string
+          owner_id: string
+          name: string
+          description: string | null
+          is_shared: boolean
+          created_at: string
+          updated_at: string
+        }
+        // Insert and Update types...
+      }
+      transactions: {
+        Row: {
+          id: string
+          portfolio_id: string
+          user_id: string
+          ticker: string
+          market_type: string
+          transaction_type: string
+          quantity: number
+          price_per_unit: number
+          transaction_currency: string
+          transaction_date: string
+          notes: string | null
+          source: string
+          created_at: string
+          updated_at: string
+        }
+        // Insert and Update types...
+      }
+      // Other tables: portfolio_members, activity_log...
+    }
+    Views: {
+      // Auto-generated view types if any
+    }
+    Functions: {
+      // RPC function types
+    }
+    Enums: {
+      // Enum types
+    }
+  }
+}
+```
+
+**Supabase Service (in @repo/database):**
+
+```typescript
+// packages/database/src/supabase.service.ts
+import { Injectable } from '@nestjs/common';
+import { createClient, SupabaseClient } from '@supabase/supabase-js';
+import { Database } from '@repo/types/supabase';
+
+@Injectable()
+export class SupabaseService {
+  private client: SupabaseClient<Database>;
+
+  constructor() {
+    this.client = createClient<Database>(
+      process.env.SUPABASE_URL!,
+      process.env.SUPABASE_SERVICE_KEY!, // Use service key for backend
+      {
+        auth: {
+          autoRefreshToken: false,
+          persistSession: false,
+        },
+      }
+    );
+  }
+
+  getClient(): SupabaseClient<Database> {
+    return this.client;
+  }
+
+  // Helper method for authenticated operations
+  fromAuthUser(userId: string) {
+    // RLS policies will automatically filter based on user_id
+    return this.client;
+  }
+}
+```
+
+**Usage Example:**
+
+```typescript
+// In NestJS service
+import { SupabaseService } from '@repo/database';
+import { Database } from '@repo/types/supabase';
+
+type Transaction = Database['public']['Tables']['transactions']['Row'];
+
+@Injectable()
+export class PortfolioService {
+  constructor(private supabase: SupabaseService) {}
+
+  async getPortfolioTransactions(portfolioId: string): Promise<Transaction[]> {
+    const { data, error } = await this.supabase
+      .getClient()
+      .from('transactions')
+      .select('*')
+      .eq('portfolio_id', portfolioId)
+      .order('transaction_date', { ascending: false });
+
+    if (error) throw new Error(error.message);
+    return data;
+  }
+}
+```
+
+**Benefits:**
+- **Zero manual type maintenance**: Types auto-sync with database schema
+- **RLS integration**: Row-level security policies enforced automatically
+- **Real-time subscriptions**: Built-in if needed for live updates
+- **Auth integration**: Seamless JWT validation and user context
+- **No ORM layer**: Direct SQL-like queries with full type safety
+
+---
 - `idx_transactions_ticker`: Used in "Holdings by Ticker" aggregation
 - Multi-column indexes follow "equality first, range second" rule
 
@@ -3824,17 +4207,10 @@ docker compose exec redis redis-cli -a $REDIS_PASSWORD
 
 ---
 
-**Document Version:** 2.0  
-**Last Updated:** December 23, 2025  
-**Maintainer:** LGTM-but-NY  
-**License:** MIT---
-
 ### 11.3 Resources
 
 **Official Documentation:**
 
-- [FastAPI Docs](https://fastapi.tiangolo.com/)
-- [React 19 RFC](https://github.com/reactjs/rfcs/blob/main/text/0188-server-components.md)
 - [ClickHouse Docs](https://clickhouse.com/docs/en/intro)
 - [Airflow Docs](https://airflow.apache.org/docs/)
 
@@ -3850,7 +4226,7 @@ docker compose exec redis redis-cli -a $REDIS_PASSWORD
 
 ---
 
-**Document Version:** 2.0  
-**Last Updated:** December 23, 2025  
-**Maintainer:** LGTM-but-NY  
+**Document Version:** 1.0
+**Last Updated:** December 24, 2025
+**Maintainer:** LGTM-but-NY
 **License:** MIT

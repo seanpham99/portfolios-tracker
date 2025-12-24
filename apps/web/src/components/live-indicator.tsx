@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react"
 import { RefreshCw } from "lucide-react"
-import { cn } from "@/lib/utils"
+import { cn } from "@repo/ui/lib/utils"
 import { usePortfolioStore, portfolioStore } from "@/stores/portfolio-store"
 
 export function LiveIndicator() {

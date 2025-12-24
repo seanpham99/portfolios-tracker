@@ -3,7 +3,7 @@ import { useRef, useEffect, useCallback } from "react"
 import { motion, AnimatePresence } from "framer-motion"
 import { ChevronLeft, ChevronRight, Plus } from "lucide-react"
 import { AssetBlade, type Asset } from "./asset-blade"
-import { cn } from "@/lib/utils"
+import { cn } from "@repo/ui/lib/utils"
 
 export interface Stage {
   id: string

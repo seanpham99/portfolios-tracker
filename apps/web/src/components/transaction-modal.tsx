@@ -3,7 +3,7 @@
 import { useState } from "react"
 import { motion, AnimatePresence } from "framer-motion"
 import { X, ArrowUpRight, ArrowDownRight } from "lucide-react"
-import { cn } from "@/lib/utils"
+import { cn } from "@repo/ui/lib/utils"
 import { portfolioStore } from "@/stores/portfolio-store"
 import type { Asset } from "./asset-blade"
 

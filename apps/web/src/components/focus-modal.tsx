@@ -5,8 +5,8 @@ import { motion, AnimatePresence } from "framer-motion"
 import { X, TrendingUp, TrendingDown, ArrowUpRight, ArrowDownRight } from "lucide-react"
 import type { Asset } from "./asset-blade"
 import { Sparkline } from "./sparkline"
-import { cn } from "@/lib/utils"
-import { Button } from "@/components/ui/button"
+import { cn } from "@repo/ui/lib/utils"
+import { Button } from "@repo/ui/components/button"
 import { TransactionModal } from "./transaction-modal"
 
 interface FocusModalProps {

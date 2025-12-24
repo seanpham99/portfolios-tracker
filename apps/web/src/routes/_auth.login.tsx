@@ -1,14 +1,14 @@
 import { createClient } from '@/lib/supabase/server'
-import { Button } from '@/components/ui/button'
+import { Button } from '@repo/ui/components/button'
 import {
   Card,
   CardContent,
   CardDescription,
   CardHeader,
   CardTitle,
-} from '@/components/ui/card'
-import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
+} from '@repo/ui/components/card'
+import { Input } from '@repo/ui/components/input'
+import { Label } from '@repo/ui/components/label'
 import { type ActionFunctionArgs, Link, redirect, useFetcher } from 'react-router'
 
 export const action = async ({ request }: ActionFunctionArgs) => {

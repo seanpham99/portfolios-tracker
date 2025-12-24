@@ -2,7 +2,7 @@
 
 import { motion } from "framer-motion"
 import { ArrowUpRight, ArrowDownRight, History } from "lucide-react"
-import { cn } from "@/lib/utils"
+import { cn } from "@repo/ui/lib/utils"
 import { usePortfolioStore, type Transaction } from "@/stores/portfolio-store"
 import { GlassCard } from "./glass-card"
 

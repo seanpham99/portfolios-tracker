@@ -2579,6 +2579,98 @@ fin-sight/                                       # Monorepo root
 
 ---
 
+#### 5. Testing and File Organization Boundaries
+
+**Critical Rule: Test Files Must NOT Be Placed in `src/routes/`**
+
+**Rationale:**
+
+React Router 7 uses file-based routing and automatically scans the `src/routes/` directory to generate route modules. Placing test files (`.test.tsx`, `.spec.tsx`) in this directory will cause critical runtime errors because:
+
+1. **Route Module Loading:** React Router treats every file in `src/routes/` as a potential route module
+2. **Vitest Initialization:** Test files containing `vi.mock()` or other Vitest-specific code will be loaded by the dev server (not Vitest)
+3. **Runtime Error:** Vitest mocking functions execute outside the Vitest environment, causing the error: `"Vitest mocker was not initialized in this environment. vi.queueMock() is forbidden."`
+
+**Correct File Structure:**
+
+```
+apps/web/src/
+├── routes/                      # Route components ONLY
+│   ├── _auth.login.tsx         # Login route component
+│   ├── _auth.sign-up.tsx       # Sign-up route component
+│   └── _protected._layout.tsx  # Protected layout
+│
+└── __tests__/                   # ALL test files
+    ├── auth.login.test.tsx      # Tests for login route
+    ├── auth.sign-up.test.tsx    # Tests for sign-up route
+    └── setup.ts                 # Test setup configuration
+```
+
+**Vitest Configuration:**
+
+```typescript
+// vitest.config.ts
+/// <reference types="vitest" />
+import { defineConfig } from 'vitest/config'  // ✅ Import from vitest/config (NOT vite)
+import react from '@vitejs/plugin-react'
+import tsconfigPaths from 'vite-tsconfig-paths'
+
+export default defineConfig({
+  plugins: [react(), tsconfigPaths()],
+  test: {                                     // ✅ test property recognized
+    globals: true,
+    environment: 'jsdom',
+    setupFiles: './test/setup.ts',
+    include: ['src/__tests__/**/*.test.{ts,tsx}'],  // ✅ Only __tests__ directory
+  },
+})
+```
+
+**Common Mistake:**
+
+```typescript
+// ❌ WRONG: Import from 'vite' (doesn't recognize test property)
+import { defineConfig } from 'vite'
+
+export default defineConfig({
+  test: {  // ❌ ERROR: Object literal may only specify known properties
+    // ...
+  }
+})
+```
+
+**Boundary Rules:**
+
+- ✅ ALL test files go in `src/__tests__/` (or co-located within `features/` subdirectories)
+- ❌ NEVER place test files in `src/routes/` (will break dev server)
+- ✅ Use `vitest/config` for `defineConfig` import (supports `test` property)
+- ✅ Configure Vitest `include` pattern to exclude `src/routes/` entirely
+- ✅ React Router route components in `src/routes/` must contain ONLY route logic (no test code)
+
+**Testing Organization Pattern:**
+
+```
+apps/web/
+├── src/
+│   ├── routes/
+│   │   └── _auth.login.tsx              # Route component
+│   │
+│   ├── __tests__/                        # Unit/integration tests
+│   │   ├── auth.login.test.tsx          # Tests for route
+│   │   └── setup.ts
+│   │
+│   └── features/                         # Feature modules
+│       └── portfolio/
+│           ├── portfolio-card.tsx        # Component
+│           └── portfolio-card.test.tsx   # Co-located test (optional pattern)
+│
+└── vitest.config.ts                      # Vitest configuration
+```
+
+**Affects:** Frontend testing strategy, dev server stability, file organization patterns, CI/CD test execution
+
+---
+
 ### Requirements to Structure Mapping
 
 This section maps PRD functional requirements to specific directories and files.

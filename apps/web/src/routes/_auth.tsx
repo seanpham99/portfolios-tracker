@@ -1,29 +1,75 @@
+import { motion, useReducedMotion } from "framer-motion";
 import { Outlet } from "react-router";
 
 export default function AuthLayout() {
+  const prefersReducedMotion = useReducedMotion();
+
+  // Reduced motion variants
+  const logoVariants = prefersReducedMotion
+    ? { initial: { opacity: 1 }, animate: { opacity: 1 } }
+    : { initial: { opacity: 0, y: -20 }, animate: { opacity: 1, y: 0 } };
+
+  const contentVariants = prefersReducedMotion
+    ? { initial: { opacity: 1 }, animate: { opacity: 1 } }
+    : { initial: { opacity: 0, y: 20 }, animate: { opacity: 1, y: 0 } };
+
+  const fadeVariants = prefersReducedMotion
+    ? { initial: { opacity: 1 }, animate: { opacity: 1 } }
+    : { initial: { opacity: 0 }, animate: { opacity: 1 } };
+
   return (
-    <div className="flex min-h-screen items-center justify-center bg-[#0a0a0b]">
-      <div className="w-full max-w-md px-4">
-        {/* Logo */}
-        <div className="mb-8 flex justify-center">
-          <div className="flex items-center gap-3">
-            <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-emerald-500/10">
-              <span className="text-2xl font-semibold text-emerald-400">F</span>
-            </div>
-            <span className="font-serif text-3xl font-light tracking-tight text-white">
-              Finsight
-            </span>
+    <div className="dark relative flex min-h-screen w-full items-center justify-center overflow-hidden bg-[#050505] text-white">
+      {/* Premium Background Mesh/Gradient */}
+      <div className="absolute inset-0 z-0" aria-hidden="true">
+        <div className="absolute -left-[10%] -top-[10%] h-[50%] w-[50%] rounded-full bg-emerald-900/20 blur-[120px] opacity-60" />
+        <div className="absolute -bottom-[10%] -right-[10%] h-[50%] w-[50%] rounded-full bg-indigo-900/15 blur-[120px] opacity-50" />
+        {/* Subtle grid pattern instead of noise.svg */}
+        <div className="absolute inset-0 bg-[linear-gradient(rgba(255,255,255,0.02)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.02)_1px,transparent_1px)] bg-[size:64px_64px] opacity-50" />
+      </div>
+
+      <main className="relative z-10 w-full max-w-md px-6" role="main">
+        {/* Animated Logo */}
+        <motion.header 
+          {...logoVariants}
+          transition={prefersReducedMotion ? { duration: 0 } : { duration: 0.5, ease: "easeOut" }}
+          className="mb-8 flex flex-col items-center justify-center"
+        >
+          <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-gradient-to-br from-emerald-500/20 to-emerald-900/20 border border-white/10 shadow-2xl shadow-emerald-900/20 backdrop-blur-sm">
+            <span className="text-3xl font-bold text-emerald-400" aria-hidden="true">F</span>
           </div>
-        </div>
+          <motion.h1 
+            {...fadeVariants}
+            transition={prefersReducedMotion ? { duration: 0 } : { delay: 0.2, duration: 0.5 }}
+            className="mt-4 font-serif text-3xl font-medium tracking-tight text-transparent bg-clip-text bg-gradient-to-b from-white to-white/70"
+          >
+            Finsight
+          </motion.h1>
+          <motion.p
+             {...fadeVariants}
+             transition={prefersReducedMotion ? { duration: 0 } : { delay: 0.3, duration: 0.5 }}
+             className="mt-2 text-center text-sm text-zinc-500"
+          >
+            Consolidated wealth. Calm mind.
+          </motion.p>
+        </motion.header>
 
         {/* Auth page content */}
-        <Outlet />
+        <motion.div
+           {...contentVariants}
+           transition={prefersReducedMotion ? { duration: 0 } : { delay: 0.1, duration: 0.4 }}
+        >
+          <Outlet />
+        </motion.div>
 
         {/* Footer */}
-        <p className="mt-8 text-center text-sm text-zinc-600">
+        <motion.footer 
+          {...fadeVariants}
+          transition={prefersReducedMotion ? { duration: 0 } : { delay: 0.4, duration: 0.5 }}
+          className="mt-8 text-center text-xs text-zinc-600"
+        >
           © {new Date().getFullYear()} Finsight. All rights reserved.
-        </p>
-      </div>
+        </motion.footer>
+      </main>
     </div>
   );
 }

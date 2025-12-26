@@ -332,10 +332,16 @@ apps/web/src/
 # From project root
 mkdir -p packages/api-types packages/config
 
-# Shared TypeScript types
+# Shared Database Types (Type Safety Foundation)
+cd packages/database-types/
+pnpm init
+# Script: "gen": "supabase gen types typescript --local > src/database.types.ts"
+
+# Shared TypeScript types (DTOs + Enums)
 cd packages/api-types/
 pnpm init
-# Add TypeScript definitions shared between frontend and backend
+# Exports shared DTOs and re-exports Database definitions
+# Dependencies: packages/database-types
 
 # Shared configuration
 cd packages/config/
@@ -2673,54 +2679,27 @@ This section maps PRD functional requirements to specific directories and files.
 
 #### Data Flow Diagram
 
-```
-┌─────────────────────────────────────────────────────────────────┐
-│                         External Sources                         │
-├─────────────┬─────────────┬─────────────┬────────────┬─────────┤
-│   vnstock   │  yfinance   │  CoinGecko  │  Binance   │  OKX    │
-└──────┬──────┴──────┬──────┴──────┬──────┴─────┬──────┴────┬────┘
-       │             │              │            │           │
-       ▼             ▼              ▼            │           │
-┌──────────────────────────────────────┐        │           │
-│   services/data-pipeline (Airflow)   │        │           │
-│   - Daily VN/US stock ingestion      │        │           │
-│   - 5-min crypto price ingestion     │        │           │
-│   - Technical indicator computation  │        │           │
-└──────────────┬───────────────────────┘        │           │
-               │                                │           │
-               ▼ (writes)                       │           │
-        ┌──────────────┐                       │           │
-        │  ClickHouse  │◄──────────────────────┘───────────┘
-        │  (read-only) │                (CCXT queries via API)
-        └──────┬───────┘
-               │
-               │ (reads)
-               │
-        ┌──────▼───────────────────────────────────────────┐
-        │         services/api (NestJS)                    │
-        │  - Business logic                                │
-        │  - API orchestration                             │
-        │  - Cache management                              │
-        └──┬────────────┬────────────────────────────┬────┘
-           │            │                            │
-           │ (reads)    │ (read/write)               │ (read/write)
-           ▼            ▼                            ▼
-    ┌──────────┐  ┌────────────────┐         ┌──────────┐
-    │  Redis   │  │ Supabase       │         │  SePay   │
-    │  (cache) │  │ Postgres       │         │  Polar   │
-    └──────────┘  │ - Users        │         └────┬─────┘
-                  │ - Portfolios   │              │
-                  │ - Transactions │              │ (webhooks)
-                  └────────┬───────┘              │
-                           │                      │
-                           │ (JWT auth)           │
-                           │                      │
-                    ┌──────▼──────────────────────▼───┐
-                    │   apps/web (React 19 SPA)       │
-                    │  - React Query (60s polling)    │
-                    │  - Zustand (UI state)           │
-                    │  - Framer Motion (animations)   │
-                    └─────────────────────────────────┘
+```mermaid
+flowchart TD
+    User([User]) <--> Web[React 19 Web App]
+    Web <--> API[NestJS API]
+    
+    subgraph Data Layer
+        API <--> Supabase[(Supabase Postgres)]
+        API <--> Redis[(Redis Cache)]
+        API -.->|Read-Only| CH[(ClickHouse)]
+    end
+    
+    subgraph Integrations
+        API <--> Crypto[Binance/OKX API]
+        API <--> Payment[SePay/Polar]
+        Supabase <--> Auth[Supabase Auth]
+    end
+    
+    subgraph Data Pipeline
+        Airflow[Airflow ETL] -->|Write| CH
+        ExtData[External Data] --> Airflow
+    end
 ```
 
 ---

@@ -1,0 +1,87 @@
+# generated: 2025-12-26
+# project: fin-sight
+# project_key: finsight
+# tracking_system: file-system
+# story_location: _bmad-output/implementation-artifacts
+
+# STATUS DEFINITIONS:
+# ==================
+# Epic Status:
+#   - backlog: Epic not yet started
+#   - in-progress: Epic actively being worked on
+#   - done: All stories in epic completed
+#
+# Epic Status Transitions:
+#   - backlog → in-progress: Automatically when first story is created (via create-story)
+#   - in-progress → done: Manually when all stories reach 'done' status
+#
+# Story Status:
+#   - backlog: Story only exists in epic file
+#   - ready-for-dev: Story file created in stories folder
+#   - in-progress: Developer actively working on implementation
+#   - review: Ready for code review (via Dev's code-review workflow)
+#   - done: Story completed
+#
+# Retrospective Status:
+#   - optional: Can be completed but not required
+#   - done: Retrospective has been completed
+#
+# WORKFLOW NOTES:
+# ===============
+# - Epic transitions to 'in-progress' automatically when first story is created
+# - Stories can be worked in parallel if team capacity allows
+# - SM typically creates next story after previous one is 'done' to incorporate learnings
+# - Dev moves story to 'review', then runs code-review (fresh context, different LLM recommended)
+
+generated: 2025-12-26
+project: fin-sight
+project_key: finsight
+tracking_system: file-system
+story_location: _bmad-output/implementation-artifacts
+
+development_status:
+  epic-1: in-progress
+  1-1-initialize-nestjs-api-shared-packages: ready-for-dev
+  1-2-configure-supabase-auth-google-oauth: backlog
+  1-3-implement-login-signup-ui: backlog
+  1-4-privacy-consent-pdpa-compliance: backlog
+  epic-1-retrospective: optional
+
+  epic-2: backlog
+  2-1-portfolio-management-logic-api-database: backlog
+  2-2-enhanced-tabbed-dashboard-shell: backlog
+  2-3-manual-transaction-entry-with-autocomplete: backlog
+  2-4-basic-net-worth-holdings-list: backlog
+  2-5-transparent-methodology-basic-panels: backlog
+  epic-2-retrospective: optional
+
+  epic-3: backlog
+  3-1-ccxt-integration-exchange-service: backlog
+  3-2-crypto-exchange-connection-ui: backlog
+  3-3-automated-spot-balance-syncing: backlog
+  epic-3-retrospective: optional
+
+  epic-4: backlog
+  4-1-multi-source-price-ingestion-pipeline: backlog
+  4-2-clickhouse-materialized-views-for-latest-prices: backlog
+  4-3-tradingview-chart-component-integration: backlog
+  4-4-data-freshness-indicators-staleness-banners: backlog
+  epic-4-retrospective: optional
+
+  epic-5: backlog
+  5-1-portfolio-valuation-engine-core: backlog
+  5-2-fx-intelligence-cross-border-gain-separation: backlog
+  5-3-performance-metrics-twr-mwr: backlog
+  5-4-hierarchical-drill-down-ui: backlog
+  epic-5-retrospective: optional
+
+  epic-6: backlog
+  6-1-sepay-polar-webhook-handlers: backlog
+  6-2-subscription-tier-enforcement: backlog
+  6-3-admin-payment-reconciliation-dashboard: backlog
+  epic-6-retrospective: optional
+
+  epic-7: backlog
+  7-1-daily-telegram-summary-bot-integration: backlog
+  7-2-basic-price-alert-configuration-ui: backlog
+  epic-7-retrospective: optional

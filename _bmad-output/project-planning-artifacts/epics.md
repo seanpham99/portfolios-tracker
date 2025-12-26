@@ -1,0 +1,463 @@
+---
+stepsCompleted: [1, 2, 3, 4]
+inputDocuments:
+  - "_bmad-output/prd.md"
+  - "_bmad-output/architecture.md"
+  - "_bmad-output/project-planning-artifacts/ux/ux-design-specification.md"
+---
+
+# fin-sight - Epic Breakdown
+
+## Overview
+
+This document provides the complete epic and story breakdown for fin-sight, decomposing the requirements from the PRD, UX Design if it exists, and Architecture requirements into implementable stories.
+
+## Requirements Inventory
+
+### Functional Requirements
+
+FR1: Authentication & User Management. Support signup/login via Google OAuth and email/password using Supabase.
+FR2: Multi-Asset Portfolio Creation. Create/edit/delete portfolios with multi-currency support (VND/USD/USDT).
+FR3: Manual Transaction Entry. Support manual entry for VN stocks, US equities, and crypto with autocomplete (symbol search) and keyboard shortcuts.
+FR4: Crypto Exchange Integration. OAuth flow for Binance and OKX via CCXT, read-only access to spot balances, real-time sync (target 5s).
+FR5: Asset Price Data Ingestion. Multi-source ingestion (vnstock, yfinance, CoinGecko) into ClickHouse with staleness detection.
+FR6: Portfolio Analytics Engine. Calculate net worth, allocations, and performance metrics (TWR/MWR) with drill-down from net worth → portfolio → asset → transaction.
+FR7: Multi-Currency Conversion. Real-time FX rates (VND/USD/USDT) with separation of asset gains vs currency gains.
+FR8: Enhanced Tabbed Navigation Dashboard. Tabbed view for VN Stocks, US Equities, and Crypto with badges (count/value) and smooth transitions.
+FR9: Charts & Visualization. Embed TradingView widgets for technical indicators (RSI, MACD, MA) with lazy loading and reduced motion support.
+FR10: Methodology Transparency. Inline "show methodology" panels with formulas for cost basis (FIFO/Avg), returns, and allocations.
+FR11: Payments & Subscriptions. Freemium model with limit of 20 assets. Paid tier ($9-12/mo) via SePay (VND) and Polar (USD) with webhook verification.
+FR12: Notifications & Alerts. Holdings snapshots, price alerts (existing Telegram integration fallback).
+FR13: Admin & Operations. Reconciliation dashboard for payments, audit log export, and user management.
+
+### NonFunctional Requirements
+
+NFR1: Performance. P95 API <200ms (cached), <500ms (analytics); TTI ≤2s; INP P75 ≤200ms; CLS ≤0.1.
+NFR2: Polling & Caching. Frontend polling ≈ 60s; Redis TTL ≈ 30s; staleness badge for data > 5 mins.
+NFR3: Reliability. 99.9% uptime; payment success ≥98%; idempotent webhooks with exponential backoff.
+NFR4: Security. TLS/HSTS/CSP; Supabase OAuth/JWT; RBAC/RLS; secrets rotation; webhook signature verification.
+NFR5: Privacy & Compliance. PDPA (Vietnam) and GDPR compliance; consent registry; data subject rights (export/delete/correct).
+NFR6: Accessibility. WCAG 2.1 AA; keyboard navigation; ARIA landmarks; color contrast ≥4.5:1; reduced motion support.
+NFR7: Scalability. Support hundreds of users at launch; horizontal scaling for API/Redis; ClickHouse materialized views.
+NFR8: Data Integrity. Append-only event store for audit trails; versioned calculations (`calculation_version`).
+
+### Additional Requirements
+
+- **Starter Template:** Minimal NestJS API + Extend existing React 19 web app in `apps/web/`.
+- **Infrastructure:** Turborepo + pnpm monorepo; Docker Compose for dev; self-hosted Docker for production (except Supabase Cloud).
+- **Data Strategy:** Star Schema (Facts: `Fact_Trades`, `Fact_Holdings_Daily`, `Fact_Portfolio_Valuation_Daily`).
+- **Integration:** CCXT library for crypto; SePay/Polar for payments.
+- **Calculating fallback:** Airflow calculates indicators only when external data is absent.
+- **Enhanced Tabs:** Smooth transitions (fade + 30px slide); Cmd+1/2/3/4 shortcuts.
+- **Responsive:** Bottom tab bar on mobile (≤640px); scrollable tabs on tablet.
+- **Calm Experience:** Red/green colors designed for low stress; staleness badges color-neutral (amber).
+- **Drill-down:** ≤3 clicks to detail; ≤15 mins to first portfolio.
+
+### FR Coverage Map
+
+FR1 (Auth): Epic 1 - Secure Account Foundation
+FR2 (Portfolios): Epic 2 - Multi-Asset Portfolio & Manual Tracking
+FR3 (Manual Entry): Epic 2 - Multi-Asset Portfolio & Manual Tracking
+FR4 (Crypto Sync): Epic 3 - Professional Crypto Automation
+FR5 (Price Data): Epic 4 - Institutional Market Intelligence
+FR6 (Analytics Engine): Epic 5 - Transparent Analytics & FX Intelligence
+FR7 (Currency Conv): Epic 5 - Transparent Analytics & FX Intelligence
+FR8 (Dashboard UX): Epic 2 - Multi-Asset Portfolio & Manual Tracking
+FR9 (Charts): Epic 4 - Institutional Market Intelligence
+FR10 (Methodology): Epic 2 & Epic 5 - Methodology Transparency
+FR11 (Payments): Epic 6 - Premium Subscriptions & Billing
+FR12 (Notifications): Epic 7 - Intelligent Alerts & Engagement
+FR13 (Admin/Recon): Epic 6 - Premium Subscriptions & Billing
+
+## Epic List
+
+### Epic 1: Secure Account Foundation
+Users can securely join the platform via Google/Email and manage their identity under PDPA/GDPR compliance.
+**FRs covered:** FR1, NFR4, NFR5, NFR6
+
+### Epic 2: Multi-Asset Portfolio & Manual Tracking
+Users can build a unified view of their wealth by manually logging VN/US/Crypto transactions on a premium tabbed dashboard.
+**FRs covered:** FR2, FR3, FR8, FR10, NFR8
+
+### Epic 3: Professional Crypto Automation
+Users can achieve "magic moment" tracking by syncing Binance and OKX balances effortlessly via read-only API access.
+**FRs covered:** FR4
+
+### Epic 4: Institutional Market Intelligence
+Users can analyze assets with high-freshness price data and TradingView charts featuring professional indicators (RSI/MACD).
+**FRs covered:** FR5, FR9, NFR1, NFR2, NFR7
+
+### Epic 5: Transparent Analytics & FX Intelligence
+Users can audit their performance with drill-down P&L and separate asset gains from currency fluctuations (VND/USD).
+**FRs covered:** FR6, FR7, FR10
+
+### Epic 6: Premium Subscriptions & Billing
+Users can unlock unlimited assets and AI insights by subscribing via SePay (VND) or Polar (USD).
+**FRs covered:** FR11, FR13, NFR3
+
+### Epic 7: Intelligent Alerts & Engagement
+Users stay informed with automated holdings snapshots and price alerts via Telegram.
+**FRs covered:** FR12
+
+## Epic 1: Secure Account Foundation
+
+Users can securely join the platform via Google/Email and manage their identity under PDPA/GDPR compliance.
+
+### Story 1.1: Initialize NestJS API & Shared Packages
+
+As a Developer,
+I want a standardized NestJS API and shared package structure,
+So that I can build the backend services with type-safety and consistency across the monorepo.
+
+**Acceptance Criteria:**
+
+**Given** the current Turborepo structure
+**When** I initialize the NestJS API using `nest new api --package-manager pnpm` in the `services/` directory
+**Then** the project should be created with strict TypeScript mode enabled
+**And** the `packages/database-types` (Supabase auto-gen) and `packages/api-types` (DTOs/Shared) packages should be present and linked in `pnpm-workspace.yaml`
+**And** a basic health check endpoint `GET /` should return a 200 OK status.
+
+### Story 1.2: Configure Supabase Auth & Google OAuth
+
+As a User,
+I want to authenticate via Google OAuth or Email/Password,
+So that I can securely access my portfolio data.
+
+**Acceptance Criteria:**
+
+**Given** a Supabase project
+**When** I configure Google OAuth and Email/Password providers in the Supabase dashboard
+**Then** a user should be able to sign up or log in using either method
+**And** the user's profile should be automatically created in the `users` table upon first login
+**And** a secure JWT should be returned to the client.
+
+### Story 1.3: Implement Login & Signup UI
+
+As a User,
+I want a premium and accessible login/signup page,
+So that I can enter the app with a sense of security and trust.
+
+**Acceptance Criteria:**
+
+**Given** the React 19 frontend
+**When** I navigate to the `/login` or `/signup` routes
+**Then** I should see a polished UI with clear Google and Email options
+**And** the forms must meet WCAG 2.1 AA accessibility standards (labels, focus states)
+**And** validation errors (e.g., invalid email) must be displayed clearly.
+
+### Story 1.4: Privacy Consent & PDPA Compliance
+
+As a User,
+I want to be asked for my privacy consent,
+So that I know my data is handled according to PDPA and GDPR standards.
+
+**Acceptance Criteria:**
+
+**Given** a new user who just signed up
+**When** they first enter the app
+**Then** a mandatory consent modal should appear explaining data usage
+**And** the user's approval must be recorded in the `user_preferences` table
+**And** the user should not be able to bypass this modal to access the app functionality.
+
+## Epic 2: Multi-Asset Portfolio & Manual Tracking
+
+Users can build a unified view of their wealth by manually logging VN/US/Crypto transactions on a premium tabbed dashboard.
+
+### Story 2.1: Portfolio Management Logic (API & Database)
+
+As a User,
+I want to create and manage multiple portfolios across different asset classes,
+So that I can organize my investments according to my strategy.
+
+**Acceptance Criteria:**
+
+**Given** the NestJS API and Supabase setup
+**When** I create, read, update, or delete a portfolio via the API
+**Then** the changes should be reflected in the Supabase PostgreSQL database
+**And** Row Level Security (RLS) must ensure I can only access my own portfolios
+**And** the API should support setting a base currency (VND/USD/USDT) for each portfolio.
+
+### Story 2.2: Enhanced Tabbed Dashboard Shell
+
+As a User,
+I want a smooth, premium tabbed interface to switch between asset classes,
+So that I can explore my portfolio without cognitive overload during market volatility.
+
+**Acceptance Criteria:**
+
+**Given** the dashboard page in the React 19 frontend
+**When** I switch between "VN Stocks", "US Equities", and "Crypto" tabs
+**Then** the transition should be smooth using Framer Motion (200ms fade + 30px slide)
+**And** each tab should display a badge showing the asset count and total value
+**And** I can use `Cmd/Ctrl + 1/2/3` shortcuts to switch tabs on desktop.
+
+### Story 2.3: Manual Transaction Entry with Autocomplete
+
+As a User,
+I want to quickly add buy/sell transactions with asset autocomplete,
+So that I spend less than 30 seconds per entry.
+
+**Acceptance Criteria:**
+
+**Given** the transaction entry form
+**When** I start typing an asset symbol or name
+**Then** I should see a list of matching assets from a seeded `Dim_Asset` table (top 100 VN/US/Crypto symbols) to ensure functionality before the full ETL pipeline is live
+**And** I should be able to specify quantity, price, and transaction fees
+**And** after submission, the transaction is saved and the UI updates optimistically using React 19 Actions.
+
+### Story 2.4: Basic Net Worth & Holdings List
+
+As a User,
+I want to see my total net worth and a list of my current holdings,
+So that I can understand my current financial state at a glance.
+
+**Acceptance Criteria:**
+
+**Given** the dashboard view
+**When** I view an asset class tab
+**Then** I should see my total net worth for that category in the top summary card
+**And** I should see a virtualized list of individual holdings showing quantity and average cost
+**And** the UI must stack gracefully on mobile devices (bottom bar navigation).
+
+### Story 2.5: Transparent Methodology Basic Panels
+
+As a User,
+I want to see how my cost basis is calculated,
+So that I can trust the accuracy of the platform.
+
+**Acceptance Criteria:**
+
+**Given** a holding in the list
+**When** I click the "Show Methodology" toggle
+**Then** a collapsible panel should appear explaining the FIFO or Weighted Average Cost formulas
+**And** the source of the asset's price data must be prominently displayed.
+
+## Epic 3: Professional Crypto Automation
+
+Users can achieve "magic moment" tracking by syncing Binance and OKX balances effortlessly via read-only API access.
+
+### Story 3.1: CCXT Integration & Exchange Service
+
+As a Developer,
+I want a unified service to interact with multiple crypto exchanges,
+So that I can easily fetch balances from Binance and OKX without writing custom logic for each.
+
+**Acceptance Criteria:**
+
+**Given** the NestJS API
+**When** I integrate the CCXT library
+**Then** I should have a service that can fetch spot balances from any supported exchange given valid credentials
+**And** the internal response must be normalized into a standard "Balance" format (Asset, Quantity, Value).
+
+### Story 3.2: Crypto Exchange Connection UI
+
+As a User,
+I want to securely connect my Binance or OKX accounts via API keys,
+So that I don't have to manually enter my crypto transactions.
+
+**Acceptance Criteria:**
+
+**Given** the "Connections" settings page
+**When** I enter a valid read-only API key and secret for a supported exchange
+**Then** the UI should validate the connection status immediately
+**And** the credentials must be stored securely (encrypted at rest)
+**And** I should clearly see my "Last Synced" status once connected.
+
+### Story 3.3: Automated Spot Balance Syncing
+
+As a User,
+I want my crypto balances to update automatically every minute,
+So that my net worth is always accurate.
+
+**Acceptance Criteria:**
+
+**Given** a connected crypto exchange account
+**When** the background polling job executes (every 60 seconds)
+**Then** the latest spot balances should be fetched via CCXT
+**And** any changes in holdings must be updated in the database
+**And** the UI should reflect "Syncing" vs "Up to date" states.
+
+## Epic 4: Institutional Market Intelligence
+
+Users can analyze assets with high-freshness price data and TradingView charts featuring professional indicators (RSI/MACD).
+
+### Story 4.1: Multi-Source Price Ingestion Pipeline
+
+As a Developer,
+I want an ETL pipeline that fetches prices from vnstock, yfinance, and CoinGecko,
+So that I have comprehensive market coverage for all asset classes.
+
+**Acceptance Criteria:**
+
+**Given** the Airflow environment
+**When** the `market_data_ingestion` DAG runs
+**Then** it should fetch primary prices for VN stocks (vnstock), US stocks (yfinance), and Crypto (CoinGecko)
+**And** it should ingest specifically required tickers into the ClickHouse `market_dwh.fact_stock_daily` table.
+
+### Story 4.2: ClickHouse Materialized Views for Latest Prices
+
+As a Developer,
+I want a fast way to query the "as of now" price for thousands of assets,
+So that the dashboard loads in under 200ms.
+
+**Acceptance Criteria:**
+
+**Given** the `fact_stock_daily` table in ClickHouse
+**When** a new price is ingested
+**Then** a Materialized View (Using `ReplacingMergeTree`) must maintain only the latest timestamp per ticker
+**And** queries for "Current Price" should target this view for maximum performance.
+
+### Story 4.3: TradingView Chart Component Integration
+
+As a User,
+I want to see advanced price charts with RSI, MACD, and Moving Averages,
+So that I can perform professional technical analysis on my holdings.
+
+**Acceptance Criteria:**
+
+**Given** the Asset Detail page
+**When** I view an asset
+**Then** a TradingView widget must be embedded and pre-configured with RSI (14), MACD, and MA (50, 200)
+**And** the chart must support light/dark mode and respect "Reduced Motion" settings.
+
+### Story 4.4: Data Freshness Indicators & Staleness Banners
+
+As a User,
+I want to know if the market data I'm seeing is old,
+So that I don't make decisions based on outdated prices.
+
+**Acceptance Criteria:**
+
+**Given** a price record in the UI
+**When** the `updated_at` timestamp is older than 5 minutes
+**Then** a color-neutral amber "Stale Data" badge should appear
+**And** a global notification banner should warn if major providers (e.g., vnstock) are experiencing outages.
+
+## Epic 5: Transparent Analytics & FX Intelligence
+
+Users can audit their performance with drill-down P&L and separate asset gains from currency fluctuations (VND/USD).
+
+### Story 5.1: Portfolio Valuation Engine (Core)
+
+As a Developer,
+I want a calculation engine that aggregates holdings with latest prices,
+So that I can deliver real-time net worth and basic P&L metrics.
+
+**Acceptance Criteria:**
+
+**Given** a user's transactions and the latest prices in ClickHouse
+**When** the valuation engine runs (triggered by polling or mutation)
+**Then** it must calculate current Net Worth, Allocation %, and Unrealized P&L in the portfolio's native currency.
+
+### Story 5.2: FX Intelligence & Cross-Border Gain Separation
+
+As a User,
+I want to see separate asset gains from currency fluctuations (VND/USD),
+So that I can understand the true source of my portfolio growth.
+
+**Acceptance Criteria:**
+
+**Given** assets held in multiple currencies
+**When** I view my consolidated dashboard
+**Then** the system must separate Asset Gain (price change) from FX Gain (currency change) based on the exchange rate at the time of trade vs now
+**And** it must fetch latest FX rates from ClickHouse to perform the conversion to the user's chosen base currency.
+
+### Story 5.3: Performance Metrics (TWR/MWR)
+
+As a User,
+I want to see my Time-Weighted Return (TWR) and Money-Weighted Return (MWR),
+So that I can accurately assess my investment performance.
+
+**Acceptance Criteria:**
+
+**Given** the portfolio history
+**When** I view the "Performance" tab
+**Then** the engine should calculate TWR and MWR for selected timeframes (1D, 1M, YTD, ALL)
+**And** it should display Total Gain, Realized P&L, and Dividends (if tracked).
+
+### Story 5.4: Hierarchical Drill-down UI
+
+As a User,
+I want to click on my net worth to see individual portfolios, and then specific assets and their trades,
+So that I can audit my data in no more than 3 clicks.
+
+**Acceptance Criteria:**
+
+**Given** the Dashboard
+**When** I click on a Portfolio -> Asset -> Transaction List
+**Then** I should reach the individual trade level within 3 clicks
+**And** the UI must maintain breadcrumb navigation to allow high-speed context switching.
+
+## Epic 6: Premium Subscriptions & Billing
+
+Users can unlock unlimited assets and AI insights by subscribing via SePay (VND) or Polar (USD).
+
+### Story 6.1: SePay & Polar Webhook Handlers
+
+As a Developer,
+I want to process payments from SePay and Polar automatically,
+So that users are upgraded instantly after paying.
+
+**Acceptance Criteria:**
+
+**Given** a payment event from SePay (VND) or Polar (USD)
+**When** the webhook is received
+**Then** the signature must be verified for security
+**And** the process must be idempotent (using event IDs) to prevent double-billing
+**And** the user's `subscription_tier` must update to `PAID` immediately upon success.
+
+### Story 6.2: Subscription Tier Enforcement
+
+As a User,
+I want to be prompted to upgrade when I hit the free limit,
+So that I know how to unlock the full power of the app.
+
+**Acceptance Criteria:**
+
+**Given** a FREE tier user
+**When** they attempt to add more than 20 assets or use advanced analytics
+**Then** the action must be blocked
+**And** a premium modal should appear offering the Paid Tier upgrade.
+
+### Story 6.3: Admin Payment Reconciliation Dashboard
+
+As an Administrator,
+I want to see a list of payments and reconcile them against user tiers,
+So that I can ensure the business is running correctly.
+
+**Acceptance Criteria:**
+
+**Given** the Admin panel
+**When** I view the "Payments" section
+**Then** I should see a ledger of all SePay and Polar events
+**And** any discrepancies (e.g., successful payment but tier not updated) should be flagged for manual review.
+
+## Epic 7: Intelligent Alerts & Engagement
+
+Users stay informed with automated holdings snapshots and price alerts via Telegram.
+
+### Story 7.1: Daily Telegram Summary Bot Integration
+
+As a User,
+I want to receive a daily snapshot of my portfolio on Telegram,
+So that I stay informed without having to log in to the app every day.
+
+**Acceptance Criteria:**
+
+**Given** a linked Telegram account
+**When** the scheduled task runs daily
+**Then** the bot should send a clean summary of Net Worth change and top 3 movers
+**And** it should include a link to the "Calm Dashboard" for deeper exploration.
+
+### Story 7.2: Basic Price Alert Configuration UI
+
+As a User,
+I want to set price alerts for my favorite assets,
+So that I don't have to watch the market constantly.
+
+**Acceptance Criteria:**
+
+**Given** the Asset Detail page
+**When** I set a target price (Above/Below)
+**Then** the system should monitor ClickHouse prices
+**And** it should trigger a Telegram notification when the condition is met.

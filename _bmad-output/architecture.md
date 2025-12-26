@@ -12,14 +12,14 @@ inputDocuments:
   - "docs/index.md"
   - "docs/architecture-web.md"
   - "docs/architecture-data-pipeline.md"
-workflowType: 'architecture'
-project_name: 'fin-sight'
-user_name: 'Son'
-date: '2025-12-26'
+workflowType: "architecture"
+project_name: "fin-sight"
+user_name: "Son"
+date: "2025-12-26"
 hasProjectContext: false
 lastStep: 8
-status: 'complete'
-completedAt: '2025-12-26'
+status: "complete"
+completedAt: "2025-12-26"
 ---
 
 # Architecture Decision Document: fin-sight
@@ -89,12 +89,14 @@ The PRD defines comprehensive functional requirements across 12 capability areas
 ### Technical Constraints & Dependencies
 
 **Brownfield Foundation (Must Integrate With):**
+
 - Existing Apache Airflow 3.1.3 + CeleryExecutor ETL pipeline (production-ready, 87% test coverage)
 - Existing ClickHouse data warehouse with `market_dwh.fact_stock_daily` and dimensional tables
 - Existing Python 3.12 codebase with vnstock, pandas_ta for technical indicators
 - Existing Telegram notification integration via Gemini API
 
 **Technology Stack Constraints:**
+
 - Frontend: React 19.2.3 (use latest features: useOptimistic, Actions), Vite 7.3.0, React Router 7.11.0
 - Backend: NestJS (chosen for TypeScript consistency, decorator-based architecture)
 - Auth: Supabase Auth + PostgreSQL (chosen for managed auth + RBAC/RLS)
@@ -103,6 +105,7 @@ The PRD defines comprehensive functional requirements across 12 capability areas
 - Charts: TradingView widgets (primary), Recharts (fallback)
 
 **External API Dependencies:**
+
 - **Data Sources:** vnstock (VN stocks), yfinance/Polygon.io (US equities), CoinGecko/Binance API (crypto)
 - **Technical Indicators:** TradingView/Polygon (primary), internal calculation (fallback)
 - **Payment Providers:** SePay (VND, Vietnam market), Polar (USD, global)
@@ -110,12 +113,14 @@ The PRD defines comprehensive functional requirements across 12 capability areas
 - **AI:** Gemini API (existing integration for market insights)
 
 **Data Strategy Constraints:**
+
 - Star Schema required from Day 1 (dimensional modeling for drill-down lineage)
 - Dual database strategy: Supabase Postgres (user data) + ClickHouse (analytics)
 - Append-only event store for audit trails (portfolio mutations, payments)
 - Calculation versioning (`calculation_version` field) for reproducibility
 
 **Performance Constraints:**
+
 - Polling-based refresh (no WebSockets in v1.0): Frontend 60s, Redis TTL 30s
 - Staleness detection threshold: >5 minutes triggers badge
 - Launch scale: Hundreds of users, scalable to low thousands without re-architecture
@@ -123,41 +128,49 @@ The PRD defines comprehensive functional requirements across 12 capability areas
 ### Cross-Cutting Concerns Identified
 
 **1. Data Consistency Across Dual Databases**
+
 - Challenge: User portfolios in Supabase Postgres, market data in ClickHouse
 - Implication: API layer must orchestrate queries across both databases
 - Pattern needed: Aggregation layer that joins user holdings with latest prices
 
 **2. Cache Invalidation Strategy**
+
 - Challenge: Redis cache (30s TTL) must invalidate on portfolio mutations
 - Implication: Write-through caching with explicit invalidation on transactions
 - Pattern needed: Cache key design for user portfolios, asset prices, FX rates
 
 **3. Multi-Currency Conversion & FX Gain Separation**
+
 - Challenge: Cost basis in native currency (VND/USD/USDT), display in user's base currency
 - Implication: FX rates table in ClickHouse, real-time conversion in API layer
 - Pattern needed: Separate asset gains from currency gains in P&L calculations
 
 **4. Financial Calculation Auditability**
+
 - Challenge: Every calculation must be reproducible and transparent
 - Implication: Versioned calculation logic, append-only event logs, drill-down lineage
 - Pattern needed: Calculation engine with versioning, methodology documentation in UI
 
 **5. Webhook Idempotency & Payment Reconciliation**
+
 - Challenge: Dual payment providers (SePay + Polar) with async webhooks
 - Implication: Signature verification, replay protection, idempotency keys, nightly reconciliation
 - Pattern needed: Webhook handler with deduplication, retry queue, admin dashboard
 
 **6. Multi-Asset Data Normalization**
+
 - Challenge: VN stocks (T+2), US equities (T+0), crypto (instant) have different settlement
 - Implication: Unified data model with asset-type-specific handling
 - Pattern needed: `Dim_Asset` with SCD Type 2, `market_type` enum, exchange-specific logic
 
 **7. Error Resilience & Graceful Degradation**
+
 - Challenge: External APIs can fail (vnstock, yfinance, TradingView, Binance)
 - Implication: Exponential backoff, staleness badges, fallback calculation for indicators
 - Pattern needed: Circuit breaker pattern, retry strategies, user-visible error states
 
 **8. Observability & Operational Monitoring**
+
 - Challenge: Complex data flow across 4 systems (Airflow, ClickHouse, Supabase, Redis)
 - Implication: Structured logging, distributed tracing, admin dashboards
 - Pattern needed: Correlation IDs, RUM for frontend, reconciliation dashboards for payments
@@ -175,12 +188,14 @@ The project extends an existing production Apache Airflow + ClickHouse data pipe
 ### Technical Preferences Established
 
 **Development Approach:**
+
 - Minimal NestJS setup (avoid opinionated boilerplates)
 - Extend existing `apps/web/` React 19 + Vite setup as template
 - Keep existing Turborepo + pnpm monorepo structure, add new packages
 - Self-hosted Docker deployment (production: Supabase cloud only)
 
 **Rationale:**
+
 - Brownfield constraints: Must integrate with existing Airflow/ClickHouse infrastructure
 - Team familiarity: Existing `apps/web/` already demonstrates React 19 patterns
 - Deployment simplicity: Docker Compose for local dev, Docker containers for production
@@ -209,11 +224,13 @@ pnpm add -D @types/node
 **Architectural Decisions Provided by Minimal Setup:**
 
 **Language & Runtime:**
+
 - TypeScript 5.x (strict mode enabled)
 - Node.js 20 LTS runtime
 - ESM module system with CommonJS compatibility
 
 **Project Structure:**
+
 ```
 services/api/
 ├── src/
@@ -228,18 +245,21 @@ services/api/
 ```
 
 **Build Tooling:**
+
 - NestJS CLI build system (Webpack under the hood)
 - TypeScript compilation with type checking
 - Watch mode for development
 - Production optimization and tree-shaking
 
 **Development Experience:**
+
 - Hot reload in development mode
 - Built-in logging and exception handling
 - Decorator-based dependency injection
 - Environment variable configuration via @nestjs/config
 
 **Additional Modules to Add:**
+
 - Swagger/OpenAPI documentation (@nestjs/swagger)
 - Rate limiting (@nestjs/throttler)
 - Validation pipes (class-validator, class-transformer)
@@ -252,6 +272,7 @@ services/api/
 **Approach:** Use existing `apps/web/` as foundation and extend with new features
 
 **Current State Analysis:**
+
 - ✅ React 19.2.3 with latest features (useOptimistic, Actions)
 - ✅ Vite 7.3.0 build system with SWC
 - ✅ React Router 7.11.0 file-based routing
@@ -277,6 +298,7 @@ pnpm add -D @playwright/test                # E2E testing
 ```
 
 **Architectural Decisions Already Made:**
+
 - Component architecture: Atomic design pattern (atoms, molecules, organisms)
 - Routing: File-based with React Router 7 (`routes/` directory)
 - State: Zustand for global state, React Query for server state (to add)
@@ -348,7 +370,7 @@ fin-sight/
 
 ```yaml
 # docker-compose.yml (extend existing services/data-pipeline/docker-compose.yaml)
-version: '3.8'
+version: "3.8"
 
 services:
   # Existing services (keep all)
@@ -493,6 +515,7 @@ CMD ["nginx", "-g", "daemon off;"]
 ### Decision Priority Analysis
 
 **Critical Decisions (Block Implementation):**
+
 - ✅ Supabase Postgres schema pattern (Hybrid: normalized + materialized views)
 - ✅ Data synchronization strategy (API-layer aggregation, no sync)
 - ✅ Cache invalidation approach (Write-through with explicit invalidation)
@@ -500,12 +523,14 @@ CMD ["nginx", "-g", "daemon off;"]
 - ✅ Server state management (React Query)
 
 **Important Decisions (Shape Architecture):**
+
 - ✅ API documentation (OpenAPI/Swagger)
 - ✅ Error handling strategy (Retry with exponential backoff)
 - ✅ Logging approach (Structured JSON)
 - ✅ Testing strategy for MVP (E2E critical paths only)
 
 **Deferred Decisions (Post-MVP):**
+
 - Circuit breaker pattern for external API failures
 - Fallback data strategies for technical indicators
 - Comprehensive unit test coverage
@@ -516,14 +541,17 @@ CMD ["nginx", "-g", "daemon off;"]
 ### Data Architecture
 
 #### Decision 1.1: Supabase Postgres Schema Pattern
+
 **Choice:** Hybrid Approach (Normalized + Materialized Views)
 
 **Rationale:**
+
 - Financial transactions require data integrity (normalized base tables)
 - Dashboard reads need performance (materialized views for aggregations)
 - Leverages Postgres strengths: ACID compliance + view refresh capabilities
 
 **Implementation Details:**
+
 ```sql
 -- Normalized base tables
 CREATE TABLE users (id, email, created_at, ...);
@@ -533,7 +561,7 @@ CREATE TABLE transactions (id, account_id, asset_id, type, quantity, price, ...)
 
 -- Materialized views for performance
 CREATE MATERIALIZED VIEW portfolio_summary AS
-  SELECT 
+  SELECT
     p.id AS portfolio_id,
     p.user_id,
     COUNT(DISTINCT t.asset_id) AS asset_count,
@@ -552,15 +580,18 @@ REFRESH MATERIALIZED VIEW CONCURRENTLY portfolio_summary;
 ---
 
 #### Decision 1.2: Data Synchronization Strategy
+
 **Choice:** API-Layer Aggregation (No Database Sync)
 
 **Rationale:**
+
 - Simplest implementation for MVP
 - Leverages Redis caching (30s TTL as specified in PRD)
 - Avoids data duplication and sync complexity
 - Aligns with polling-based architecture
 
 **Implementation Pattern:**
+
 ```typescript
 // NestJS service example
 async getPortfolioValuation(portfolioId: string) {
@@ -603,14 +634,17 @@ async getPortfolioValuation(portfolioId: string) {
 ---
 
 #### Decision 1.3: Cache Invalidation Strategy
+
 **Choice:** Write-Through with Explicit Invalidation
 
 **Rationale:**
+
 - Users expect immediate reflection of transaction changes
 - Aligns with transparent calculations requirement
 - Cache key pattern enables granular invalidation
 
 **Cache Key Design:**
+
 ```
 portfolio:{userId}:{portfolioId}:summary      # Portfolio summary
 portfolio:{userId}:{portfolioId}:holdings     # Holdings breakdown
@@ -620,6 +654,7 @@ fx:rates:{date}                               # FX rates per day
 ```
 
 **Invalidation Logic:**
+
 ```typescript
 // On transaction create/update/delete
 async invalidatePortfolioCache(userId: string, portfolioId: string) {
@@ -639,15 +674,18 @@ async invalidatePortfolioCache(userId: string, portfolioId: string) {
 ### API Design & Communication
 
 #### Decision 2.1: API Design Pattern
+
 **Choice:** RESTful API
 
 **Rationale:**
+
 - Simple, widely understood, great tooling
 - Aligns with NestJS controller patterns
 - Sufficient for MVP dashboard requirements
 - Cacheable HTTP GET requests
 
 **Endpoint Structure:**
+
 ```
 # Authentication
 POST   /auth/signup
@@ -695,35 +733,38 @@ GET    /admin/audit-logs                 # Audit trail export
 ---
 
 #### Decision 2.2: API Documentation
+
 **Choice:** OpenAPI/Swagger via @nestjs/swagger
 
 **Rationale:**
+
 - Auto-generated from decorators (stays in sync)
 - Interactive UI for testing endpoints
 - Type-safe client generation for frontend
 - Minimal effort with NestJS
 
 **Implementation:**
+
 ```typescript
 // NestJS setup (main.ts)
 const config = new DocumentBuilder()
-  .setTitle('Fin-Sight API')
-  .setDescription('Multi-asset portfolio tracking API')
-  .setVersion('1.0')
+  .setTitle("Fin-Sight API")
+  .setDescription("Multi-asset portfolio tracking API")
+  .setVersion("1.0")
   .addBearerAuth()
   .build();
 const document = SwaggerModule.createDocument(app, config);
-SwaggerModule.setup('api/docs', app, document);
+SwaggerModule.setup("api/docs", app, document);
 
 // Controller example with decorators
-@ApiTags('portfolios')
+@ApiTags("portfolios")
 @ApiBearerAuth()
-@Controller('portfolios')
+@Controller("portfolios")
 export class PortfoliosController {
-  @Get(':id/summary')
-  @ApiOperation({ summary: 'Get portfolio summary with allocations' })
+  @Get(":id/summary")
+  @ApiOperation({ summary: "Get portfolio summary with allocations" })
   @ApiResponse({ status: 200, type: PortfolioSummaryDto })
-  async getSummary(@Param('id') id: string) {
+  async getSummary(@Param("id") id: string) {
     return this.portfoliosService.getSummary(id);
   }
 }
@@ -738,15 +779,18 @@ export class PortfoliosController {
 ### Frontend Architecture
 
 #### Decision 3.1: Server State Management
+
 **Choice:** React Query (@tanstack/react-query)
 
 **Rationale:**
+
 - Purpose-built for server state (API data)
 - Built-in caching, refetching, polling (matches 60s requirement)
 - Perfect for optimistic updates with React 19's useOptimistic
 - Automatic cache invalidation on mutations
 
 **Implementation:**
+
 ```typescript
 // Query setup (App.tsx)
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
@@ -773,7 +817,7 @@ export function usePortfolioSummary(portfolioId: string) {
 // Mutation with cache invalidation
 export function useAddTransaction(portfolioId: string) {
   const queryClient = useQueryClient();
-  
+
   return useMutation({
     mutationFn: (data) => api.addTransaction(portfolioId, data),
     onSuccess: () => {
@@ -810,15 +854,18 @@ function TransactionForm({ portfolioId }) {
 ### Error Handling & Resilience
 
 #### Decision 4.1: Error Handling Strategy
+
 **Choice:** Simple Retry with Exponential Backoff
 
 **Rationale:**
+
 - Handles transient network failures
 - Simple to implement
 - React Query provides built-in retry logic
 - Sufficient for MVP, add circuit breaker post-MVP
 
 **Retry Configuration:**
+
 ```typescript
 // React Query (frontend)
 const queryClient = new QueryClient({
@@ -845,12 +892,14 @@ async fetchFromExternalAPI(url: string) {
 ```
 
 **Error States to Handle:**
+
 - Network timeout → Retry with backoff
 - API rate limit (429) → Retry with exponential backoff
 - Server error (500) → Retry, then show error message
 - Client error (400) → No retry, show validation error
 
-**Future Enhancement (Post-MVP):** 
+**Future Enhancement (Post-MVP):**
+
 - Circuit breaker for external APIs (vnstock, yfinance, Binance)
 - Fallback to cached/stale data with staleness badge (>5 min)
 - Fallback to internal indicator calculation when TradingView unavailable
@@ -862,41 +911,44 @@ async fetchFromExternalAPI(url: string) {
 ### Observability & Monitoring
 
 #### Decision 5.1: Logging Strategy
+
 **Choice:** Structured JSON Logging with Correlation IDs
 
 **Rationale:**
+
 - Machine-parseable for querying and alerting
 - Correlation IDs trace requests across services (Airflow → ClickHouse → NestJS → React)
 - Essential for debugging distributed systems
 
 **Implementation:**
+
 ```typescript
 // NestJS with Winston
-import { WinstonModule } from 'nest-winston';
-import * as winston from 'winston';
+import { WinstonModule } from "nest-winston";
+import * as winston from "winston";
 
 const logger = WinstonModule.createLogger({
   format: winston.format.combine(
     winston.format.timestamp(),
-    winston.format.json(),
+    winston.format.json()
   ),
   transports: [
     new winston.transports.Console(),
-    new winston.transports.File({ filename: 'logs/app.log' }),
+    new winston.transports.File({ filename: "logs/app.log" }),
   ],
 });
 
 // Middleware to add correlation ID
 app.use((req, res, next) => {
-  req.correlationId = req.headers['x-correlation-id'] || uuidv4();
-  res.setHeader('x-correlation-id', req.correlationId);
+  req.correlationId = req.headers["x-correlation-id"] || uuidv4();
+  res.setHeader("x-correlation-id", req.correlationId);
   next();
 });
 
 // Logging with context
 this.logger.log({
-  level: 'info',
-  message: 'Portfolio valuation calculated',
+  level: "info",
+  message: "Portfolio valuation calculated",
   correlationId: req.correlationId,
   userId: user.id,
   portfolioId: portfolio.id,
@@ -905,6 +957,7 @@ this.logger.log({
 ```
 
 **Log Levels:**
+
 - `error`: API failures, database errors, webhook failures
 - `warn`: Retry attempts, stale cache, rate limits
 - `info`: User actions (transaction added), API calls, cache hits/misses
@@ -917,96 +970,103 @@ this.logger.log({
 ### Testing Strategy
 
 #### Decision 6.1: Testing Approach for MVP
+
 **Choice:** E2E Critical Paths Only (Playwright)
 
 **Rationale:**
+
 - Fast MVP delivery (6-8 week timeline)
 - Tests what matters to users (journeys, not units)
 - Playwright already in PRD requirements
 - Add unit/integration tests post-MVP during refactoring
 
 **Critical E2E Test Scenarios:**
+
 ```typescript
 // tests/e2e/critical-flows.spec.ts
 
-test('User journey: Signup → Add transaction → View portfolio', async ({ page }) => {
+test("User journey: Signup → Add transaction → View portfolio", async ({
+  page,
+}) => {
   // 1. Signup
-  await page.goto('/signup');
-  await page.fill('[name=email]', 'test@example.com');
-  await page.fill('[name=password]', 'SecurePass123!');
-  await page.click('button[type=submit]');
-  await expect(page).toHaveURL('/');
+  await page.goto("/signup");
+  await page.fill("[name=email]", "test@example.com");
+  await page.fill("[name=password]", "SecurePass123!");
+  await page.click("button[type=submit]");
+  await expect(page).toHaveURL("/");
 
   // 2. Create portfolio
-  await page.click('text=Create Portfolio');
-  await page.fill('[name=name]', 'My Portfolio');
-  await page.selectOption('[name=currency]', 'USD');
+  await page.click("text=Create Portfolio");
+  await page.fill("[name=name]", "My Portfolio");
+  await page.selectOption("[name=currency]", "USD");
   await page.click('button:has-text("Create")');
 
   // 3. Add transaction
-  await page.click('text=Add Transaction');
-  await page.fill('[name=ticker]', 'AAPL');
-  await page.fill('[name=quantity]', '10');
-  await page.fill('[name=price]', '150');
+  await page.click("text=Add Transaction");
+  await page.fill("[name=ticker]", "AAPL");
+  await page.fill("[name=quantity]", "10");
+  await page.fill("[name=price]", "150");
   await page.click('button:has-text("Add")');
 
   // 4. Verify portfolio shows transaction
-  await expect(page.locator('text=AAPL')).toBeVisible();
-  await expect(page.locator('text=$1,500')).toBeVisible(); // 10 * 150
+  await expect(page.locator("text=AAPL")).toBeVisible();
+  await expect(page.locator("text=$1,500")).toBeVisible(); // 10 * 150
 });
 
-test('User journey: Connect Binance → Sync holdings', async ({ page }) => {
-  await page.goto('/settings');
-  await page.click('text=Connect Binance');
-  
+test("User journey: Connect Binance → Sync holdings", async ({ page }) => {
+  await page.goto("/settings");
+  await page.click("text=Connect Binance");
+
   // OAuth flow (mock in test)
-  await page.waitForURL('**/exchanges/binance/callback**');
-  
+  await page.waitForURL("**/exchanges/binance/callback**");
+
   // Verify holdings synced
-  await expect(page.locator('text=Bitcoin (BTC)')).toBeVisible();
-  await expect(page.locator('[data-testid=sync-badge]')).toHaveText('Synced');
+  await expect(page.locator("text=Bitcoin (BTC)")).toBeVisible();
+  await expect(page.locator("[data-testid=sync-badge]")).toHaveText("Synced");
 });
 
-test('User journey: Upgrade to paid tier', async ({ page }) => {
+test("User journey: Upgrade to paid tier", async ({ page }) => {
   // Hit free tier limit
   for (let i = 0; i < 20; i++) {
     await addTransaction(page, `STOCK${i}`, 1, 100);
   }
-  
+
   // Upgrade modal appears
-  await expect(page.locator('text=Upgrade to Pro')).toBeVisible();
+  await expect(page.locator("text=Upgrade to Pro")).toBeVisible();
   await page.click('button:has-text("Upgrade")');
-  
+
   // Payment flow (mock webhook)
-  await page.selectOption('[name=currency]', 'USD');
+  await page.selectOption("[name=currency]", "USD");
   await page.click('button:has-text("Pay with Polar")');
-  
+
   // Verify tier upgraded
-  await expect(page.locator('text=Pro Plan')).toBeVisible();
+  await expect(page.locator("text=Pro Plan")).toBeVisible();
 });
 
-test('Error recovery: Stale price data shows badge', async ({ page }) => {
+test("Error recovery: Stale price data shows badge", async ({ page }) => {
   // Mock API to return stale timestamp
-  await page.route('**/api/assets/AAPL', route => {
+  await page.route("**/api/assets/AAPL", (route) => {
     route.fulfill({
-      json: { 
-        ticker: 'AAPL', 
-        price: 150, 
-        updated_at: new Date(Date.now() - 6 * 60 * 1000) // 6 min ago
-      }
+      json: {
+        ticker: "AAPL",
+        price: 150,
+        updated_at: new Date(Date.now() - 6 * 60 * 1000), // 6 min ago
+      },
     });
   });
-  
-  await page.goto('/portfolio/123');
-  await expect(page.locator('[data-testid=staleness-badge]')).toBeVisible();
+
+  await page.goto("/portfolio/123");
+  await expect(page.locator("[data-testid=staleness-badge]")).toBeVisible();
 });
 ```
 
 **Test Matrix (Per PRD):**
+
 - Desktop: Chrome, Firefox, Safari (latest)
 - Mobile: iOS Safari, Android Chrome (latest)
 
 **CI Integration:**
+
 ```yaml
 # .github/workflows/e2e-tests.yml
 name: E2E Tests
@@ -1023,6 +1083,7 @@ jobs:
 ```
 
 **Deferred (Post-MVP):**
+
 - Unit tests for business logic (portfolio calculations, cost basis)
 - Integration tests for API endpoints
 - Visual regression tests for UI components
@@ -1097,6 +1158,7 @@ These patterns ensure that all AI agents (and developers) write compatible, cons
 **Standard:** snake_case for all database objects
 
 **Rules:**
+
 ```sql
 -- Tables: lowercase plural snake_case
 CREATE TABLE users (...);
@@ -1130,6 +1192,7 @@ CREATE MATERIALIZED VIEW portfolio_summary_mv AS ...
 **Standard:** Plural resources, snake_case query params, camelCase JSON fields
 
 **REST Endpoint Rules:**
+
 ```
 # Resources: plural nouns, kebab-case for multi-word
 GET    /portfolios
@@ -1153,6 +1216,7 @@ GET /portfolios/:id/transactions?start_date=2024-01-01&end_date=2024-12-31
 ```
 
 **JSON Response Format (camelCase):**
+
 ```typescript
 // Success response - ALWAYS wrapped
 {
@@ -1186,7 +1250,8 @@ GET /portfolios/:id/transactions?start_date=2024-01-01&end_date=2024-12-31
 }
 ```
 
-**Rationale:** 
+**Rationale:**
+
 - Plural resources = RESTful best practice
 - snake_case query params = URL convention, matches database
 - camelCase JSON = JavaScript/TypeScript convention
@@ -1225,33 +1290,35 @@ src/types/transaction.types.ts
 ```
 
 **Class/Function Naming:**
+
 ```typescript
 // Classes: PascalCase
-class PortfolioService { }
-class TransactionController { }
-class AssetPriceCalculator { }
+class PortfolioService {}
+class TransactionController {}
+class AssetPriceCalculator {}
 
 // Functions/methods: camelCase
-function calculatePortfolioValue() { }
-async function fetchLatestPrices() { }
-const getUserPortfolios = () => { }
+function calculatePortfolioValue() {}
+async function fetchLatestPrices() {}
+const getUserPortfolios = () => {};
 
 // React components: PascalCase
-export function PortfolioCard() { }
-export function TransactionList() { }
+export function PortfolioCard() {}
+export function TransactionList() {}
 
 // Constants: UPPER_SNAKE_CASE
 const MAX_ASSETS_FREE_TIER = 20;
-const API_BASE_URL = 'http://localhost:3000';
+const API_BASE_URL = "http://localhost:3000";
 const CACHE_TTL_SECONDS = 30;
 
 // Variables: camelCase
-const portfolioId = '123';
+const portfolioId = "123";
 const currentUser = await getUser();
 let totalValue = 0;
 ```
 
-**Rationale:** 
+**Rationale:**
+
 - kebab-case files = Linux/URL-safe, clear word separation
 - Industry standard casing for classes/functions
 - Consistent across React and NestJS codebases
@@ -1263,6 +1330,7 @@ let totalValue = 0;
 #### Project Organization
 
 **Feature-Based Organization (Frontend):**
+
 ```
 apps/web/src/
 ├── features/                    # Feature-based organization
@@ -1329,6 +1397,7 @@ apps/web/src/
 ```
 
 **Module-Based Organization (Backend):**
+
 ```
 services/api/src/
 ├── portfolios/                # Feature module
@@ -1392,6 +1461,7 @@ services/api/src/
 ```
 
 **Test Location:** Co-located with source files
+
 ```
 # Unit tests: same directory as source
 portfolio.service.ts
@@ -1408,6 +1478,7 @@ tests/e2e/
 ```
 
 **Rationale:**
+
 - Feature-based = easier to find related code, supports team scaling
 - Co-located tests = easier to maintain, no import path confusion
 - Shared components separate = reusability without circular dependencies
@@ -1421,6 +1492,7 @@ tests/e2e/
 **Standard:** Always wrapped responses with `data` envelope
 
 **Success Responses:**
+
 ```typescript
 // Single resource
 {
@@ -1459,6 +1531,7 @@ tests/e2e/
 ```
 
 **Error Responses (NestJS Standard):**
+
 ```typescript
 // Validation error (400)
 {
@@ -1496,6 +1569,7 @@ tests/e2e/
 ```
 
 **Rationale:**
+
 - Consistent wrapping = predictable client parsing
 - Meta field = extensible for pagination, timestamps
 - NestJS standard errors = framework consistency
@@ -1507,6 +1581,7 @@ tests/e2e/
 **Standard:** ISO 8601 strings in UTC
 
 **Rules:**
+
 ```typescript
 // API responses: ISO 8601 string with Z suffix (UTC)
 {
@@ -1531,6 +1606,7 @@ CREATE TABLE transactions (
 ```
 
 **Rationale:**
+
 - ISO 8601 = web standard, unambiguous, sortable
 - UTC in API = no timezone confusion
 - Format at presentation layer = user-friendly display
@@ -1542,23 +1618,24 @@ CREATE TABLE transactions (
 #### State Management Patterns
 
 **Zustand (UI State):**
+
 ```typescript
 // Store organization: feature-based slices
-import { create } from 'zustand';
+import { create } from "zustand";
 
 interface UIState {
-  theme: 'light' | 'dark';
+  theme: "light" | "dark";
   sidebarOpen: boolean;
   activeModal: string | null;
   // Actions
-  setTheme: (theme: 'light' | 'dark') => void;
+  setTheme: (theme: "light" | "dark") => void;
   toggleSidebar: () => void;
   openModal: (modal: string) => void;
   closeModal: () => void;
 }
 
 export const useUIStore = create<UIState>((set) => ({
-  theme: 'dark',
+  theme: "dark",
   sidebarOpen: true,
   activeModal: null,
   setTheme: (theme) => set({ theme }),
@@ -1569,21 +1646,21 @@ export const useUIStore = create<UIState>((set) => ({
 
 // Usage: immutable updates only
 const { theme, setTheme } = useUIStore();
-setTheme('light'); // ✅ Correct
+setTheme("light"); // ✅ Correct
 ```
 
 **React Query (Server State):**
+
 ```typescript
 // Query key pattern: [resource, ...identifiers, ...filters]
-['portfolios']                           // All portfolios
-['portfolio', portfolioId]               // Single portfolio
-['portfolio', portfolioId, 'summary']    // Portfolio summary
-['portfolio', portfolioId, 'transactions', { startDate, endDate }] // Filtered
+["portfolios"][("portfolio", portfolioId)][ // All portfolios // Single portfolio
+  ("portfolio", portfolioId, "summary")
+][("portfolio", portfolioId, "transactions", { startDate, endDate })]; // Portfolio summary // Filtered
 
 // Custom hook pattern
 export function usePortfolio(portfolioId: string) {
   return useQuery({
-    queryKey: ['portfolio', portfolioId],
+    queryKey: ["portfolio", portfolioId],
     queryFn: () => api.getPortfolio(portfolioId),
     staleTime: 30 * 1000,
     enabled: !!portfolioId, // Only fetch if ID exists
@@ -1593,20 +1670,21 @@ export function usePortfolio(portfolioId: string) {
 // Mutation pattern with cache invalidation
 export function useUpdatePortfolio(portfolioId: string) {
   const queryClient = useQueryClient();
-  
+
   return useMutation({
-    mutationFn: (data: UpdatePortfolioDto) => 
+    mutationFn: (data: UpdatePortfolioDto) =>
       api.updatePortfolio(portfolioId, data),
     onSuccess: () => {
       // Invalidate specific queries
-      queryClient.invalidateQueries(['portfolio', portfolioId]);
-      queryClient.invalidateQueries(['portfolios']);
+      queryClient.invalidateQueries(["portfolio", portfolioId]);
+      queryClient.invalidateQueries(["portfolios"]);
     },
   });
 }
 ```
 
 **Rationale:**
+
 - Zustand for UI = simple, no provider hell
 - React Query for server = caching, refetching, invalidation built-in
 - Clear separation = easier debugging
@@ -1619,15 +1697,15 @@ export function useUpdatePortfolio(portfolioId: string) {
 
 ```typescript
 // Event names
-'portfolio.updated'
-'transaction.created'
-'price.changed'
-'exchange.synced'
+"portfolio.updated";
+"transaction.created";
+"price.changed";
+"exchange.synced";
 
 // Event payload structure
 interface PortfolioUpdatedEvent {
-  eventType: 'portfolio.updated';
-  timestamp: string;  // ISO 8601
+  eventType: "portfolio.updated";
+  timestamp: string; // ISO 8601
   data: {
     portfolioId: string;
     userId: string;
@@ -1687,15 +1765,15 @@ export class HttpExceptionFilter implements ExceptionFilter {
     const ctx = host.switchToHttp();
     const response = ctx.getResponse();
     const request = ctx.getRequest();
-    
-    const status = exception instanceof HttpException
-      ? exception.getStatus()
-      : 500;
-    
-    const message = exception instanceof HttpException
-      ? exception.message
-      : 'Internal server error';
-    
+
+    const status =
+      exception instanceof HttpException ? exception.getStatus() : 500;
+
+    const message =
+      exception instanceof HttpException
+        ? exception.message
+        : "Internal server error";
+
     // Log error with correlation ID
     this.logger.error({
       statusCode: status,
@@ -1705,7 +1783,7 @@ export class HttpExceptionFilter implements ExceptionFilter {
       method: request.method,
       stack: exception instanceof Error ? exception.stack : undefined,
     });
-    
+
     // Return standard error response
     response.status(status).json({
       statusCode: status,
@@ -1719,6 +1797,7 @@ export class HttpExceptionFilter implements ExceptionFilter {
 ```
 
 **Rationale:**
+
 - Global boundary = app doesn't crash
 - Feature boundaries = isolated failures
 - Consistent error structure = easier frontend handling
@@ -1728,6 +1807,7 @@ export class HttpExceptionFilter implements ExceptionFilter {
 #### Loading State Patterns
 
 **React Query Loading States:**
+
 ```typescript
 const { data, isLoading, isFetching, isError } = usePortfolio(portfolioId);
 
@@ -1749,31 +1829,32 @@ return <PortfolioCard data={data} />;
 ```
 
 **Optimistic Updates:**
+
 ```typescript
 const mutation = useMutation({
   mutationFn: addTransaction,
   onMutate: async (newTransaction) => {
     // Cancel outgoing refetches
-    await queryClient.cancelQueries(['portfolio', portfolioId]);
-    
+    await queryClient.cancelQueries(["portfolio", portfolioId]);
+
     // Snapshot previous value
-    const previous = queryClient.getQueryData(['portfolio', portfolioId]);
-    
+    const previous = queryClient.getQueryData(["portfolio", portfolioId]);
+
     // Optimistically update
-    queryClient.setQueryData(['portfolio', portfolioId], (old) => ({
+    queryClient.setQueryData(["portfolio", portfolioId], (old) => ({
       ...old,
-      transactions: [...old.transactions, { ...newTransaction, id: 'temp' }],
+      transactions: [...old.transactions, { ...newTransaction, id: "temp" }],
     }));
-    
+
     return { previous };
   },
   onError: (err, newTransaction, context) => {
     // Rollback on error
-    queryClient.setQueryData(['portfolio', portfolioId], context.previous);
+    queryClient.setQueryData(["portfolio", portfolioId], context.previous);
   },
   onSettled: () => {
     // Refetch after mutation
-    queryClient.invalidateQueries(['portfolio', portfolioId]);
+    queryClient.invalidateQueries(["portfolio", portfolioId]);
   },
 });
 ```
@@ -1836,11 +1917,13 @@ const mutation = useMutation({
 #### Pattern Verification:
 
 **Pre-commit Hooks:**
+
 - ESLint for code naming conventions
 - Prettier for consistent formatting
 - TypeScript strict mode for type safety
 
 **Code Review Checklist:**
+
 - [ ] File names use kebab-case
 - [ ] Database queries use snake_case
 - [ ] API responses use camelCase JSON fields
@@ -1853,6 +1936,7 @@ const mutation = useMutation({
 #### Documenting Pattern Violations:
 
 If a pattern must be violated (rare), document the reason:
+
 ```typescript
 // PATTERN EXCEPTION: Using PascalCase for legacy API compatibility
 // Context: External API expects PascalCase, we transform at boundary
@@ -1869,16 +1953,17 @@ const legacyPayload = {
 #### ✅ Good Examples
 
 **Backend Service:**
+
 ```typescript
 // File: src/portfolios/portfolio.service.ts
-import { Injectable } from '@nestjs/common';
-import { SupabaseClient } from '@supabase/supabase-js';
+import { Injectable } from "@nestjs/common";
+import { SupabaseClient } from "@supabase/supabase-js";
 
 @Injectable()
 export class PortfolioService {
   constructor(
     private readonly supabase: SupabaseClient,
-    private readonly redis: RedisService,
+    private readonly redis: RedisService
   ) {}
 
   async getPortfolioSummary(portfolioId: string) {
@@ -1889,9 +1974,9 @@ export class PortfolioService {
 
     // Query database (snake_case columns)
     const { data: portfolio } = await this.supabase
-      .from('portfolios')
-      .select('portfolio_id, user_id, portfolio_name, base_currency')
-      .eq('portfolio_id', portfolioId)
+      .from("portfolios")
+      .select("portfolio_id, user_id, portfolio_name, base_currency")
+      .eq("portfolio_id", portfolioId)
       .single();
 
     // Transform to camelCase for API response
@@ -1911,6 +1996,7 @@ export class PortfolioService {
 ```
 
 **Frontend Component:**
+
 ```typescript
 // File: src/features/portfolio/portfolio-card.tsx
 import { usePortfolio } from '@/api/hooks/use-portfolios';
@@ -1940,6 +2026,7 @@ export function PortfolioCard({ portfolioId }: { portfolioId: string }) {
 ```
 
 **API Response:**
+
 ```typescript
 // GET /portfolios/123
 {
@@ -1962,43 +2049,47 @@ export function PortfolioCard({ portfolioId }: { portfolioId: string }) {
 #### ❌ Anti-Patterns (Avoid)
 
 **Inconsistent Naming:**
+
 ```typescript
 // ❌ Wrong: Mixed casing
 const { data: portfolio_data } = await supabase
-  .from('Portfolios')  // ❌ PascalCase table name
-  .select('PortfolioID, user_name')  // ❌ Mixed casing
-  .eq('ID', portfolioId);
+  .from("Portfolios") // ❌ PascalCase table name
+  .select("PortfolioID, user_name") // ❌ Mixed casing
+  .eq("ID", portfolioId);
 
 // ✅ Correct: Consistent snake_case
 const { data: portfolio } = await supabase
-  .from('portfolios')
-  .select('portfolio_id, user_id, portfolio_name')
-  .eq('portfolio_id', portfolioId);
+  .from("portfolios")
+  .select("portfolio_id, user_id, portfolio_name")
+  .eq("portfolio_id", portfolioId);
 ```
 
 **Unwrapped API Responses:**
+
 ```typescript
 // ❌ Wrong: Direct response
-return portfolio;  // { portfolioId: "...", ... }
+return portfolio; // { portfolioId: "...", ... }
 
 // ✅ Correct: Wrapped response
 return {
   data: portfolio,
-  meta: { timestamp: new Date().toISOString() }
+  meta: { timestamp: new Date().toISOString() },
 };
 ```
 
 **Wrong File Names:**
+
 ```typescript
 // ❌ Wrong: PascalCase or camelCase file names
-PortfolioCard.tsx
-portfolioCard.tsx
+PortfolioCard.tsx;
+portfolioCard.tsx;
 
 // ✅ Correct: kebab-case
-portfolio-card.tsx
+portfolio - card.tsx;
 ```
 
 **Inconsistent Date Formats:**
+
 ```typescript
 // ❌ Wrong: Mixed date formats
 {
@@ -2014,6 +2105,7 @@ portfolio-card.tsx
 ```
 
 **Non-Feature Organization:**
+
 ```typescript
 // ❌ Wrong: Organized by type
 src/
@@ -2341,6 +2433,7 @@ fin-sight/                                       # Monorepo root
 #### 1. Service Boundaries
 
 **services/api (NestJS API):**
+
 - **Responsibility:** Business logic, authentication, authorization, API orchestration
 - **Owns:** Portfolio CRUD, transaction management, crypto OAuth, payment processing
 - **Dependencies:**
@@ -2352,6 +2445,7 @@ fin-sight/                                       # Monorepo root
 - **Data Access:** Direct SQL via TypeORM/Prisma (Postgres), HTTP client (ClickHouse REST API)
 
 **services/data-pipeline (Airflow ETL):**
+
 - **Responsibility:** Market data ingestion, technical indicator computation, data quality
 - **Owns:** Asset price history, technical indicators, market metadata
 - **Dependencies:**
@@ -2361,6 +2455,7 @@ fin-sight/                                       # Monorepo root
 - **Data Access:** ClickHouse Python driver
 
 **Boundary Rules:**
+
 - API service NEVER writes to ClickHouse (read-only)
 - Data pipeline NEVER reads from Supabase (isolated)
 - No direct service-to-service calls (data flow through databases only)
@@ -2368,18 +2463,21 @@ fin-sight/                                       # Monorepo root
 #### 2. Component Boundaries (Frontend)
 
 **Feature Modules:**
+
 - Each feature (portfolio, transactions, analytics, crypto, payments, auth) is self-contained
 - **Owns:** UI components, React Query hooks, types, tests
 - **May import from:** Shared components (`components/`), API client (`api/`), stores (`stores/`)
 - **Cannot import from:** Other features (prevents circular dependencies)
 
 **Shared Modules:**
+
 - `components/`: UI primitives (Radix), layout, global error boundary
 - `api/`: HTTP client, endpoint definitions, React Query setup
 - `stores/`: UI-only state (theme, sidebar, modals) - NO server state
 - `lib/`: Utilities, Supabase client, constants
 
 **Boundary Rules:**
+
 - Features communicate via shared stores or prop drilling (no direct imports)
 - API layer is the ONLY place that makes HTTP requests
 - Server state managed ONLY by React Query (never Zustand)
@@ -2387,23 +2485,27 @@ fin-sight/                                       # Monorepo root
 #### 3. Data Boundaries
 
 **Supabase Postgres:**
+
 - **Tables:** `users`, `portfolios`, `transactions`, `crypto_connections`, `subscriptions`
 - **Materialized Views:** `portfolio_summary`, `asset_holdings`, `performance_metrics`
 - **Access:** services/api (read/write), apps/web (read-only via API)
 - **Refresh Strategy:** Materialized views refresh on transaction mutations (REFRESH MATERIALIZED VIEW CONCURRENTLY)
 
 **ClickHouse:**
+
 - **Tables:** `vn_stocks`, `us_equities`, `crypto_prices`, `technical_indicators`
 - **Access:** services/data-pipeline (write), services/api (read)
 - **Query Pattern:** Aggregations only (e.g., "last 30 days RSI for AAPL"), never raw rows
 
 **Redis:**
+
 - **Keys:** `portfolio:{userId}:{portfolioId}:summary`, `asset:{symbol}:price`
 - **TTL:** 30 seconds
 - **Invalidation:** Explicit on mutations (delete keys on POST/PUT/DELETE)
 - **Access:** services/api only
 
 **Boundary Rules:**
+
 - User data (portfolios, transactions) → Supabase ONLY
 - Market data (prices, indicators) → ClickHouse ONLY
 - Cache → Redis ONLY (never store business logic in cache)
@@ -2412,12 +2514,14 @@ fin-sight/                                       # Monorepo root
 #### 4. API Boundaries
 
 **Public API (REST):**
+
 - **Base URL:** `http://localhost:3000/api/v1` (dev), `https://api.fin-sight.com/v1` (prod)
 - **Authentication:** JWT Bearer token (Supabase Auth)
 - **Rate Limiting:** 100 req/min per user (free tier), 1000 req/min (pro tier)
 - **Versioning:** URL path (`/v1/`), support v1 for 12 months after v2 release
 
 **Endpoints:**
+
 ```
 /portfolios                GET, POST
 /portfolios/:id            GET, PUT, DELETE
@@ -2434,6 +2538,7 @@ fin-sight/                                       # Monorepo root
 ```
 
 **Response Format (ALL endpoints):**
+
 ```typescript
 {
   data: T,                  // Actual payload
@@ -2448,6 +2553,7 @@ fin-sight/                                       # Monorepo root
 ```
 
 **Error Format:**
+
 ```typescript
 {
   statusCode: number,
@@ -2459,6 +2565,7 @@ fin-sight/                                       # Monorepo root
 ```
 
 **Boundary Rules:**
+
 - ALL responses wrapped (even single objects)
 - ALL dates in ISO 8601 UTC
 - ALL numbers as numeric types (never strings)
@@ -2470,20 +2577,20 @@ fin-sight/                                       # Monorepo root
 
 This section maps PRD functional requirements to specific directories and files.
 
-| PRD Capability | Frontend Location | Backend Location | Database Location |
-|----------------|-------------------|------------------|-------------------|
-| **Authentication & User Management** | `apps/web/src/features/auth/` | `services/api/src/common/guards/` | `supabase/migrations/*users.sql` |
-| **Portfolio Management** | `apps/web/src/features/portfolio/` | `services/api/src/portfolios/` | `supabase/migrations/*portfolios.sql` |
-| **Transaction Management** | `apps/web/src/features/transactions/` | `services/api/src/transactions/` | `supabase/migrations/*transactions.sql` |
-| **Crypto Exchange Integration** | `apps/web/src/features/crypto/` | `services/api/src/crypto/` | `supabase/migrations/*crypto_connections.sql` |
-| **Asset Price Data** | `apps/web/src/features/analytics/` | `services/api/src/assets/` | `services/data-pipeline/dags/` |
-| **Technical Indicators** | `apps/web/src/features/analytics/technical-indicators.tsx` | `services/api/src/assets/assets.service.ts` (queries ClickHouse) | `services/data-pipeline/dags/technical_indicators.py` |
-| **Portfolio Analytics** | `apps/web/src/features/analytics/analytics-dashboard.tsx` | `services/api/src/portfolios/portfolios.service.ts` (computes aggregations) | `supabase/migrations/*materialized_views.sql` |
-| **Multi-Currency Support** | `apps/web/src/features/portfolio/portfolio-form.tsx` (currency selector) | `packages/config/src/currencies.ts` | `supabase/migrations/*portfolios.sql` (currency column) |
-| **Real-Time Price Updates** | `apps/web/src/features/portfolio/use-portfolio.ts` (60s polling) | `services/api/src/assets/assets.controller.ts` (GET /assets/:symbol/price) | Redis cache (`asset:{symbol}:price`, 30s TTL) |
-| **Payment Integration** | `apps/web/src/features/payments/` | `services/api/src/payments/` | `supabase/migrations/*subscriptions.sql` |
-| **Freemium Subscription** | `apps/web/src/features/payments/subscription-plans.tsx` | `services/api/src/payments/payments.service.ts` | `supabase/migrations/*subscriptions.sql` (RLS policies) |
-| **Search & Autocomplete** | `apps/web/src/features/transactions/transaction-form.tsx` (autocomplete input) | `services/api/src/assets/assets.controller.ts` (GET /assets/search?q=) | ClickHouse FTS (full-text search on symbol, name) |
+| PRD Capability                       | Frontend Location                                                              | Backend Location                                                            | Database Location                                       |
+| ------------------------------------ | ------------------------------------------------------------------------------ | --------------------------------------------------------------------------- | ------------------------------------------------------- |
+| **Authentication & User Management** | `apps/web/src/features/auth/`                                                  | `services/api/src/common/guards/`                                           | `supabase/migrations/*users.sql`                        |
+| **Portfolio Management**             | `apps/web/src/features/portfolio/`                                             | `services/api/src/portfolios/`                                              | `supabase/migrations/*portfolios.sql`                   |
+| **Transaction Management**           | `apps/web/src/features/transactions/`                                          | `services/api/src/transactions/`                                            | `supabase/migrations/*transactions.sql`                 |
+| **Crypto Exchange Integration**      | `apps/web/src/features/crypto/`                                                | `services/api/src/crypto/`                                                  | `supabase/migrations/*crypto_connections.sql`           |
+| **Asset Price Data**                 | `apps/web/src/features/analytics/`                                             | `services/api/src/assets/`                                                  | `services/data-pipeline/dags/`                          |
+| **Technical Indicators**             | `apps/web/src/features/analytics/technical-indicators.tsx`                     | `services/api/src/assets/assets.service.ts` (queries ClickHouse)            | `services/data-pipeline/dags/technical_indicators.py`   |
+| **Portfolio Analytics**              | `apps/web/src/features/analytics/analytics-dashboard.tsx`                      | `services/api/src/portfolios/portfolios.service.ts` (computes aggregations) | `supabase/migrations/*materialized_views.sql`           |
+| **Multi-Currency Support**           | `apps/web/src/features/portfolio/portfolio-form.tsx` (currency selector)       | `packages/config/src/currencies.ts`                                         | `supabase/migrations/*portfolios.sql` (currency column) |
+| **Real-Time Price Updates**          | `apps/web/src/features/portfolio/use-portfolio.ts` (60s polling)               | `services/api/src/assets/assets.controller.ts` (GET /assets/:symbol/price)  | Redis cache (`asset:{symbol}:price`, 30s TTL)           |
+| **Payment Integration**              | `apps/web/src/features/payments/`                                              | `services/api/src/payments/`                                                | `supabase/migrations/*subscriptions.sql`                |
+| **Freemium Subscription**            | `apps/web/src/features/payments/subscription-plans.tsx`                        | `services/api/src/payments/payments.service.ts`                             | `supabase/migrations/*subscriptions.sql` (RLS policies) |
+| **Search & Autocomplete**            | `apps/web/src/features/transactions/transaction-form.tsx` (autocomplete input) | `services/api/src/assets/assets.controller.ts` (GET /assets/search?q=)      | ClickHouse FTS (full-text search on symbol, name)       |
 
 **Epic-Level Mapping:**
 
@@ -2500,6 +2607,7 @@ This section maps PRD functional requirements to specific directories and files.
 #### Internal Communication
 
 **Frontend ↔ Backend API:**
+
 - **Protocol:** HTTPS (REST)
 - **Authentication:** JWT Bearer token in `Authorization` header
 - **Content-Type:** `application/json`
@@ -2508,18 +2616,21 @@ This section maps PRD functional requirements to specific directories and files.
 - **State Sync:** React Query invalidates cache on mutations (`queryClient.invalidateQueries(['portfolios'])`)
 
 **Backend API ↔ Supabase Postgres:**
+
 - **Protocol:** PostgreSQL wire protocol (port 5432)
 - **Library:** Supabase JS SDK (wraps PostgREST)
 - **Migrations:** Applied via `supabase db push` (dev) or CI/CD pipeline (prod)
 - **Connection Pooling:** PgBouncer (default in Supabase)
 
 **Backend API ↔ ClickHouse:**
+
 - **Protocol:** HTTP (ClickHouse REST API, port 8123)
 - **Library:** `@clickhouse/client` (Node.js)
 - **Query Pattern:** Parameterized queries to prevent injection
 - **Read-Only:** API service has SELECT-only permissions
 
 **Backend API ↔ Redis:**
+
 - **Protocol:** Redis protocol (port 6379)
 - **Library:** `ioredis`
 - **Pattern:** Get → If miss → Query DB → Set with TTL
@@ -2528,6 +2639,7 @@ This section maps PRD functional requirements to specific directories and files.
 #### External Integrations
 
 **Crypto Exchanges (Binance, OKX):**
+
 - **Library:** CCXT (unified API)
 - **Authentication:** OAuth 2.0 (user authorizes read-only API keys)
 - **Storage:** Encrypted API keys in `crypto_connections` table (Supabase Vault)
@@ -2535,6 +2647,7 @@ This section maps PRD functional requirements to specific directories and files.
 - **Error Handling:** Log failures, display stale badge if >5 min
 
 **Market Data Providers:**
+
 - **vnstock:** Vietnamese stock prices (Python library, used in Airflow DAG)
 - **yfinance:** US equities (Python library, used in Airflow DAG)
 - **CoinGecko:** Crypto prices (REST API, free tier: 50 calls/min)
@@ -2542,6 +2655,7 @@ This section maps PRD functional requirements to specific directories and files.
 - **Frequency:** Daily batch (VN/US stocks), 5-minute intervals (crypto)
 
 **Payment Gateways:**
+
 - **SePay:** Vietnamese local payments (bank transfer, e-wallet)
   - **Integration:** Webhook for payment confirmations
   - **Endpoint:** `POST /api/v1/payments/webhooks/sepay`
@@ -2552,6 +2666,7 @@ This section maps PRD functional requirements to specific directories and files.
   - **Verification:** Webhook secret validation
 
 **Authentication Providers:**
+
 - **Google OAuth:** Supabase handles flow (redirect to `apps/web/src/features/auth/oauth-callback.tsx`)
 - **GitHub OAuth:** Same as Google
 - **Flow:** User clicks login → Supabase Auth → Redirect to callback → Extract JWT → Store in localStorage
@@ -2615,6 +2730,7 @@ This section maps PRD functional requirements to specific directories and files.
 #### Configuration Files
 
 **Location:** Root of each service/app
+
 - `tsconfig.json` - TypeScript compiler config
 - `package.json` - Dependencies and scripts
 - `.env.example` - Environment variables template (NEVER commit `.env`)
@@ -2622,18 +2738,21 @@ This section maps PRD functional requirements to specific directories and files.
 - `README.md` - Service-specific documentation
 
 **Shared Config:**
+
 - `packages/typescript-config/` - Shared TS configs (extend in services)
 - `packages/eslint-config/` - Shared linting rules
 
 #### Source Code Organization
 
 **NestJS (services/api):**
+
 - Feature modules at `src/<feature>/`
 - Each module contains: controller, service, module, entities, DTOs, tests
 - Shared code at `src/common/`
 - Config at `src/config/`
 
 **React (apps/web):**
+
 - Feature-based at `src/features/<feature>/`
 - Each feature contains: components, hooks, types, tests
 - Shared UI at `src/components/`
@@ -2643,10 +2762,12 @@ This section maps PRD functional requirements to specific directories and files.
 #### Test Organization
 
 **Co-located Tests:**
+
 - React: `feature-name.test.tsx` next to `feature-name.tsx`
 - NestJS: `feature-name.spec.ts` next to `feature-name.ts`
 
 **E2E Tests:**
+
 - Location: `services/api/test/e2e/`
 - Naming: `<feature>.e2e-spec.ts` (e.g., `portfolios.e2e-spec.ts`)
 - Scope: MVP critical paths only (portfolio CRUD, transaction creation, crypto OAuth)
@@ -2654,11 +2775,13 @@ This section maps PRD functional requirements to specific directories and files.
 #### Asset Organization
 
 **Frontend Assets:**
+
 - Static: `apps/web/public/` (favicon, images)
 - Styles: `apps/web/src/styles/` (Tailwind CSS)
 - Fonts: Load from CDN (Google Fonts) or `public/fonts/`
 
 **Database Assets:**
+
 - Migrations: `supabase/migrations/<timestamp>_<description>.sql`
 - Naming: ISO 8601 timestamp prefix (e.g., `20250126000001_init_users.sql`)
 - Order: Applied sequentially by timestamp
@@ -2683,6 +2806,7 @@ The monorepo structure fully supports all architectural decisions with proper bo
 ### Requirements Coverage Validation ✅
 
 **Functional Requirements Coverage (12/12):**
+
 - ✅ Authentication & User Management → Supabase Auth + JWT guards + RLS policies
 - ✅ Portfolio Management → Complete CRUD with materialized views for performance
 - ✅ Transaction Management → Manual entry + autocomplete via asset search endpoint
@@ -2697,6 +2821,7 @@ The monorepo structure fully supports all architectural decisions with proper bo
 - ✅ Search & Autocomplete → ClickHouse FTS on symbol/name + debounced API
 
 **Epic-Level Coverage (5/5):**
+
 1. ✅ Core Portfolio Management → Complete structure from frontend to database migrations
 2. ✅ Multi-Asset Support → VN/US/crypto DAGs + ClickHouse schema extensions + asset type enums
 3. ✅ Crypto Integration → CCXT service + OAuth callbacks + Supabase Vault encryption
@@ -2704,6 +2829,7 @@ The monorepo structure fully supports all architectural decisions with proper bo
 5. ✅ Payments & Monetization → SePay (VN local) + Polar (international) + webhook verification
 
 **Non-Functional Requirements Coverage:**
+
 - ✅ Performance <200ms → Redis caching + materialized views + query optimization
 - ✅ 99.9% Uptime → Retry logic with exponential backoff + error boundaries
 - ✅ Staleness Detection → 5-minute threshold with visual indicators
@@ -2737,6 +2863,7 @@ The enforcement guidelines provide explicit rules: "ALWAYS use snake_case for da
 All blocking architectural decisions are complete. Every PRD requirement has architectural support. All services have defined boundaries and integration points. No missing decisions that would prevent implementation from starting.
 
 **Important Gaps (Optional, Post-Architecture):**
+
 - ⚠️ Database Migration Execution Strategy: Specific CI/CD commands for applying Supabase migrations not documented (manual `supabase db push` vs automated pipeline)
 - ⚠️ Environment Variables Template: Complete `.env.example` with all required keys not shown (SUPABASE_URL, SUPABASE_ANON_KEY, REDIS_HOST, CLICKHOUSE_URL, CCXT_API_KEYS, etc.)
 - ⚠️ Docker Compose Orchestration: Full `docker-compose.yml` with service definitions, networks, volumes not included
@@ -2745,6 +2872,7 @@ All blocking architectural decisions are complete. Every PRD requirement has arc
 **Assessment:** The identified gaps are implementation/DevOps artifacts that belong in separate operational documentation, not architectural decisions. The architecture document contains all decisions needed for feature development. These gaps can be addressed during the "setup-development-workflow" phase.
 
 **Nice-to-Have Enhancements (Future Consideration):**
+
 - 💡 Development workflow guide: Commands for running services locally, debugging tips, common issues
 - 💡 Performance monitoring strategy: Recommendations for APM tools (DataDog, New Relic), metrics to track
 - 💡 Backup and disaster recovery: Strategy for database backups, failover procedures
@@ -2757,12 +2885,14 @@ All blocking architectural decisions are complete. Every PRD requirement has arc
 **ARCHITECTURE VALIDATED AND READY FOR IMPLEMENTATION**
 
 **Validation Results:**
+
 - ✅ Coherence: All decisions compatible, patterns consistent, structure aligned
 - ✅ Coverage: 12/12 functional requirements, 5/5 epics, all NFRs addressed
 - ✅ Readiness: Complete decisions, comprehensive patterns, AI agent clarity
 - ✅ Gaps: Zero critical gaps, optional gaps are operational (not architectural)
 
 **Key Strengths:**
+
 1. **Brownfield + Greenfield Hybrid:** Respects existing Airflow/ClickHouse production system while adding new services/api
 2. **Conflict Prevention:** 11 potential AI agent conflict points identified and resolved with explicit patterns
 3. **Complete Traceability:** Every PRD capability mapped to specific files (frontend, backend, database)
@@ -2771,6 +2901,7 @@ All blocking architectural decisions are complete. Every PRD requirement has arc
 6. **MVP Timeline Feasibility:** Architecture supports 6-8 week implementation with AI agents (E2E critical paths only, unit tests deferred)
 
 **Ready for Handoff To:**
+
 - **Dev Agent:** Can scaffold services/api (NestJS modules), extend apps/web (feature-based), create shared packages
 - **Dev Agent:** Can implement database migrations, API endpoints, React Query hooks per structure
 - **Tech Writer Agent:** Can generate API documentation from endpoint definitions + OpenAPI spec
@@ -2789,7 +2920,7 @@ The architecture document is complete and validated. Proceed to finalization (St
 **Architecture Decision Workflow:** COMPLETED ✅
 **Total Steps Completed:** 8
 **Date Completed:** 2025-12-26
-**Document Location:** _bmad-output/architecture.md
+**Document Location:** \_bmad-output/architecture.md
 
 ### Final Architecture Deliverables
 

@@ -11,24 +11,29 @@ afterEach(() => {
 // Global Mocks for CI/Unit Tests
 
 // Mock React Router
-vi.mock("react-router", () => ({
-  useFetcher: () => ({
-    Form: ({ children, ...props }: any) =>
-      React.createElement("form", props, children),
-    state: "idle",
-    data: null,
-    submit: vi.fn(),
-  }),
-  useSearchParams: () => [new URLSearchParams(), vi.fn()],
-  Link: ({ children, to, ...props }: any) =>
-    React.createElement("a", { href: to, ...props }, children),
-  redirect: vi.fn(),
-  useNavigate: () => vi.fn(),
-  useLocation: () => ({ pathname: "/", search: "", hash: "", state: null }),
-  useSubmit: () => vi.fn(),
-  useNavigation: () => ({ state: "idle" }),
-  Outlet: () => null,
-}));
+// Mock React Router
+vi.mock("react-router", async (importOriginal) => {
+  const actual = await importOriginal<typeof import("react-router")>();
+  return {
+    ...actual,
+    useFetcher: () => ({
+      Form: ({ children, ...props }: any) =>
+        React.createElement("form", props, children),
+      state: "idle",
+      data: null,
+      submit: vi.fn(),
+    }),
+    useSearchParams: () => [new URLSearchParams(), vi.fn()],
+    Link: ({ children, to, ...props }: any) =>
+      React.createElement("a", { href: to, ...props }, children),
+    redirect: vi.fn(),
+    useNavigate: () => vi.fn(),
+    useLocation: () => ({ pathname: "/", search: "", hash: "", state: null }),
+    useSubmit: () => vi.fn(),
+    useNavigation: () => ({ state: "idle" }),
+    Outlet: () => null,
+  };
+});
 
 // Mock Framer Motion
 vi.mock("framer-motion", async () => {

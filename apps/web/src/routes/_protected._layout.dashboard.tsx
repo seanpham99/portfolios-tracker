@@ -1,5 +1,5 @@
-import { DashboardLayout } from '@/components/dashboard-layout';
+import { UnifiedDashboardLayout } from '@/components/unified-dashboard-layout';
 
 export default function Dashboard() {
-  return <DashboardLayout />;
+  return <UnifiedDashboardLayout />;
 }

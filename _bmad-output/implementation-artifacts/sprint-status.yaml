@@ -52,12 +52,12 @@ development_status:
   prep-2-extract-vite-config: done
   prep-3-seed-asset-data: done
 
-  epic-2: backlog
-  2-1-portfolio-management-logic-api-database: backlog
-  2-2-enhanced-tabbed-dashboard-shell: backlog
-  2-3-manual-transaction-entry-with-autocomplete: backlog
-  2-4-basic-net-worth-holdings-list: backlog
-  2-5-transparent-methodology-basic-panels: backlog
+  epic-2: in-progress
+  2-1-portfolio-management-logic-api-database: in-progress
+  2-2-enhanced-tabbed-dashboard-shell: ready-for-dev
+  2-3-manual-transaction-entry-with-autocomplete: ready-for-dev
+  2-4-basic-net-worth-holdings-list: ready-for-dev
+  2-5-transparent-methodology-basic-panels: ready-for-dev
   epic-2-retrospective: optional
 
   epic-3: backlog

@@ -31,6 +31,16 @@
                 "eslint.config.*"
             ]
         },
+        "type-check": {
+            "dependsOn": [
+                "^build"
+            ],
+            "inputs": [
+                "$TURBO_DEFAULT$",
+                "tsconfig.json",
+                "tsconfig.*.json"
+            ]
+        },
         "test": {
             "dependsOn": [
                 "^build"

@@ -7,7 +7,7 @@ import {
 import { SupabaseClient, PostgrestError } from '@supabase/supabase-js';
 import { Database } from '@repo/database-types';
 import { CreatePortfolioDto, UpdatePortfolioDto } from './dto';
-import { CreateTransactionDto } from '@repo/api-types';
+import { CreateTransactionDto, HoldingDto } from '@repo/api-types';
 import { Portfolio } from './portfolio.entity';
 import { CacheService } from '../cache';
 
@@ -214,5 +214,107 @@ export class PortfoliosService {
     await this.cacheService.invalidatePortfolio(userId, portfolioId);
 
     return data;
+  }
+
+
+  /**
+   * Get aggregated holdings for all portfolios of the authenticated user
+   */
+  async getHoldings(userId: string): Promise<HoldingDto[]> {
+    // Check cache first
+    const cacheKey = `holdings:${userId}`;
+    const cached = await this.cacheService.get<HoldingDto[]>(cacheKey);
+    if (cached) {
+      return cached;
+    }
+
+    // Query all transactions for user across all portfolios
+    // Joining assets to get details
+    const { data: transactions, error } = await this.supabase
+      .from('transactions')
+      .select(`
+        asset_id,
+        quantity,
+        price,
+        type,
+        assets (
+          id,
+          symbol,
+          name_en,
+          name_local,
+          asset_class,
+          market,
+          currency
+        ),
+        portfolios!inner (
+          user_id
+        )
+      `)
+      .eq('portfolios.user_id', userId);
+
+    if (error) {
+      throw error;
+    }
+
+    // Aggregate holdings
+    const holdingsMap = new Map<string, {
+      qty: number;
+      cost: number;
+      asset: any;
+    }>();
+
+    for (const tx of (transactions || [])) {
+      if (!tx.assets) continue; // Should not happen with inner join logic implicitly
+
+      const assetId = tx.asset_id;
+      if (!holdingsMap.has(assetId)) {
+        holdingsMap.set(assetId, { 
+          qty: 0, 
+          cost: 0, 
+          asset: tx.assets 
+        });
+      }
+      const entry = holdingsMap.get(assetId)!;
+
+      if (tx.type === 'BUY') {
+        entry.qty += tx.quantity;
+        entry.cost += tx.quantity * tx.price;
+      } else if (tx.type === 'SELL') {
+        // Weighted Average Cost Logic: Cost basis reduces proportionally
+        const currentAvg = entry.qty > 0 ? entry.cost / entry.qty : 0;
+        entry.qty -= tx.quantity;
+        entry.cost -= tx.quantity * currentAvg;
+      }
+      
+      // Handle floating point errors if qty goes to approx 0
+      if (Math.abs(entry.qty) < 0.000001) {
+        entry.qty = 0;
+        entry.cost = 0;
+      }
+    }
+
+    // Convert to DTO
+    const holdings: HoldingDto[] = Array.from(holdingsMap.values())
+      .map(entry => {
+        // Handle case where asset might be an array or object (Supabase JS single vs undefined)
+        const asset = Array.isArray(entry.asset) ? entry.asset[0] : entry.asset;
+        
+        return {
+          asset_id: asset.id,
+          symbol: asset.symbol,
+          name: asset.name_en || asset.name_local || asset.symbol,
+          asset_class: asset.asset_class,
+          market: asset.market,
+          currency: asset.currency,
+          total_quantity: entry.qty,
+          avg_cost: entry.qty > 0 ? entry.cost / entry.qty : 0,
+        };
+      })
+      .filter(h => h.total_quantity > 0); // Only return active holdings
+
+    // Cache result (30s default TTL is fine)
+    await this.cacheService.set(cacheKey, holdings);
+
+    return holdings;
   }
 }

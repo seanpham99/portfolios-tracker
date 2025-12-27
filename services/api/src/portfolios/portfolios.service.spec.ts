@@ -325,5 +325,73 @@ describe('PortfoliosService', () => {
         service.remove(mockUserId, 'non-existent-id'),
       ).rejects.toThrow(NotFoundException);
     });
+    });
+
+
+  describe('getHoldings', () => {
+    it('should aggregate holdings from transactions correctly', async () => {
+      // Mock transactions with joined data
+      const mockTransactions = [
+        {
+          asset_id: 'asset-1',
+          quantity: 10,
+          price: 100,
+          type: 'BUY',
+          assets: { symbol: 'AAPL', name: 'Apple', asset_class: 'US Equity', market: 'US', currency: 'USD' },
+        },
+        {
+          asset_id: 'asset-1',
+          quantity: 5,
+          price: 120, // Total Buy Cost: 1000 + 600 = 1600. Total Buy Qty: 15. Avg: 106.66
+          type: 'BUY',
+          assets: { symbol: 'AAPL', name: 'Apple', asset_class: 'US Equity', market: 'US', currency: 'USD' },
+        },
+        {
+          asset_id: 'asset-1',
+          quantity: 5,
+          price: 150, // SELL. Remaining Qty: 10. Avg Cost should remain ~106.66
+          type: 'SELL',
+          assets: { symbol: 'AAPL', name: 'Apple', asset_class: 'US Equity', market: 'US', currency: 'USD' },
+        },
+        {
+          asset_id: 'asset-2',
+          quantity: 100,
+          price: 1,
+          type: 'BUY',
+          assets: { symbol: 'VND', name: 'Vietnam Dong', asset_class: 'Cash', market: 'VN', currency: 'VND' },
+        },
+      ];
+
+      // Mock Supabase chain
+      const mockSelect = jest.fn().mockReturnThis();
+      const mockEq = jest.fn().mockResolvedValue({
+        data: mockTransactions,
+        error: null,
+      });
+
+      mockSupabaseClient.from.mockReturnValue({
+        select: mockSelect,
+        eq: mockEq,
+      });
+      mockSelect.mockReturnValue({ eq: mockEq });
+
+      const result = await service.getHoldings(mockUserId);
+
+      expect(result).toHaveLength(2);
+      
+      const aapl = result.find(h => h.symbol === 'AAPL');
+      expect(aapl).toBeDefined();
+      expect(aapl!.total_quantity).toBe(10);
+      // Avg Cost Logic:
+      // Buy 1: 10 @ 100 = 1000. Qty=10.
+      // Buy 2: 5 @ 120 = 600. Total Cost = 1600. Total Qty = 15. Avg = 106.666
+      // Sell 1: 5 @ 150. Reduced Cost = 5 * 106.666 = 533.33. Remaining Cost = 1066.67. Remaining Qty = 10. Avg = 106.666.
+      expect(aapl!.avg_cost).toBeCloseTo(106.666, 3);
+      
+      const vnd = result.find(h => h.symbol === 'VND');
+      expect(vnd).toBeDefined();
+      expect(vnd!.total_quantity).toBe(100);
+      expect(vnd!.avg_cost).toBe(1);
+    });
   });
 });

@@ -56,7 +56,7 @@ development_status:
   2-1-portfolio-management-logic-api-database: done
   2-2-unified-portfolio-dashboard-shell: done
   2-3-manual-transaction-entry-with-autocomplete: done
-  2-4-unified-holdings-table: ready-for-dev
+  2-4-unified-holdings-table: done
   2-5-transparent-methodology-basic-panels: ready-for-dev
   2-6-asset-detail-page: ready-for-dev
   2-7-connection-settings: ready-for-dev

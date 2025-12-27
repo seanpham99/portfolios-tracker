@@ -3,7 +3,7 @@ import { Check, ChevronsUpDown, Search } from "lucide-react";
 import { Command } from "cmdk";
 import * as PopoverPrimitive from "@radix-ui/react-popover";
 import { useDebounce } from "@/hooks/use-debounce";
-import { Asset } from "@/types/asset";
+import { Assets } from "@repo/database-types";
 import { cn } from "@repo/ui/lib/utils";
 import { Button } from "@repo/ui/components/button";
 import { apiFetch } from "@/lib/api";
@@ -11,12 +11,12 @@ import { apiFetch } from "@/lib/api";
 export function AssetAutocomplete({
   onSelect,
 }: {
-  onSelect: (asset: Asset) => void;
+  onSelect: (asset: Assets) => void;
 }) {
   const [open, setOpen] = React.useState(false);
-  const [selectedAsset, setSelectedAsset] = React.useState<Asset | null>(null);
+  const [selectedAsset, setSelectedAsset] = React.useState<Assets | null>(null);
   const [query, setQuery] = React.useState("");
-  const [assets, setAssets] = React.useState<Asset[]>([]);
+  const [assets, setAssets] = React.useState<Assets[]>([]);
   const [loading, setLoading] = React.useState(false);
   const [error, setError] = React.useState<string | null>(null);
   const debouncedQuery = useDebounce(query, 300);

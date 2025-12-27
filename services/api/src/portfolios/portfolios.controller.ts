@@ -13,7 +13,7 @@ import {
 } from '@nestjs/common';
 import { PortfoliosService } from './portfolios.service';
 import { CreatePortfolioDto, UpdatePortfolioDto } from './dto';
-import { CreateTransactionDto } from '@repo/api-types';
+import { CreateTransactionDto, HoldingDto } from '@repo/api-types';
 import { Portfolio } from './portfolio.entity';
 import { AuthGuard } from './guards/auth.guard';
 import { UserId } from './decorators/user-id.decorator';
@@ -45,6 +45,14 @@ export class PortfoliosController {
   @Get()
   async findAll(@UserId() userId: string): Promise<Portfolio[]> {
     return this.portfoliosService.findAll(userId);
+  }
+
+  /**
+   * GET /portfolios/holdings - Get aggregated holdings for all portfolios
+   */
+  @Get('holdings')
+  async getHoldings(@UserId() userId: string): Promise<HoldingDto[]> {
+    return this.portfoliosService.getHoldings(userId);
   }
 
   /**

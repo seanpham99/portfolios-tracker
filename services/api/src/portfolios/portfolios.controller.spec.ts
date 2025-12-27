@@ -39,6 +39,7 @@ const mockPortfoliosService = {
   update: jest.fn(),
   remove: jest.fn(),
   addTransaction: jest.fn(),
+  getHoldings: jest.fn(),
 };
 
 describe('PortfoliosController', () => {
@@ -107,6 +108,26 @@ describe('PortfoliosController', () => {
       const result = await controller.findAll(mockUserId);
 
       expect(result).toEqual([]);
+    });
+  });
+
+  describe('getHoldings', () => {
+    it('should return aggregated holdings', async () => {
+      const holdings = [{
+        asset_id: 'asset-1',
+        symbol: 'AAPL',
+        name: 'Apple',
+        asset_class: 'US Equity',
+        total_quantity: 10,
+        avg_cost: 150
+      }];
+      
+      mockPortfoliosService.getHoldings.mockResolvedValue(holdings);
+
+      const result = await controller.getHoldings(mockUserId);
+
+      expect(result).toEqual(holdings);
+      expect(mockPortfoliosService.getHoldings).toHaveBeenCalledWith(mockUserId);
     });
   });
 

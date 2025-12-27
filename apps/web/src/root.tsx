@@ -1,5 +1,7 @@
 import { Links, Meta, Outlet, Scripts, ScrollRestoration } from "react-router";
 import "@repo/ui/styles/globals.css";
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { useState } from 'react';
 
 import { Toaster } from "@repo/ui/components/sonner";
 import { ThemeProvider, useTheme } from "next-themes";
@@ -10,6 +12,7 @@ function AppToaster() {
 }
 
 export function Layout({ children }: { children: React.ReactNode }) {
+  const [queryClient] = useState(() => new QueryClient());
   return (
     <html lang="en" suppressHydrationWarning>
       <head>
@@ -21,6 +24,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
         <Links />
       </head>
       <body>
+        <QueryClientProvider client={queryClient}>
         <ThemeProvider
           attribute="class"
           defaultTheme="dark"
@@ -31,6 +35,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
           {children}
           <AppToaster />
         </ThemeProvider>
+        </QueryClientProvider>
         <ScrollRestoration />
         <Scripts />
       </body>

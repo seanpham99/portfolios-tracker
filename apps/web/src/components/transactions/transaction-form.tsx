@@ -1,6 +1,6 @@
 import { useActionState, useState, useEffect, useOptimistic, useId } from "react";
 import { AssetAutocomplete } from "./asset-autocomplete";
-import { Asset } from "@/types/asset";
+import { Assets } from "@repo/database-types";
 import { Button } from "@repo/ui/components/button";
 import { Input } from "@repo/ui/components/input";
 import { Label } from "@repo/ui/components/label";
@@ -82,7 +82,7 @@ export function TransactionForm({
   existingTransactions?: Transaction[];
 }) {
   const [state, formAction, isPending] = useActionState(submitTransactionAction, null);
-  const [selectedAsset, setSelectedAsset] = useState<Asset | null>(null);
+  const [selectedAsset, setSelectedAsset] = useState<Assets | null>(null);
   const [type, setType] = useState("BUY");
 
   // Optimistic UI: Show transaction immediately while API call is in flight

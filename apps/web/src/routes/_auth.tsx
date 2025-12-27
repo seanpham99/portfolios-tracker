@@ -29,25 +29,42 @@ export default function AuthLayout() {
 
       <main className="relative z-10 w-full max-w-md px-6" role="main">
         {/* Animated Logo */}
-        <motion.header 
+        <motion.header
           {...logoVariants}
-          transition={prefersReducedMotion ? { duration: 0 } : { duration: 0.5, ease: "easeOut" }}
+          transition={
+            prefersReducedMotion
+              ? { duration: 0 }
+              : { duration: 0.5, ease: "easeOut" }
+          }
           className="mb-8 flex flex-col items-center justify-center"
         >
           <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-gradient-to-br from-emerald-500/20 to-emerald-900/20 border border-white/10 shadow-2xl shadow-emerald-900/20 backdrop-blur-sm">
-            <span className="text-3xl font-bold text-emerald-400" aria-hidden="true">F</span>
+            <span
+              className="text-3xl font-bold text-emerald-400"
+              aria-hidden="true"
+            >
+              F
+            </span>
           </div>
-          <motion.h1 
+          <motion.h1
             {...fadeVariants}
-            transition={prefersReducedMotion ? { duration: 0 } : { delay: 0.2, duration: 0.5 }}
+            transition={
+              prefersReducedMotion
+                ? { duration: 0 }
+                : { delay: 0.2, duration: 0.5 }
+            }
             className="mt-4 font-serif text-3xl font-medium tracking-tight text-transparent bg-clip-text bg-gradient-to-b from-white to-white/70"
           >
             Finsight
           </motion.h1>
           <motion.p
-             {...fadeVariants}
-             transition={prefersReducedMotion ? { duration: 0 } : { delay: 0.3, duration: 0.5 }}
-             className="mt-2 text-center text-sm text-zinc-500"
+            {...fadeVariants}
+            transition={
+              prefersReducedMotion
+                ? { duration: 0 }
+                : { delay: 0.3, duration: 0.5 }
+            }
+            className="mt-2 text-center text-sm text-zinc-500"
           >
             Consolidated wealth. Calm mind.
           </motion.p>
@@ -55,16 +72,24 @@ export default function AuthLayout() {
 
         {/* Auth page content */}
         <motion.div
-           {...contentVariants}
-           transition={prefersReducedMotion ? { duration: 0 } : { delay: 0.1, duration: 0.4 }}
+          {...contentVariants}
+          transition={
+            prefersReducedMotion
+              ? { duration: 0 }
+              : { delay: 0.1, duration: 0.4 }
+          }
         >
           <Outlet />
         </motion.div>
 
         {/* Footer */}
-        <motion.footer 
+        <motion.footer
           {...fadeVariants}
-          transition={prefersReducedMotion ? { duration: 0 } : { delay: 0.4, duration: 0.5 }}
+          transition={
+            prefersReducedMotion
+              ? { duration: 0 }
+              : { delay: 0.4, duration: 0.5 }
+          }
           className="mt-8 text-center text-xs text-zinc-600"
         >
           © {new Date().getFullYear()} Finsight. All rights reserved.

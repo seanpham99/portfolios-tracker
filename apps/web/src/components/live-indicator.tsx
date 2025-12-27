@@ -1,41 +1,41 @@
-"use client"
+"use client";
 
-import { useEffect, useState } from "react"
-import { RefreshCw } from "lucide-react"
-import { cn } from "@repo/ui/lib/utils"
-import { usePortfolioStore, portfolioStore } from "@/stores/portfolio-store"
+import { useEffect, useState } from "react";
+import { RefreshCw } from "lucide-react";
+import { cn } from "@repo/ui/lib/utils";
+import { usePortfolioStore, portfolioStore } from "@/stores/portfolio-store";
 
 export function LiveIndicator() {
-  const { lastUpdated, settings } = usePortfolioStore()
-  const [isRefreshing, setIsRefreshing] = useState(false)
-  const [timeAgo, setTimeAgo] = useState("just now")
+  const { lastUpdated, settings } = usePortfolioStore();
+  const [isRefreshing, setIsRefreshing] = useState(false);
+  const [timeAgo, setTimeAgo] = useState("just now");
 
   // Update time ago display
   useEffect(() => {
     const updateTimeAgo = () => {
-      const seconds = Math.floor((Date.now() - lastUpdated.getTime()) / 1000)
-      if (seconds < 5) setTimeAgo("just now")
-      else if (seconds < 60) setTimeAgo(`${seconds}s ago`)
-      else setTimeAgo(`${Math.floor(seconds / 60)}m ago`)
-    }
-    updateTimeAgo()
-    const interval = setInterval(updateTimeAgo, 1000)
-    return () => clearInterval(interval)
-  }, [lastUpdated])
+      const seconds = Math.floor((Date.now() - lastUpdated.getTime()) / 1000);
+      if (seconds < 5) setTimeAgo("just now");
+      else if (seconds < 60) setTimeAgo(`${seconds}s ago`);
+      else setTimeAgo(`${Math.floor(seconds / 60)}m ago`);
+    };
+    updateTimeAgo();
+    const interval = setInterval(updateTimeAgo, 1000);
+    return () => clearInterval(interval);
+  }, [lastUpdated]);
 
   // Auto-refresh based on settings
   useEffect(() => {
     const interval = setInterval(() => {
-      portfolioStore.updatePrices()
-    }, settings.refreshInterval * 1000)
-    return () => clearInterval(interval)
-  }, [settings.refreshInterval])
+      portfolioStore.updatePrices();
+    }, settings.refreshInterval * 1000);
+    return () => clearInterval(interval);
+  }, [settings.refreshInterval]);
 
   const handleRefresh = () => {
-    setIsRefreshing(true)
-    portfolioStore.updatePrices()
-    setTimeout(() => setIsRefreshing(false), 500)
-  }
+    setIsRefreshing(true);
+    portfolioStore.updatePrices();
+    setTimeout(() => setIsRefreshing(false), 500);
+  };
 
   return (
     <div className="flex items-center gap-3">
@@ -60,5 +60,5 @@ export function LiveIndicator() {
         <RefreshCw className={cn("h-4 w-4", isRefreshing && "animate-spin")} />
       </button>
     </div>
-  )
+  );
 }

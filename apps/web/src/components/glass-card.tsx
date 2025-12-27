@@ -1,18 +1,24 @@
-"use client"
+"use client";
 
-import type React from "react"
-import { cn } from "@repo/ui/lib/utils"
-import { motion } from "framer-motion"
+import type React from "react";
+import { cn } from "@repo/ui/lib/utils";
+import { motion } from "framer-motion";
 
 interface GlassCardProps {
-  children: React.ReactNode
-  className?: string
-  hover?: boolean
-  onClick?: () => void
-  delay?: number
+  children: React.ReactNode;
+  className?: string;
+  hover?: boolean;
+  onClick?: () => void;
+  delay?: number;
 }
 
-export function GlassCard({ children, className, hover = true, onClick, delay = 0 }: GlassCardProps) {
+export function GlassCard({
+  children,
+  className,
+  hover = true,
+  onClick,
+  delay = 0,
+}: GlassCardProps) {
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
@@ -22,12 +28,13 @@ export function GlassCard({ children, className, hover = true, onClick, delay = 
       className={cn(
         "relative rounded-2xl border border-white/[0.08] bg-white/[0.03] backdrop-blur-xl",
         "shadow-[0_8px_32px_rgba(0,0,0,0.3)]",
-        hover && "cursor-pointer transition-all duration-300 hover:border-white/[0.15] hover:bg-white/[0.05]",
+        hover &&
+          "cursor-pointer transition-all duration-300 hover:border-white/[0.15] hover:bg-white/[0.05]",
         onClick && "cursor-pointer",
         className,
       )}
     >
       {children}
     </motion.div>
-  )
+  );
 }

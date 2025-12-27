@@ -1,37 +1,50 @@
-"use client"
+"use client";
 
-import { useEffect, useState } from "react"
-import { motion, AnimatePresence } from "framer-motion"
-import { X, TrendingUp, TrendingDown, ArrowUpRight, ArrowDownRight } from "lucide-react"
-import type { Asset } from "./asset-blade"
-import { Sparkline } from "./sparkline"
-import { cn } from "@repo/ui/lib/utils"
-import { Button } from "@repo/ui/components/button"
-import { TransactionModal } from "./transaction-modal"
+import { useEffect, useState } from "react";
+import { motion, AnimatePresence } from "framer-motion";
+import {
+  X,
+  TrendingUp,
+  TrendingDown,
+  ArrowUpRight,
+  ArrowDownRight,
+} from "lucide-react";
+import type { Asset } from "./asset-blade";
+import { Sparkline } from "./sparkline";
+import { cn } from "@repo/ui/lib/utils";
+import { Button } from "@repo/ui/components/button";
+import { TransactionModal } from "./transaction-modal";
 
 interface FocusModalProps {
-  asset: Asset | null
-  onClose: () => void
-  timeframe: string
-  onTimeframeChange: (tf: string) => void
+  asset: Asset | null;
+  onClose: () => void;
+  timeframe: string;
+  onTimeframeChange: (tf: string) => void;
 }
 
-const timeframes = ["1D", "1W", "1M", "3M", "YTD", "1Y"]
+const timeframes = ["1D", "1W", "1M", "3M", "YTD", "1Y"];
 
-export function FocusModal({ asset, onClose, timeframe, onTimeframeChange }: FocusModalProps) {
-  const [transactionType, setTransactionType] = useState<"buy" | "sell" | null>(null)
+export function FocusModal({
+  asset,
+  onClose,
+  timeframe,
+  onTimeframeChange,
+}: FocusModalProps) {
+  const [transactionType, setTransactionType] = useState<"buy" | "sell" | null>(
+    null,
+  );
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === "Escape") onClose()
-    }
-    window.addEventListener("keydown", handleKeyDown)
-    return () => window.removeEventListener("keydown", handleKeyDown)
-  }, [onClose])
+      if (e.key === "Escape") onClose();
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [onClose]);
 
-  if (!asset) return null
+  if (!asset) return null;
 
-  const isPositive = asset.change >= 0
+  const isPositive = asset.change >= 0;
 
   return (
     <AnimatePresence>
@@ -65,20 +78,32 @@ export function FocusModal({ asset, onClose, timeframe, onTimeframeChange }: Foc
                 {asset.icon || asset.symbol.slice(0, 2)}
               </div>
               <div className="flex-1">
-                <h2 className="font-serif text-3xl font-light text-white">{asset.name}</h2>
+                <h2 className="font-serif text-3xl font-light text-white">
+                  {asset.name}
+                </h2>
                 <p className="text-zinc-500">{asset.symbol}</p>
               </div>
               <div className="text-right">
                 <p className="text-3xl font-semibold tabular-nums text-white">
-                  ${asset.value.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                  $
+                  {asset.value.toLocaleString("en-US", {
+                    minimumFractionDigits: 2,
+                    maximumFractionDigits: 2,
+                  })}
                 </p>
                 <div
                   className={cn(
                     "mt-1 inline-flex items-center gap-1 rounded-full px-3 py-1 text-sm font-medium",
-                    isPositive ? "bg-emerald-500/10 text-emerald-400" : "bg-rose-500/10 text-rose-400",
+                    isPositive
+                      ? "bg-emerald-500/10 text-emerald-400"
+                      : "bg-rose-500/10 text-rose-400",
                   )}
                 >
-                  {isPositive ? <TrendingUp className="h-3 w-3" /> : <TrendingDown className="h-3 w-3" />}
+                  {isPositive ? (
+                    <TrendingUp className="h-3 w-3" />
+                  ) : (
+                    <TrendingDown className="h-3 w-3" />
+                  )}
                   {isPositive ? "+" : ""}
                   {asset.change.toFixed(2)}%
                 </div>
@@ -93,7 +118,9 @@ export function FocusModal({ asset, onClose, timeframe, onTimeframeChange }: Foc
                   onClick={() => onTimeframeChange(tf)}
                   className={cn(
                     "rounded-lg px-4 py-2 text-sm font-medium transition-all",
-                    timeframe === tf ? "bg-white/10 text-white" : "text-zinc-500 hover:bg-white/5 hover:text-zinc-300",
+                    timeframe === tf
+                      ? "bg-white/10 text-white"
+                      : "text-zinc-500 hover:bg-white/5 hover:text-zinc-300",
                   )}
                 >
                   {tf}
@@ -144,5 +171,5 @@ export function FocusModal({ asset, onClose, timeframe, onTimeframeChange }: Foc
         />
       )}
     </AnimatePresence>
-  )
+  );
 }

@@ -1,7 +1,7 @@
-"use client"
+"use client";
 
-import { useState } from "react"
-import { motion, AnimatePresence } from "framer-motion"
+import { useState } from "react";
+import { motion, AnimatePresence } from "framer-motion";
 import {
   X,
   Search,
@@ -14,15 +14,19 @@ import {
   ChevronDown,
   Loader2,
   CheckCircle2,
-} from "lucide-react"
-import { cn } from "@repo/ui/lib/utils"
-import { portfolioStore, useAssetRequests, type AssetRequest } from "@/stores/portfolio-store"
-import type { Asset } from "./asset-blade"
+} from "lucide-react";
+import { cn } from "@repo/ui/lib/utils";
+import {
+  portfolioStore,
+  useAssetRequests,
+  type AssetRequest,
+} from "@/stores/portfolio-store";
+import type { Asset } from "./asset-blade";
 
 interface AddAssetModalProps {
-  isOpen: boolean
-  onClose: () => void
-  stageId: string
+  isOpen: boolean;
+  onClose: () => void;
+  stageId: string;
 }
 
 const popularAssets = [
@@ -36,7 +40,7 @@ const popularAssets = [
   { symbol: "SOL", name: "Solana", type: "crypto" },
   { symbol: "VNQ", name: "Vanguard Real Estate", type: "real-estate" },
   { symbol: "O", name: "Realty Income Corp", type: "real-estate" },
-]
+];
 
 const exchanges = [
   { value: "NYSE", label: "NYSE (US)" },
@@ -48,7 +52,7 @@ const exchanges = [
   { value: "HKEX", label: "HKEX (Hong Kong)" },
   { value: "SSE", label: "SSE (China)" },
   { value: "other", label: "Other" },
-]
+];
 
 const assetTypes: { value: AssetRequest["type"]; label: string }[] = [
   { value: "stock", label: "Stock" },
@@ -56,20 +60,26 @@ const assetTypes: { value: AssetRequest["type"]; label: string }[] = [
   { value: "etf", label: "ETF" },
   { value: "real_estate", label: "Real Estate" },
   { value: "other", label: "Other" },
-]
+];
 
 function generateSparkline(): number[] {
-  const data: number[] = []
-  let value = 100
+  const data: number[] = [];
+  let value = 100;
   for (let i = 0; i < 20; i++) {
-    value = value + (Math.random() - 0.48) * 6
-    data.push(Math.max(50, Math.min(150, value)))
+    value = value + (Math.random() - 0.48) * 6;
+    data.push(Math.max(50, Math.min(150, value)));
   }
-  return data
+  return data;
 }
 
-function PendingRequestsBadge({ count, onClick }: { count: number; onClick: () => void }) {
-  if (count === 0) return null
+function PendingRequestsBadge({
+  count,
+  onClick,
+}: {
+  count: number;
+  onClick: () => void;
+}) {
+  if (count === 0) return null;
   return (
     <button
       onClick={onClick}
@@ -78,33 +88,67 @@ function PendingRequestsBadge({ count, onClick }: { count: number; onClick: () =
       <Clock className="h-3 w-3" />
       {count} pending request{count !== 1 ? "s" : ""}
     </button>
-  )
+  );
 }
 
-function RequestStatusBadge({ status, progress }: { status: AssetRequest["status"]; progress: number }) {
+function RequestStatusBadge({
+  status,
+  progress,
+}: {
+  status: AssetRequest["status"];
+  progress: number;
+}) {
   const config = {
-    pending: { bg: "bg-amber-500/10", text: "text-amber-400", label: "Pending" },
-    processing: { bg: "bg-indigo-500/10", text: "text-indigo-400", label: `Processing ${Math.round(progress)}%` },
-    approved: { bg: "bg-emerald-500/10", text: "text-emerald-400", label: "Available" },
-    rejected: { bg: "bg-rose-500/10", text: "text-rose-400", label: "Unavailable" },
-  }
-  const c = config[status]
+    pending: {
+      bg: "bg-amber-500/10",
+      text: "text-amber-400",
+      label: "Pending",
+    },
+    processing: {
+      bg: "bg-indigo-500/10",
+      text: "text-indigo-400",
+      label: `Processing ${Math.round(progress)}%`,
+    },
+    approved: {
+      bg: "bg-emerald-500/10",
+      text: "text-emerald-400",
+      label: "Available",
+    },
+    rejected: {
+      bg: "bg-rose-500/10",
+      text: "text-rose-400",
+      label: "Unavailable",
+    },
+  };
+  const c = config[status];
   return (
-    <span className={cn("inline-flex items-center gap-1.5 rounded-full px-2 py-0.5 text-xs font-medium", c.bg, c.text)}>
+    <span
+      className={cn(
+        "inline-flex items-center gap-1.5 rounded-full px-2 py-0.5 text-xs font-medium",
+        c.bg,
+        c.text,
+      )}
+    >
       {status === "processing" && <Loader2 className="h-3 w-3 animate-spin" />}
       {status === "approved" && <CheckCircle2 className="h-3 w-3" />}
       {c.label}
     </span>
-  )
+  );
 }
 
-export function AddAssetModal({ isOpen, onClose, stageId }: AddAssetModalProps) {
-  const [searchQuery, setSearchQuery] = useState("")
-  const [selectedAsset, setSelectedAsset] = useState<(typeof popularAssets)[0] | null>(null)
-  const [quantity, setQuantity] = useState("")
-  const [pricePerUnit, setPricePerUnit] = useState("")
-  const [showRequestForm, setShowRequestForm] = useState(false)
-  const [showPendingRequests, setShowPendingRequests] = useState(false)
+export function AddAssetModal({
+  isOpen,
+  onClose,
+  stageId,
+}: AddAssetModalProps) {
+  const [searchQuery, setSearchQuery] = useState("");
+  const [selectedAsset, setSelectedAsset] = useState<
+    (typeof popularAssets)[0] | null
+  >(null);
+  const [quantity, setQuantity] = useState("");
+  const [pricePerUnit, setPricePerUnit] = useState("");
+  const [showRequestForm, setShowRequestForm] = useState(false);
+  const [showPendingRequests, setShowPendingRequests] = useState(false);
 
   const [requestData, setRequestData] = useState({
     symbol: "",
@@ -112,28 +156,32 @@ export function AddAssetModal({ isOpen, onClose, stageId }: AddAssetModalProps) 
     type: "stock" as AssetRequest["type"],
     exchange: "",
     country: "",
-  })
-  const [requestSubmitted, setRequestSubmitted] = useState(false)
+  });
+  const [requestSubmitted, setRequestSubmitted] = useState(false);
 
-  const { requests, pendingCount, submitRequest } = useAssetRequests()
-  const userPendingRequests = requests.filter((r) => r.status === "pending" || r.status === "processing")
+  const { requests, pendingCount, submitRequest } = useAssetRequests();
+  const userPendingRequests = requests.filter(
+    (r) => r.status === "pending" || r.status === "processing",
+  );
 
   const filteredAssets = popularAssets.filter(
     (asset) =>
       (asset.type === stageId || stageId === "all") &&
       (asset.symbol.toLowerCase().includes(searchQuery.toLowerCase()) ||
         asset.name.toLowerCase().includes(searchQuery.toLowerCase())),
-  )
+  );
 
   const pendingRequest = requests.find(
     (r) =>
-      r.symbol.toLowerCase() === searchQuery.toLowerCase() && (r.status === "pending" || r.status === "processing"),
-  )
+      r.symbol.toLowerCase() === searchQuery.toLowerCase() &&
+      (r.status === "pending" || r.status === "processing"),
+  );
 
   const handleAddAsset = () => {
-    if (!selectedAsset || !quantity || !pricePerUnit) return
+    if (!selectedAsset || !quantity || !pricePerUnit) return;
 
-    const totalValue = Number.parseFloat(quantity) * Number.parseFloat(pricePerUnit)
+    const totalValue =
+      Number.parseFloat(quantity) * Number.parseFloat(pricePerUnit);
     const newAsset: Asset = {
       id: selectedAsset.symbol.toLowerCase() + "-" + Date.now(),
       symbol: selectedAsset.symbol,
@@ -143,9 +191,9 @@ export function AddAssetModal({ isOpen, onClose, stageId }: AddAssetModalProps) 
       allocation: 0,
       sparklineData: generateSparkline(),
       icon: (selectedAsset as { icon?: string }).icon,
-    }
+    };
 
-    portfolioStore.addAsset(stageId, newAsset)
+    portfolioStore.addAsset(stageId, newAsset);
     portfolioStore.addTransaction({
       assetId: newAsset.id,
       symbol: newAsset.symbol,
@@ -153,21 +201,21 @@ export function AddAssetModal({ isOpen, onClose, stageId }: AddAssetModalProps) 
       quantity: Number.parseFloat(quantity),
       price: Number.parseFloat(pricePerUnit),
       total: totalValue,
-    })
+    });
     portfolioStore.addNotification({
       type: "portfolio_change",
       title: "Asset Added",
       message: `Added ${quantity} ${selectedAsset.symbol} worth $${totalValue.toLocaleString()}`,
-    })
+    });
 
-    onClose()
-    setSelectedAsset(null)
-    setQuantity("")
-    setPricePerUnit("")
-  }
+    onClose();
+    setSelectedAsset(null);
+    setQuantity("");
+    setPricePerUnit("");
+  };
 
   const handleRequestAsset = () => {
-    if (!requestData.symbol) return
+    if (!requestData.symbol) return;
 
     submitRequest({
       symbol: requestData.symbol.toUpperCase(),
@@ -175,28 +223,34 @@ export function AddAssetModal({ isOpen, onClose, stageId }: AddAssetModalProps) 
       type: requestData.type,
       exchange: requestData.exchange || undefined,
       country: requestData.country || undefined,
-    })
+    });
 
-    setRequestSubmitted(true)
+    setRequestSubmitted(true);
     setTimeout(() => {
-      setShowRequestForm(false)
-      setRequestData({ symbol: "", name: "", type: "stock", exchange: "", country: "" })
-      setRequestSubmitted(false)
-    }, 2000)
-  }
+      setShowRequestForm(false);
+      setRequestData({
+        symbol: "",
+        name: "",
+        type: "stock",
+        exchange: "",
+        country: "",
+      });
+      setRequestSubmitted(false);
+    }, 2000);
+  };
 
   const getStageIcon = () => {
     switch (stageId) {
       case "equities":
-        return <TrendingUp className="h-5 w-5" />
+        return <TrendingUp className="h-5 w-5" />;
       case "crypto":
-        return <Coins className="h-5 w-5" />
+        return <Coins className="h-5 w-5" />;
       case "real-estate":
-        return <Building2 className="h-5 w-5" />
+        return <Building2 className="h-5 w-5" />;
       default:
-        return <Plus className="h-5 w-5" />
+        return <Plus className="h-5 w-5" />;
     }
-  }
+  };
 
   return (
     <AnimatePresence>
@@ -222,8 +276,12 @@ export function AddAssetModal({ isOpen, onClose, stageId }: AddAssetModalProps) 
                   {getStageIcon()}
                 </div>
                 <div>
-                  <h2 className="font-serif text-xl font-light text-white">Add Asset</h2>
-                  <p className="text-xs text-zinc-500 capitalize">{stageId.replace("-", " ")}</p>
+                  <h2 className="font-serif text-xl font-light text-white">
+                    Add Asset
+                  </h2>
+                  <p className="text-xs text-zinc-500 capitalize">
+                    {stageId.replace("-", " ")}
+                  </p>
                 </div>
               </div>
               <div className="flex items-center gap-2">
@@ -244,7 +302,9 @@ export function AddAssetModal({ isOpen, onClose, stageId }: AddAssetModalProps) 
               {showPendingRequests ? (
                 <div className="space-y-4">
                   <div className="flex items-center justify-between">
-                    <h3 className="text-sm font-medium text-zinc-300">Your Pending Requests</h3>
+                    <h3 className="text-sm font-medium text-zinc-300">
+                      Your Pending Requests
+                    </h3>
                     <button
                       onClick={() => setShowPendingRequests(false)}
                       className="text-xs text-indigo-400 hover:text-indigo-300"
@@ -254,27 +314,42 @@ export function AddAssetModal({ isOpen, onClose, stageId }: AddAssetModalProps) 
                   </div>
 
                   {userPendingRequests.length === 0 ? (
-                    <div className="py-8 text-center text-sm text-zinc-500">No pending requests</div>
+                    <div className="py-8 text-center text-sm text-zinc-500">
+                      No pending requests
+                    </div>
                   ) : (
                     <div className="max-h-72 space-y-2 overflow-y-auto">
                       {userPendingRequests.map((request) => (
-                        <div key={request.id} className="rounded-xl border border-white/[0.05] bg-white/[0.02] p-4">
+                        <div
+                          key={request.id}
+                          className="rounded-xl border border-white/[0.05] bg-white/[0.02] p-4"
+                        >
                           <div className="flex items-start justify-between">
                             <div>
                               <div className="flex items-center gap-2">
-                                <span className="font-medium text-white">{request.symbol}</span>
-                                <RequestStatusBadge status={request.status} progress={request.progress} />
+                                <span className="font-medium text-white">
+                                  {request.symbol}
+                                </span>
+                                <RequestStatusBadge
+                                  status={request.status}
+                                  progress={request.progress}
+                                />
                               </div>
-                              <p className="mt-0.5 text-sm text-zinc-500">{request.name}</p>
+                              <p className="mt-0.5 text-sm text-zinc-500">
+                                {request.name}
+                              </p>
                               {request.exchange && (
                                 <p className="mt-1 text-xs text-zinc-600">
-                                  {request.exchange} {request.country && `• ${request.country}`}
+                                  {request.exchange}{" "}
+                                  {request.country && `• ${request.country}`}
                                 </p>
                               )}
                             </div>
                             {request.status === "pending" && (
                               <button
-                                onClick={() => portfolioStore.cancelAssetRequest(request.id)}
+                                onClick={() =>
+                                  portfolioStore.cancelAssetRequest(request.id)
+                                }
                                 className="text-xs text-zinc-500 hover:text-rose-400"
                               >
                                 Cancel
@@ -295,7 +370,8 @@ export function AddAssetModal({ isOpen, onClose, stageId }: AddAssetModalProps) 
                               </div>
                               {request.estimatedCompletion && (
                                 <p className="mt-1.5 text-xs text-zinc-600">
-                                  Est. completion: {request.estimatedCompletion.toLocaleTimeString()}
+                                  Est. completion:{" "}
+                                  {request.estimatedCompletion.toLocaleTimeString()}
                                 </p>
                               )}
                             </div>
@@ -329,11 +405,16 @@ export function AddAssetModal({ isOpen, onClose, stageId }: AddAssetModalProps) 
                           className="flex w-full items-center gap-3 rounded-xl bg-white/[0.03] p-3 transition-colors hover:bg-white/[0.06]"
                         >
                           <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-white/[0.05] text-sm font-medium text-zinc-300">
-                            {(asset as { icon?: string }).icon || asset.symbol.slice(0, 2)}
+                            {(asset as { icon?: string }).icon ||
+                              asset.symbol.slice(0, 2)}
                           </div>
                           <div className="flex-1 text-left">
-                            <p className="font-medium text-white">{asset.symbol}</p>
-                            <p className="text-xs text-zinc-500">{asset.name}</p>
+                            <p className="font-medium text-white">
+                              {asset.symbol}
+                            </p>
+                            <p className="text-xs text-zinc-500">
+                              {asset.name}
+                            </p>
                           </div>
                           <Plus className="h-4 w-4 text-zinc-500" />
                         </button>
@@ -346,18 +427,30 @@ export function AddAssetModal({ isOpen, onClose, stageId }: AddAssetModalProps) 
                               <Clock className="h-6 w-6 text-amber-400" />
                             </div>
                             <div>
-                              <p className="font-medium text-white">{pendingRequest.symbol}</p>
-                              <RequestStatusBadge status={pendingRequest.status} progress={pendingRequest.progress} />
+                              <p className="font-medium text-white">
+                                {pendingRequest.symbol}
+                              </p>
+                              <RequestStatusBadge
+                                status={pendingRequest.status}
+                                progress={pendingRequest.progress}
+                              />
                             </div>
-                            <p className="text-sm text-zinc-500">You've already requested tracking for this asset.</p>
+                            <p className="text-sm text-zinc-500">
+                              You've already requested tracking for this asset.
+                            </p>
                           </div>
                         ) : !showRequestForm ? (
                           <>
-                            <p className="mb-4 text-sm text-zinc-500">No assets found for "{searchQuery}"</p>
+                            <p className="mb-4 text-sm text-zinc-500">
+                              No assets found for "{searchQuery}"
+                            </p>
                             <button
                               onClick={() => {
-                                setShowRequestForm(true)
-                                setRequestData((prev) => ({ ...prev, symbol: searchQuery }))
+                                setShowRequestForm(true);
+                                setRequestData((prev) => ({
+                                  ...prev,
+                                  symbol: searchQuery,
+                                }));
                               }}
                               className="inline-flex items-center gap-2 rounded-lg bg-indigo-500/10 px-4 py-2 text-sm font-medium text-indigo-400 transition-colors hover:bg-indigo-500/20"
                             >
@@ -370,29 +463,43 @@ export function AddAssetModal({ isOpen, onClose, stageId }: AddAssetModalProps) 
                           <div className="space-y-4 text-left">
                             <div className="flex items-center gap-2">
                               <Globe className="h-4 w-4 text-indigo-400" />
-                              <span className="text-sm font-medium text-zinc-300">Request Asset Tracking</span>
+                              <span className="text-sm font-medium text-zinc-300">
+                                Request Asset Tracking
+                              </span>
                             </div>
 
                             <div className="grid grid-cols-2 gap-3">
                               <div>
-                                <label className="mb-1 block text-xs text-zinc-500">Symbol *</label>
+                                <label className="mb-1 block text-xs text-zinc-500">
+                                  Symbol *
+                                </label>
                                 <input
                                   type="text"
                                   placeholder="e.g., RELIANCE"
                                   value={requestData.symbol}
                                   onChange={(e) =>
-                                    setRequestData((prev) => ({ ...prev, symbol: e.target.value.toUpperCase() }))
+                                    setRequestData((prev) => ({
+                                      ...prev,
+                                      symbol: e.target.value.toUpperCase(),
+                                    }))
                                   }
                                   className="w-full rounded-lg border border-white/[0.08] bg-white/[0.03] px-3 py-2 text-sm text-white placeholder-zinc-600 outline-none focus:border-indigo-500/50"
                                 />
                               </div>
                               <div>
-                                <label className="mb-1 block text-xs text-zinc-500">Name</label>
+                                <label className="mb-1 block text-xs text-zinc-500">
+                                  Name
+                                </label>
                                 <input
                                   type="text"
                                   placeholder="Company name"
                                   value={requestData.name}
-                                  onChange={(e) => setRequestData((prev) => ({ ...prev, name: e.target.value }))}
+                                  onChange={(e) =>
+                                    setRequestData((prev) => ({
+                                      ...prev,
+                                      name: e.target.value,
+                                    }))
+                                  }
                                   className="w-full rounded-lg border border-white/[0.08] bg-white/[0.03] px-3 py-2 text-sm text-white placeholder-zinc-600 outline-none focus:border-indigo-500/50"
                                 />
                               </div>
@@ -400,20 +507,27 @@ export function AddAssetModal({ isOpen, onClose, stageId }: AddAssetModalProps) 
 
                             <div className="grid grid-cols-2 gap-3">
                               <div>
-                                <label className="mb-1 block text-xs text-zinc-500">Type</label>
+                                <label className="mb-1 block text-xs text-zinc-500">
+                                  Type
+                                </label>
                                 <div className="relative">
                                   <select
                                     value={requestData.type}
                                     onChange={(e) =>
                                       setRequestData((prev) => ({
                                         ...prev,
-                                        type: e.target.value as AssetRequest["type"],
+                                        type: e.target
+                                          .value as AssetRequest["type"],
                                       }))
                                     }
                                     className="w-full appearance-none rounded-lg border border-white/[0.08] bg-white/[0.03] px-3 py-2 pr-8 text-sm text-white outline-none focus:border-indigo-500/50"
                                   >
                                     {assetTypes.map((t) => (
-                                      <option key={t.value} value={t.value} className="bg-zinc-900">
+                                      <option
+                                        key={t.value}
+                                        value={t.value}
+                                        className="bg-zinc-900"
+                                      >
                                         {t.label}
                                       </option>
                                     ))}
@@ -422,18 +536,29 @@ export function AddAssetModal({ isOpen, onClose, stageId }: AddAssetModalProps) 
                                 </div>
                               </div>
                               <div>
-                                <label className="mb-1 block text-xs text-zinc-500">Exchange</label>
+                                <label className="mb-1 block text-xs text-zinc-500">
+                                  Exchange
+                                </label>
                                 <div className="relative">
                                   <select
                                     value={requestData.exchange}
-                                    onChange={(e) => setRequestData((prev) => ({ ...prev, exchange: e.target.value }))}
+                                    onChange={(e) =>
+                                      setRequestData((prev) => ({
+                                        ...prev,
+                                        exchange: e.target.value,
+                                      }))
+                                    }
                                     className="w-full appearance-none rounded-lg border border-white/[0.08] bg-white/[0.03] px-3 py-2 pr-8 text-sm text-white outline-none focus:border-indigo-500/50"
                                   >
                                     <option value="" className="bg-zinc-900">
                                       Select...
                                     </option>
                                     {exchanges.map((ex) => (
-                                      <option key={ex.value} value={ex.value} className="bg-zinc-900">
+                                      <option
+                                        key={ex.value}
+                                        value={ex.value}
+                                        className="bg-zinc-900"
+                                      >
                                         {ex.label}
                                       </option>
                                     ))}
@@ -452,7 +577,9 @@ export function AddAssetModal({ isOpen, onClose, stageId }: AddAssetModalProps) 
                               </button>
                               <button
                                 onClick={handleRequestAsset}
-                                disabled={!requestData.symbol || requestSubmitted}
+                                disabled={
+                                  !requestData.symbol || requestSubmitted
+                                }
                                 className={cn(
                                   "flex-1 rounded-lg py-2 text-sm font-medium transition-all",
                                   requestSubmitted
@@ -481,20 +608,30 @@ export function AddAssetModal({ isOpen, onClose, stageId }: AddAssetModalProps) 
                   {/* Selected Asset Form */}
                   <div className="mb-6 flex items-center gap-3 rounded-xl bg-indigo-500/10 p-4">
                     <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-white/[0.08] text-lg font-medium text-white">
-                      {(selectedAsset as { icon?: string }).icon || selectedAsset.symbol.slice(0, 2)}
+                      {(selectedAsset as { icon?: string }).icon ||
+                        selectedAsset.symbol.slice(0, 2)}
                     </div>
                     <div className="flex-1">
-                      <p className="font-medium text-white">{selectedAsset.symbol}</p>
-                      <p className="text-sm text-zinc-400">{selectedAsset.name}</p>
+                      <p className="font-medium text-white">
+                        {selectedAsset.symbol}
+                      </p>
+                      <p className="text-sm text-zinc-400">
+                        {selectedAsset.name}
+                      </p>
                     </div>
-                    <button onClick={() => setSelectedAsset(null)} className="text-xs text-zinc-500 hover:text-white">
+                    <button
+                      onClick={() => setSelectedAsset(null)}
+                      className="text-xs text-zinc-500 hover:text-white"
+                    >
                       Change
                     </button>
                   </div>
 
                   <div className="space-y-4">
                     <div>
-                      <label className="mb-2 block text-sm text-zinc-400">Quantity</label>
+                      <label className="mb-2 block text-sm text-zinc-400">
+                        Quantity
+                      </label>
                       <input
                         type="number"
                         placeholder="0.00"
@@ -504,7 +641,9 @@ export function AddAssetModal({ isOpen, onClose, stageId }: AddAssetModalProps) 
                       />
                     </div>
                     <div>
-                      <label className="mb-2 block text-sm text-zinc-400">Price per unit ($)</label>
+                      <label className="mb-2 block text-sm text-zinc-400">
+                        Price per unit ($)
+                      </label>
                       <input
                         type="number"
                         placeholder="0.00"
@@ -517,10 +656,15 @@ export function AddAssetModal({ isOpen, onClose, stageId }: AddAssetModalProps) 
                     {quantity && pricePerUnit && (
                       <div className="rounded-xl bg-white/[0.03] p-4">
                         <div className="flex items-center justify-between">
-                          <span className="text-sm text-zinc-400">Total Value</span>
+                          <span className="text-sm text-zinc-400">
+                            Total Value
+                          </span>
                           <span className="text-xl font-semibold text-white">
                             $
-                            {(Number.parseFloat(quantity) * Number.parseFloat(pricePerUnit)).toLocaleString("en-US", {
+                            {(
+                              Number.parseFloat(quantity) *
+                              Number.parseFloat(pricePerUnit)
+                            ).toLocaleString("en-US", {
                               minimumFractionDigits: 2,
                             })}
                           </span>
@@ -543,5 +687,5 @@ export function AddAssetModal({ isOpen, onClose, stageId }: AddAssetModalProps) 
         </motion.div>
       )}
     </AnimatePresence>
-  )
+  );
 }

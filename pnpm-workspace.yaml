@@ -4,6 +4,7 @@ packages:
   - services/*
 
 onlyBuiltDependencies:
+  - '@nestjs/core'
   - '@swc/core'
   - esbuild
   - supabase

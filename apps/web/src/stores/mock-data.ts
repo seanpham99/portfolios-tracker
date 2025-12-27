@@ -1,19 +1,22 @@
-import type { Asset } from "@/components/asset-blade"
-import type { Stage } from "@/components/stage-slider"
+import type { Asset } from "@/components/asset-blade";
+import type { Stage } from "@/components/stage-slider";
 
 // Generate realistic sparkline data
-function generateSparkline(trend: "up" | "down" | "volatile", points = 20): number[] {
-  const data: number[] = []
-  let value = 100
+function generateSparkline(
+  trend: "up" | "down" | "volatile",
+  points = 20,
+): number[] {
+  const data: number[] = [];
+  let value = 100;
 
   for (let i = 0; i < points; i++) {
-    const volatility = trend === "volatile" ? 8 : 4
-    const direction = trend === "up" ? 0.3 : trend === "down" ? -0.3 : 0
-    value = value + (Math.random() - 0.5 + direction) * volatility
-    data.push(Math.max(50, Math.min(150, value)))
+    const volatility = trend === "volatile" ? 8 : 4;
+    const direction = trend === "up" ? 0.3 : trend === "down" ? -0.3 : 0;
+    value = value + (Math.random() - 0.5 + direction) * volatility;
+    data.push(Math.max(50, Math.min(150, value)));
   }
 
-  return data
+  return data;
 }
 
 export const equityAssets: Asset[] = [
@@ -62,7 +65,7 @@ export const equityAssets: Asset[] = [
     allocation: 8,
     sparklineData: generateSparkline("volatile"),
   },
-]
+];
 
 export const cryptoAssets: Asset[] = [
   {
@@ -103,7 +106,7 @@ export const cryptoAssets: Asset[] = [
     allocation: 4,
     sparklineData: generateSparkline("down"),
   },
-]
+];
 
 export const realEstateAssets: Asset[] = [
   {
@@ -133,7 +136,7 @@ export const realEstateAssets: Asset[] = [
     allocation: 5,
     sparklineData: generateSparkline("volatile"),
   },
-]
+];
 
 export const stages: Stage[] = [
   {
@@ -157,17 +160,17 @@ export const stages: Stage[] = [
     totalValue: realEstateAssets.reduce((sum, a) => sum + a.value, 0),
     change: 0.92,
   },
-]
+];
 
 export const netWorthHistory = Array.from({ length: 30 }, (_, i) => {
-  const base = 450000
-  const trend = i * 2500
-  const volatility = Math.random() * 15000 - 7500
-  return base + trend + volatility
-})
+  const base = 450000;
+  const trend = i * 2500;
+  const volatility = Math.random() * 15000 - 7500;
+  return base + trend + volatility;
+});
 
 export const aiInsights = [
   "Your tech allocation is 45% above benchmark. Consider diversifying into defensive sectors for balance.",
   "Bitcoin holdings show strong momentum. DCA opportunity detected based on 200-day moving average.",
   "Real estate REIT yields outperforming treasuries by 2.3%. Current allocation is optimal for income goals.",
-]
+];

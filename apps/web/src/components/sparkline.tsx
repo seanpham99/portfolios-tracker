@@ -1,14 +1,14 @@
-"use client"
+"use client";
 
-import { motion } from "framer-motion"
+import { motion } from "framer-motion";
 
 interface SparklineProps {
-  data: number[]
-  color?: string
-  width?: number
-  height?: number
-  strokeWidth?: number
-  showGradient?: boolean
+  data: number[];
+  color?: string;
+  width?: number;
+  height?: number;
+  strokeWidth?: number;
+  showGradient?: boolean;
 }
 
 export function Sparkline({
@@ -19,21 +19,21 @@ export function Sparkline({
   strokeWidth = 2,
   showGradient = true,
 }: SparklineProps) {
-  if (!data || data.length < 2) return null
+  if (!data || data.length < 2) return null;
 
-  const min = Math.min(...data)
-  const max = Math.max(...data)
-  const range = max - min || 1
+  const min = Math.min(...data);
+  const max = Math.max(...data);
+  const range = max - min || 1;
 
   const points = data.map((value, index) => {
-    const x = (index / (data.length - 1)) * width
-    const y = height - ((value - min) / range) * height * 0.8 - height * 0.1
-    return `${x},${y}`
-  })
+    const x = (index / (data.length - 1)) * width;
+    const y = height - ((value - min) / range) * height * 0.8 - height * 0.1;
+    return `${x},${y}`;
+  });
 
-  const pathD = `M ${points.join(" L ")}`
-  const areaD = `${pathD} L ${width},${height} L 0,${height} Z`
-  const gradientId = `sparkline-gradient-${Math.random().toString(36).slice(2)}`
+  const pathD = `M ${points.join(" L ")}`;
+  const areaD = `${pathD} L ${width},${height} L 0,${height} Z`;
+  const gradientId = `sparkline-gradient-${Math.random().toString(36).slice(2)}`;
 
   return (
     <svg width={width} height={height} className="overflow-visible">
@@ -66,5 +66,5 @@ export function Sparkline({
         transition={{ duration: 1, ease: "easeOut" }}
       />
     </svg>
-  )
+  );
 }

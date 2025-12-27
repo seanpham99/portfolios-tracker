@@ -1,5 +1,11 @@
 import { Link } from "react-router";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@repo/ui/components/card";
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+  CardDescription,
+} from "@repo/ui/components/card";
 import { Button } from "@repo/ui/components/button";
 import { ShieldAlert } from "lucide-react";
 
@@ -24,8 +30,11 @@ export default function ConsentRequired() {
           <div className="p-4 rounded-lg bg-white/5 border border-white/10 text-sm text-zinc-300">
             <p className="leading-relaxed">
               You declined to provide privacy consent, which is required by{" "}
-              <span className="text-amber-400 font-medium">PDPL (Vietnam 2026)</span> and{" "}
-              <span className="text-amber-400 font-medium">GDPR</span> regulations.
+              <span className="text-amber-400 font-medium">
+                PDPL (Vietnam 2026)
+              </span>{" "}
+              and <span className="text-amber-400 font-medium">GDPR</span>{" "}
+              regulations.
             </p>
           </div>
 

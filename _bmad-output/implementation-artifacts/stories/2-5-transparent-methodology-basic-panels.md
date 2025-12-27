@@ -16,24 +16,28 @@ So that I can trust the accuracy of the platform.
 2. **When** I click the "Show Methodology" toggle
 3. **Then** a collapsible panel should appear explaining the FIFO or Weighted Average Cost formulas
 4. **And** the source of the asset's price data must be prominently displayed.
+5. **And** the methodology explanations must be consistent across the app, driven by typed definitions in `packages/api-types`.
 
 ## Tasks / Subtasks
 
-- [ ] **Task 1: Methodology Logic**
-  - [ ] Define the explanation text/formulas for the current calculation method (likely Weighted Avg for MVP).
+- [ ] **Task 1: Shared Methodology Types**
+  - [ ] Define `CalculationMethodology` enum and `MethodologyContent` constants in `packages/api-types`.
+  - [ ] Define the explanation text/formulas (Weighted Avg for MVP).
 
 - [ ] **Task 2: UI Implementation**
   - [ ] Add a "Show Methodology"/Info icon or toggle in the Holdings list/detail.
-  - [ ] Create a `MethodologyPanel` or `Tooltip` that reveals the explanation.
+  - [ ] Create a `MethodologyPanel` component in `apps/web/src/components/common/`.
   - [ ] Display "Data Source: [Source Name]" (e.g., "Manual Entry", "CoinGecko").
 
 ## Dev Notes
 
 - **Trust:** This feature is about building trust. The UI should look authoritative and clear.
+- **CMS-lite:** Although hardcoded for now, keeping these in `api-types` allows for future internationalization or dynamic updates.
 
 ### Project Structure Notes
 
 - **Location:** `apps/web/src/components/common/`
+- **Shared:** `packages/api-types/`
 
 ### References
 

@@ -11,6 +11,7 @@ vi.mock('react-router', () => ({
   }),
   Link: ({ children, to, ...props }: any) => <a href={to} {...props}>{children}</a>,
   redirect: vi.fn(),
+  useSearchParams: () => [new URLSearchParams(), vi.fn()],
 }))
 
 // Mock Framer Motion

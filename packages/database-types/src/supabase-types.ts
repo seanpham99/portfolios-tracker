@@ -9,6 +9,47 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
+      user_preferences: {
+        Row: {
+          audit_metadata: Json
+          consent_at: string
+          consent_granted: boolean
+          consent_version: string
+          created_at: string
+          id: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          audit_metadata?: Json
+          consent_at?: string
+          consent_granted?: boolean
+          consent_version: string
+          created_at?: string
+          id?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          audit_metadata?: Json
+          consent_at?: string
+          consent_granted?: boolean
+          consent_version?: string
+          created_at?: string
+          id?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_preferences_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: true
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       users: {
         Row: {
           avatar_url: string | null

@@ -14,7 +14,7 @@ import { ArrowRight, Loader2, Mail, Lock } from 'lucide-react'
 import { useForm, Controller } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
-import { type ActionFunctionArgs, Link, redirect, useFetcher } from 'react-router'
+import { type ActionFunctionArgs, Link, redirect, useFetcher, useSearchParams } from 'react-router'
 
 const loginSchema = z.object({
   email: z.string().email('Please enter a valid email address'),
@@ -72,6 +72,8 @@ export const action = async ({ request }: ActionFunctionArgs) => {
 export default function Login() {
   const fetcher = useFetcher<typeof action>()
   const prefersReducedMotion = useReducedMotion()
+  const [searchParams] = useSearchParams()
+  const message = searchParams.get('message')
 
   const form = useForm<LoginFormData>({
     resolver: zodResolver(loginSchema),
@@ -192,6 +194,13 @@ export default function Login() {
             {serverError && (
               <div role="alert" aria-live="polite" className="rounded-md bg-rose-500/10 border border-rose-500/20 px-3 py-2 text-sm text-rose-400">
                 {serverError}
+              </div>
+            )}
+
+            {/* Consent required message */}
+            {message === 'consent_required' && (
+              <div role="alert" aria-live="polite" className="rounded-md bg-amber-500/10 border border-amber-500/20 px-3 py-2 text-sm text-amber-400">
+                Privacy consent is required to access the platform. Please sign in again and accept the terms to continue.
               </div>
             )}
 

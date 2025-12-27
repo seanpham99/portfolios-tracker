@@ -8,7 +8,8 @@
     "build": "tsc --noEmit && vite build",
     "lint": "eslint .",
     "preview": "vite preview",
-    "type-check": "react-router typegen && tsc --noEmit"
+    "type-check": "react-router typegen && tsc --noEmit",
+    "test": "vitest run"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.2.2",

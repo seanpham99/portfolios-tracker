@@ -40,6 +40,7 @@ const mockPortfoliosService = {
   remove: jest.fn(),
   addTransaction: jest.fn(),
   getHoldings: jest.fn(),
+  getPortfolioHoldings: jest.fn(),
 };
 
 describe('PortfoliosController', () => {
@@ -93,7 +94,13 @@ describe('PortfoliosController', () => {
 
   describe('findAll', () => {
     it('should return all portfolios for user', async () => {
-      const portfolios = [mockPortfolio];
+      const portfolios = [{
+        ...mockPortfolio,
+        netWorth: 1000,
+        change24h: 50,
+        change24hPercent: 5,
+        allocation: []
+      }];
       mockPortfoliosService.findAll.mockResolvedValue(portfolios);
 
       const result = await controller.findAll(mockUserId);
@@ -128,6 +135,25 @@ describe('PortfoliosController', () => {
 
       expect(result).toEqual(holdings);
       expect(mockPortfoliosService.getHoldings).toHaveBeenCalledWith(mockUserId);
+    });
+  });
+
+  describe('getPortfolioHoldings', () => {
+    it('should return holdings for specific portfolio', async () => {
+      const holdings = [{
+        asset_id: 'asset-1',
+        symbol: 'AAPL',
+        ...mockPortfolio, // just filling
+        total_quantity: 5,
+        avg_cost: 100
+      }];
+      
+      mockPortfoliosService.getHoldings.mockResolvedValue(holdings);
+
+      const result = await controller.getPortfolioHoldings(mockUserId, mockPortfolio.id);
+
+      expect(result).toEqual(holdings);
+      expect(mockPortfoliosService.getHoldings).toHaveBeenCalledWith(mockUserId, mockPortfolio.id);
     });
   });
 

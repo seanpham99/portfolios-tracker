@@ -7,7 +7,7 @@ import {
 import { SupabaseClient, PostgrestError } from '@supabase/supabase-js';
 import { Database } from '@repo/database-types';
 import { CreatePortfolioDto, UpdatePortfolioDto } from './dto';
-import { CreateTransactionDto, HoldingDto, CalculationMethod } from '@repo/api-types';
+import { HoldingDto, CalculationMethod, PortfolioSummaryDto, CreateTransactionDto } from '@repo/api-types';
 import { Portfolio } from './portfolio.entity';
 import { CacheService } from '../cache';
 
@@ -47,6 +47,10 @@ export class PortfoliosService {
       this.handleError(error, createDto.name);
     }
 
+    if (!data) {
+      throw new Error('Failed to create portfolio');
+    }
+
     // Invalidate portfolios list cache for user
     await this.cacheService.del(`portfolios:${userId}`);
 
@@ -56,102 +60,191 @@ export class PortfoliosService {
   /**
    * Find all portfolios for the authenticated user
    */
-  async findAll(userId: string): Promise<Portfolio[]> {
+  async findAll(userId: string): Promise<PortfolioSummaryDto[]> {
     // Check cache first
     const cacheKey = `portfolios:${userId}`;
-    const cached = await this.cacheService.get<Portfolio[]>(cacheKey);
+    const cached = await this.cacheService.get<PortfolioSummaryDto[]>(cacheKey);
     if (cached) {
       return cached;
     }
 
-    const { data, error } = await this.supabase
+    // First, fetch portfolios ONLY (lightweight query)
+    const portfoliosResult = await this.supabase
       .from('portfolios')
       .select('*')
       .eq('user_id', userId)
       .order('created_at', { ascending: false });
 
-    if (error) {
-      throw error;
+    if (portfoliosResult.error) throw portfoliosResult.error;
+    
+    const portfolios = portfoliosResult.data ?? [];
+    
+    // EARLY RETURN: If no portfolios, skip expensive transactions query
+    if (portfolios.length === 0) {
+      await this.cacheService.set(cacheKey, []);
+      return [];
     }
 
-    const portfolios = data ?? [];
+    // Only fetch transactions if portfolios exist
+    const transactionsResult = await this.supabase
+      .from('transactions')
+      .select(`
+        asset_id,
+        quantity,
+        price,
+        type,
+        portfolio_id,
+        assets (
+          id,
+          symbol,
+          name_en,
+          name_local,
+          asset_class,
+          market,
+          currency
+        ),
+        portfolios!inner (
+          user_id
+        )
+      `)
+      .eq('portfolios.user_id', userId);
+
+    if (transactionsResult.error) throw transactionsResult.error;
+
+    const allTransactions = transactionsResult.data ?? [];
+
+    const portfoliosWithSummary = portfolios.map((portfolio) => {
+      // Filter transactions for this portfolio
+      const portfolioTxs = allTransactions.filter(tx => tx.portfolio_id === portfolio.id);
+      
+      // Calculate holdings
+      const holdings = this.calculateHoldings(portfolioTxs);
+      
+      // Calculate Net Worth
+      const netWorth = holdings.reduce((sum, h) => sum + (h.total_quantity * h.avg_cost), 0);
+      
+      return {
+        ...portfolio,
+        netWorth,
+        change24h: 0, // Placeholder: Requires historical price service
+        change24hPercent: 0, // Placeholder
+        allocation: [], // Placeholder
+      };
+    });
 
     // Cache the result
-    await this.cacheService.set(cacheKey, portfolios);
+    await this.cacheService.set(cacheKey, portfoliosWithSummary);
 
-    return portfolios;
+    return portfoliosWithSummary;
   }
 
   /**
-   * Find a single portfolio by ID
+   * Find a specific portfolio by id
    */
-  async findOne(userId: string, id: string): Promise<Portfolio> {
+  async findOne(userId: string, id: string): Promise<PortfolioSummaryDto> {
     const { data, error } = await this.supabase
       .from('portfolios')
       .select('*')
-      .eq('id', id)
       .eq('user_id', userId)
+      .eq('id', id)
       .single();
 
     if (error) {
-      if (error.code === 'PGRST116') {
-        throw new NotFoundException(`Portfolio with ID "${id}" not found`);
-      }
-      throw error;
+      this.handleError(error, id);
     }
 
-    return data;
+    if (!data) {
+      throw new NotFoundException(`Portfolio ${id} not found`);
+    }
+
+    // Calculate details on the fly to ensure consistency
+    // We fetch transactions for this specific portfolio
+    const { data: transactions, error: txError } = await this.supabase
+      .from('transactions')
+      .select(`
+        asset_id,
+        quantity,
+        price,
+        type,
+        portfolio_id,
+        assets (
+          id,
+          symbol,
+          name_en,
+          name_local,
+          asset_class,
+          market,
+          currency
+        ),
+        portfolios!inner (
+          user_id
+        )
+      `)
+      .eq('portfolio_id', id) // Specific portfolio
+      .eq('portfolios.user_id', userId); // Security check via join
+
+    if (txError) throw txError;
+
+    const holdings = this.calculateHoldings(transactions || []);
+    const netWorth = holdings.reduce((sum, h) => sum + (h.total_quantity * h.avg_cost), 0);
+
+    return {
+      ...data,
+      netWorth,
+      change24h: 0,
+      change24hPercent: 0,
+      allocation: [],
+    };
   }
 
   /**
-   * Update an existing portfolio
+   * Update a portfolio
    */
   async update(
     userId: string,
     id: string,
     updateDto: UpdatePortfolioDto,
   ): Promise<Portfolio> {
-    // First verify the portfolio exists and belongs to the user
+    // Check if exists first
     await this.findOne(userId, id);
 
     const { data, error } = await this.supabase
       .from('portfolios')
       .update({
-        ...(updateDto.name !== undefined && { name: updateDto.name }),
-        ...(updateDto.base_currency !== undefined && {
-          base_currency: updateDto.base_currency,
-        }),
-        ...(updateDto.description !== undefined && {
-          description: updateDto.description,
-        }),
+        ...updateDto,
+        updated_at: new Date().toISOString(),
       })
-      .eq('id', id)
       .eq('user_id', userId)
+      .eq('id', id)
       .select()
       .single();
 
     if (error) {
-      this.handleError(error, updateDto.name);
+      this.handleError(error, updateDto.name || id);
     }
 
-    // Invalidate caches
+    if (!data) {
+      throw new Error('Failed to update portfolio');
+    }
+
+    // Invalidate specific portfolio and list
     await this.cacheService.invalidatePortfolio(userId, id);
 
     return data;
   }
 
   /**
-   * Delete a portfolio
+   * Remove a portfolio
    */
   async remove(userId: string, id: string): Promise<void> {
-    // First verify the portfolio exists and belongs to the user
+    // Check if exists first
     await this.findOne(userId, id);
 
     const { error } = await this.supabase
       .from('portfolios')
       .delete()
-      .eq('id', id)
-      .eq('user_id', userId);
+      .eq('user_id', userId)
+      .eq('id', id);
 
     if (error) {
       throw error;
@@ -161,37 +254,138 @@ export class PortfoliosService {
     await this.cacheService.invalidatePortfolio(userId, id);
   }
 
-  /**
-   * Handle Supabase errors
-   */
-  private handleError(error: PostgrestError, name?: string): never {
-    // Handle unique constraint violation
+  private handleError(error: PostgrestError, resource: string) {
+    if (error.code === 'PGRST116') {
+      throw new NotFoundException(`Portfolio ${resource} not found`);
+    }
     if (error.code === '23505') {
-      throw new ConflictException(
-        `Portfolio with name "${name}" already exists`,
-      );
+      throw new ConflictException('Portfolio with this name already exists');
     }
     throw error;
   }
 
   /**
+   * Get aggregated holdings for user (all portfolios or specific one)
+   */
+  async getHoldings(userId: string, portfolioId?: string): Promise<HoldingDto[]> {
+    // Check cache first (different keys for filtered vs all)
+    const cacheKey = portfolioId ? `holdings:${userId}:${portfolioId}` : `holdings:${userId}`;
+    const cached = await this.cacheService.get<HoldingDto[]>(cacheKey);
+    if (cached) {
+      return cached;
+    }
+
+    // Query transactions
+    let query = this.supabase
+      .from('transactions')
+      .select(`
+        asset_id,
+        quantity,
+        price,
+        type,
+        portfolio_id,
+        assets (
+          id,
+          symbol,
+          name_en,
+          name_local,
+          asset_class,
+          market,
+          currency
+        ),
+        portfolios!inner (
+          user_id
+        )
+      `)
+      .eq('portfolios.user_id', userId);
+
+    if (portfolioId) {
+      query = query.eq('portfolio_id', portfolioId);
+    }
+
+    const { data: transactions, error } = await query;
+
+    if (error) {
+      throw error;
+    }
+
+    const holdings = this.calculateHoldings(transactions || []);
+
+    // Cache result
+    await this.cacheService.set(cacheKey, holdings);
+
+    return holdings;
+  }
+
+  /**
+   * Helper to aggregates transactions into holdings using Weighted Average Cost
+   */
+  private calculateHoldings(transactions: any[]): HoldingDto[] {
+    const holdingsMap = new Map<string, {
+      qty: number;
+      cost: number;
+      asset: any;
+    }>();
+
+    for (const tx of (transactions || [])) {
+      if (!tx.assets) continue;
+
+      const assetId = tx.asset_id;
+      if (!holdingsMap.has(assetId)) {
+        holdingsMap.set(assetId, { 
+          qty: 0, 
+          cost: 0, 
+          asset: Array.isArray(tx.assets) ? tx.assets[0] : tx.assets 
+        });
+      }
+      const entry = holdingsMap.get(assetId)!;
+
+      if (tx.type === 'BUY') {
+        entry.qty += tx.quantity;
+        entry.cost += tx.quantity * tx.price;
+      } else if (tx.type === 'SELL') {
+        // Weighted Average Cost Logic
+        const currentAvg = entry.qty > 0 ? entry.cost / entry.qty : 0;
+        entry.qty -= tx.quantity;
+        entry.cost -= tx.quantity * currentAvg;
+      }
+      
+      if (Math.abs(entry.qty) < 0.000001) {
+        entry.qty = 0;
+        entry.cost = 0;
+      }
+    }
+
+    // Convert to DTO
+    return Array.from(holdingsMap.values())
+      .map(entry => {
+        return {
+          asset_id: entry.asset.id,
+          symbol: entry.asset.symbol,
+          name: entry.asset.name_en || entry.asset.name_local || entry.asset.symbol,
+          asset_class: entry.asset.asset_class,
+          market: entry.asset.market,
+          currency: entry.asset.currency,
+          total_quantity: entry.qty,
+          avg_cost: entry.qty > 0 ? entry.cost / entry.qty : 0,
+          calculationMethod: CalculationMethod.WEIGHTED_AVG,
+          dataSource: 'Manual Entry',
+        };
+      })
+      .filter(h => h.total_quantity > 0);
+  }
+
+  /**
    * Add a transaction to a portfolio
-   * Implements cache invalidation per Architecture Decision 1.3
    */
   async addTransaction(
     userId: string,
     portfolioId: string,
     createDto: CreateTransactionDto,
   ): Promise<any> {
-    // 1. Verify portfolio ownership
+    // Verify portfolio ownership
     await this.findOne(userId, portfolioId);
 
-    // 2. Validate DTO portfolio_id matches URL param
-    if (createDto.portfolio_id !== portfolioId) {
-      throw new ConflictException('Portfolio ID in body does not match URL parameter');
-    }
-
-    // 3. Insert transaction
     const { data, error } = await this.supabase
       .from('transactions')
       .insert({
@@ -211,114 +405,9 @@ export class PortfoliosService {
       throw error;
     }
 
-    // 4. Invalidate Upstash cache keys for the portfolio (Decision 1.3)
+    // Invalidate relevant caches
     await this.cacheService.invalidatePortfolio(userId, portfolioId);
 
     return data;
-  }
-
-
-  /**
-   * Get aggregated holdings for all portfolios of the authenticated user
-   */
-  async getHoldings(userId: string): Promise<HoldingDto[]> {
-    // Check cache first
-    const cacheKey = `holdings:${userId}`;
-    const cached = await this.cacheService.get<HoldingDto[]>(cacheKey);
-    if (cached) {
-      return cached;
-    }
-
-    // Query all transactions for user across all portfolios
-    // Joining assets to get details
-    const { data: transactions, error } = await this.supabase
-      .from('transactions')
-      .select(`
-        asset_id,
-        quantity,
-        price,
-        type,
-        assets (
-          id,
-          symbol,
-          name_en,
-          name_local,
-          asset_class,
-          market,
-          currency
-        ),
-        portfolios!inner (
-          user_id
-        )
-      `)
-      .eq('portfolios.user_id', userId);
-
-    if (error) {
-      throw error;
-    }
-
-    // Aggregate holdings
-    const holdingsMap = new Map<string, {
-      qty: number;
-      cost: number;
-      asset: any;
-    }>();
-
-    for (const tx of (transactions || [])) {
-      if (!tx.assets) continue; // Should not happen with inner join logic implicitly
-
-      const assetId = tx.asset_id;
-      if (!holdingsMap.has(assetId)) {
-        holdingsMap.set(assetId, { 
-          qty: 0, 
-          cost: 0, 
-          asset: tx.assets 
-        });
-      }
-      const entry = holdingsMap.get(assetId)!;
-
-      if (tx.type === 'BUY') {
-        entry.qty += tx.quantity;
-        entry.cost += tx.quantity * tx.price;
-      } else if (tx.type === 'SELL') {
-        // Weighted Average Cost Logic: Cost basis reduces proportionally
-        const currentAvg = entry.qty > 0 ? entry.cost / entry.qty : 0;
-        entry.qty -= tx.quantity;
-        entry.cost -= tx.quantity * currentAvg;
-      }
-      
-      // Handle floating point errors if qty goes to approx 0
-      if (Math.abs(entry.qty) < 0.000001) {
-        entry.qty = 0;
-        entry.cost = 0;
-      }
-    }
-
-    // Convert to DTO
-    const holdings: HoldingDto[] = Array.from(holdingsMap.values())
-      .map(entry => {
-        // Handle case where asset might be an array or object (Supabase JS single vs undefined)
-        const asset = Array.isArray(entry.asset) ? entry.asset[0] : entry.asset;
-        
-        return {
-          asset_id: asset.id,
-          symbol: asset.symbol,
-          name: asset.name_en || asset.name_local || asset.symbol,
-          asset_class: asset.asset_class,
-          market: asset.market,
-          currency: asset.currency,
-          total_quantity: entry.qty,
-          avg_cost: entry.qty > 0 ? entry.cost / entry.qty : 0,
-          // Methodology transparency fields
-          calculationMethod: CalculationMethod.WEIGHTED_AVG,
-          dataSource: 'Manual Entry', // Future: could be 'Binance via CCXT', 'vnstock', etc.
-        };
-      })
-      .filter(h => h.total_quantity > 0); // Only return active holdings
-
-    // Cache result (30s default TTL is fine)
-    await this.cacheService.set(cacheKey, holdings);
-
-    return holdings;
   }
 }

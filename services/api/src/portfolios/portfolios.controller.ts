@@ -17,6 +17,7 @@ import { CreateTransactionDto, HoldingDto } from '@repo/api-types';
 import { Portfolio } from './portfolio.entity';
 import { AuthGuard } from './guards/auth.guard';
 import { UserId } from './decorators/user-id.decorator';
+import { PortfolioSummaryDto } from '@repo/api-types';
 
 /**
  * Controller for portfolio management endpoints
@@ -43,7 +44,7 @@ export class PortfoliosController {
    * GET /portfolios - Get all portfolios for authenticated user
    */
   @Get()
-  async findAll(@UserId() userId: string): Promise<Portfolio[]> {
+  async findAll(@UserId() userId: string): Promise<PortfolioSummaryDto[]> {
     return this.portfoliosService.findAll(userId);
   }
 
@@ -55,6 +56,17 @@ export class PortfoliosController {
     return this.portfoliosService.getHoldings(userId);
   }
 
+   /**
+   * GET /portfolios/:id/holdings - Get holdings for specific portfolio
+   */
+  @Get(':id/holdings')
+  async getPortfolioHoldings(
+    @UserId() userId: string,
+    @Param('id', ParseUUIDPipe) id: string,
+  ): Promise<HoldingDto[]> {
+    return this.portfoliosService.getHoldings(userId, id);
+  }
+
   /**
    * GET /portfolios/:id - Get a specific portfolio by ID
    */
@@ -62,7 +74,7 @@ export class PortfoliosController {
   async findOne(
     @UserId() userId: string,
     @Param('id', ParseUUIDPipe) id: string,
-  ): Promise<Portfolio> {
+  ): Promise<PortfolioSummaryDto> {
     return this.portfoliosService.findOne(userId, id);
   }
 

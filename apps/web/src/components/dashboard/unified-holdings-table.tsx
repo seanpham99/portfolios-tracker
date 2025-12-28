@@ -27,8 +27,13 @@ import { Button } from '@repo/ui/components/button';
 
 const columnHelper = createColumnHelper<Holding>();
 
-export function UnifiedHoldingsTable() {
-  const { data: allHoldings = [], isLoading, isError } = useHoldings();
+interface UnifiedHoldingsTableProps {
+  portfolioId?: string;
+  onAddAsset?: () => void;
+}
+
+export function UnifiedHoldingsTable({ portfolioId, onAddAsset }: UnifiedHoldingsTableProps) {
+  const { data: allHoldings = [], isLoading, isError } = useHoldings(portfolioId);
   const [sorting, setSorting] = useState<SortingState>([]);
   const [expanded, setExpanded] = useState<ExpandedState>({});
   const [filter, setFilter] = useState<'ALL' | 'VN' | 'US' | 'CRYPTO'>('ALL');
@@ -36,9 +41,12 @@ export function UnifiedHoldingsTable() {
   const holdings = useMemo(() => {
     if (filter === 'ALL') return allHoldings;
     return allHoldings.filter(h => {
-        if (filter === 'VN') return h.market === 'VN' || h.asset_class?.includes('Stock');
-        if (filter === 'US') return h.market === 'US' || h.asset_class?.includes('US');
-        if (filter === 'CRYPTO') return h.market === 'CRYPTO' || h.asset_class === 'Crypto';
+        const type = (h.asset_class || '').toLowerCase();
+        const market = (h.market || '').toUpperCase();
+        
+        if (filter === 'VN') return market === 'VN' || type.includes('stock');
+        if (filter === 'US') return market === 'US' || type.includes('us') || type.includes('equity');
+        if (filter === 'CRYPTO') return market === 'CRYPTO' || type.includes('crypto');
         return true;
     });
   }, [allHoldings, filter]);
@@ -168,10 +176,18 @@ export function UnifiedHoldingsTable() {
     <div className="w-full rounded-xl border border-white/5 bg-zinc-900/50">
       <div className="flex items-center justify-between border-b border-white/5 px-6 py-4">
         <h3 className="font-serif text-lg font-light text-white">Holdings</h3>
-        <button className="flex items-center gap-1.5 rounded-lg border border-white/10 bg-white/5 px-3 py-1.5 text-xs font-medium text-zinc-300 hover:bg-white/10">
-          <TrendingUp className="h-3.5 w-3.5" />
-          Analytics
-        </button>
+        <div className="flex items-center gap-3">
+          {onAddAsset && (
+            <Button variant="outline" size="sm" onClick={onAddAsset} className="h-8 gap-1.5 border-white/10 bg-white/5 text-zinc-300 hover:bg-white/10 hover:text-white">
+              <Plus className="h-3.5 w-3.5" />
+              Add Asset
+            </Button>
+          )}
+          <button className="flex items-center gap-1.5 rounded-lg border border-white/10 bg-white/5 px-3 py-1.5 text-xs font-medium text-zinc-300 hover:bg-white/10">
+            <TrendingUp className="h-3.5 w-3.5" />
+            Analytics
+          </button>
+        </div>
       </div>
       
       {/* Filters (AC 5) */}
@@ -231,12 +247,19 @@ export function UnifiedHoldingsTable() {
                       </EmptyDescription>
                     </EmptyHeader>
                     <EmptyContent>
-                      <Button asChild size="sm" className="gap-1.5">
-                        <Link to="/transactions/new">
+                      {onAddAsset ? (
+                        <Button size="sm" className="gap-1.5" onClick={onAddAsset}>
                           <Plus className="h-4 w-4" />
                           Add Transaction
-                        </Link>
-                      </Button>
+                        </Button>
+                      ) : (
+                        <Button asChild size="sm" className="gap-1.5">
+                          <Link to="/transactions/new">
+                            <Plus className="h-4 w-4" />
+                            Add Transaction
+                          </Link>
+                        </Button>
+                      )}
                     </EmptyContent>
                   </Empty>
                 </td></tr>

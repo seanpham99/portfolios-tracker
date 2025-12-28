@@ -1,27 +1,53 @@
 "use client";
 
-import { useState } from "react";
-import { motion, AnimatePresence } from "framer-motion";
+import { useEffect, useState } from "react";
+import { useForm, useWatch, Controller } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import * as z from "zod";
 import {
-  X,
-  Search,
-  Plus,
-  Clock,
-  Building2,
-  Coins,
-  TrendingUp,
-  Globe,
-  ChevronDown,
-  Loader2,
   CheckCircle2,
+  Clock,
+  Globe,
+  Loader2,
+  Plus,
+  Search,
+  TrendingUp,
+  Coins,
+  Building2,
+  ChevronLeft,
 } from "lucide-react";
-import { cn } from "@repo/ui/lib/utils";
+
 import {
   portfolioStore,
   useAssetRequests,
   type AssetRequest,
 } from "@/stores/portfolio-store";
 import type { Asset } from "./asset-blade";
+
+import { Button } from "@repo/ui/components/button";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogTitle,
+} from "@repo/ui/components/dialog";
+import {
+  Field,
+  FieldLabel,
+  FieldError
+} from "@repo/ui/components/field";
+import { Input } from "@repo/ui/components/input";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@repo/ui/components/select";
+import { ScrollArea } from "@repo/ui/components/scroll-area";
+import { Badge } from "@repo/ui/components/badge";
+
+// --- Types & Data ---
 
 interface AddAssetModalProps {
   isOpen: boolean;
@@ -54,7 +80,7 @@ const exchanges = [
   { value: "other", label: "Other" },
 ];
 
-const assetTypes: { value: AssetRequest["type"]; label: string }[] = [
+const assetTypes = [
   { value: "stock", label: "Stock" },
   { value: "crypto", label: "Cryptocurrency" },
   { value: "etf", label: "ETF" },
@@ -72,6 +98,26 @@ function generateSparkline(): number[] {
   return data;
 }
 
+// --- Schemas ---
+
+const addAssetSchema = z.object({
+  quantity: z.string().refine((val) => !isNaN(Number(val)) && Number(val) > 0, "Ctq > 0"),
+  pricePerUnit: z.string().refine((val) => !isNaN(Number(val)) && Number(val) > 0, "Price > 0"),
+});
+
+const requestAssetSchema = z.object({
+  symbol: z.string().min(1, "Symbol is required"),
+  name: z.string().optional(),
+  type: z.enum(["stock", "crypto", "etf", "real_estate", "other"]),
+  exchange: z.string().optional(),
+  country: z.string().optional(),
+});
+
+type AddAssetFormValues = z.infer<typeof addAssetSchema>;
+type RequestAssetFormValues = z.infer<typeof requestAssetSchema>;
+
+// --- Sub-Components ---
+
 function PendingRequestsBadge({
   count,
   onClick,
@@ -81,13 +127,14 @@ function PendingRequestsBadge({
 }) {
   if (count === 0) return null;
   return (
-    <button
+    <Badge
+      variant="outline"
       onClick={onClick}
-      className="flex items-center gap-2 rounded-lg bg-amber-500/10 px-3 py-1.5 text-xs font-medium text-amber-400 transition-colors hover:bg-amber-500/20"
+      className="cursor-pointer gap-2 border-amber-500/20 bg-amber-500/10 text-amber-400 hover:bg-amber-500/20 hover:text-amber-300"
     >
       <Clock className="h-3 w-3" />
-      {count} pending request{count !== 1 ? "s" : ""}
-    </button>
+      {count} pending
+    </Badge>
   );
 }
 
@@ -99,42 +146,22 @@ function RequestStatusBadge({
   progress: number;
 }) {
   const config = {
-    pending: {
-      bg: "bg-amber-500/10",
-      text: "text-amber-400",
-      label: "Pending",
-    },
-    processing: {
-      bg: "bg-indigo-500/10",
-      text: "text-indigo-400",
-      label: `Processing ${Math.round(progress)}%`,
-    },
-    approved: {
-      bg: "bg-emerald-500/10",
-      text: "text-emerald-400",
-      label: "Available",
-    },
-    rejected: {
-      bg: "bg-rose-500/10",
-      text: "text-rose-400",
-      label: "Unavailable",
-    },
+    pending: { variant: "outline" as const, className: "border-amber-500/20 bg-amber-500/10 text-amber-400", label: "Pending" },
+    processing: { variant: "outline" as const, className: "border-indigo-500/20 bg-indigo-500/10 text-indigo-400", label: `Processing ${Math.round(progress)}%` },
+    approved: { variant: "outline" as const, className: "border-emerald-500/20 bg-emerald-500/10 text-emerald-400", label: "Available" },
+    rejected: { variant: "outline" as const, className: "border-rose-500/20 bg-rose-500/10 text-rose-400", label: "Unavailable" },
   };
   const c = config[status];
   return (
-    <span
-      className={cn(
-        "inline-flex items-center gap-1.5 rounded-full px-2 py-0.5 text-xs font-medium",
-        c.bg,
-        c.text,
-      )}
-    >
-      {status === "processing" && <Loader2 className="h-3 w-3 animate-spin" />}
-      {status === "approved" && <CheckCircle2 className="h-3 w-3" />}
+    <Badge variant={c.variant} className={c.className}>
+      {status === "processing" && <Loader2 className="mr-1 h-3 w-3 animate-spin" />}
+      {status === "approved" && <CheckCircle2 className="mr-1 h-3 w-3" />}
       {c.label}
-    </span>
+    </Badge>
   );
 }
+
+// --- Main Component ---
 
 export function AddAssetModal({
   isOpen,
@@ -142,21 +169,9 @@ export function AddAssetModal({
   stageId,
 }: AddAssetModalProps) {
   const [searchQuery, setSearchQuery] = useState("");
-  const [selectedAsset, setSelectedAsset] = useState<
-    (typeof popularAssets)[0] | null
-  >(null);
-  const [quantity, setQuantity] = useState("");
-  const [pricePerUnit, setPricePerUnit] = useState("");
+  const [selectedAsset, setSelectedAsset] = useState<(typeof popularAssets)[0] | null>(null);
   const [showRequestForm, setShowRequestForm] = useState(false);
   const [showPendingRequests, setShowPendingRequests] = useState(false);
-
-  const [requestData, setRequestData] = useState({
-    symbol: "",
-    name: "",
-    type: "stock" as AssetRequest["type"],
-    exchange: "",
-    country: "",
-  });
   const [requestSubmitted, setRequestSubmitted] = useState(false);
 
   const { requests, pendingCount, submitRequest } = useAssetRequests();
@@ -164,6 +179,29 @@ export function AddAssetModal({
     (r) => r.status === "pending" || r.status === "processing",
   );
 
+  // Forms
+  const addForm = useForm<AddAssetFormValues>({
+    resolver: zodResolver(addAssetSchema),
+    defaultValues: { quantity: "", pricePerUnit: "" },
+  });
+
+  const requestForm = useForm<RequestAssetFormValues>({
+    resolver: zodResolver(requestAssetSchema),
+    defaultValues: {
+      symbol: "",
+      name: "",
+      type: "stock",
+      exchange: "",
+      country: "",
+    },
+  });
+
+  // Watch for totals calculation
+  const qty = useWatch({ control: addForm.control, name: "quantity" });
+  const price = useWatch({ control: addForm.control, name: "pricePerUnit" });
+  const totalValue = Number(qty || 0) * Number(price || 0);
+
+  // Filter assets
   const filteredAssets = popularAssets.filter(
     (asset) =>
       (asset.type === stageId || stageId === "all") &&
@@ -177,16 +215,31 @@ export function AddAssetModal({
       (r.status === "pending" || r.status === "processing"),
   );
 
-  const handleAddAsset = () => {
-    if (!selectedAsset || !quantity || !pricePerUnit) return;
+  // Reset state when opening/closing
+  useEffect(() => {
+    if (isOpen) {
+      setSearchQuery("");
+      setSelectedAsset(null);
+      setShowRequestForm(false);
+      setShowPendingRequests(false);
+      addForm.reset();
+      requestForm.reset();
+    }
+  }, [isOpen, addForm, requestForm]);
 
-    const totalValue =
-      Number.parseFloat(quantity) * Number.parseFloat(pricePerUnit);
+  // Handlers
+  const handleAddAsset = (values: AddAssetFormValues) => {
+    if (!selectedAsset) return;
+
+    const quantityVal = Number(values.quantity);
+    const priceVal = Number(values.pricePerUnit);
+    const total = quantityVal * priceVal;
+
     const newAsset: Asset = {
       id: selectedAsset.symbol.toLowerCase() + "-" + Date.now(),
       symbol: selectedAsset.symbol,
       name: selectedAsset.name,
-      value: totalValue,
+      value: total,
       change: (Math.random() - 0.5) * 4,
       allocation: 0,
       sparklineData: generateSparkline(),
@@ -198,494 +251,346 @@ export function AddAssetModal({
       assetId: newAsset.id,
       symbol: newAsset.symbol,
       type: "buy",
-      quantity: Number.parseFloat(quantity),
-      price: Number.parseFloat(pricePerUnit),
-      total: totalValue,
+      quantity: quantityVal,
+      price: priceVal,
+      total: total,
     });
     portfolioStore.addNotification({
       type: "portfolio_change",
       title: "Asset Added",
-      message: `Added ${quantity} ${selectedAsset.symbol} worth $${totalValue.toLocaleString()}`,
+      message: `Added ${values.quantity} ${selectedAsset.symbol} worth $${total.toLocaleString()}`,
     });
 
     onClose();
-    setSelectedAsset(null);
-    setQuantity("");
-    setPricePerUnit("");
   };
 
-  const handleRequestAsset = () => {
-    if (!requestData.symbol) return;
-
+  const handleRequestAsset = (values: RequestAssetFormValues) => {
     submitRequest({
-      symbol: requestData.symbol.toUpperCase(),
-      name: requestData.name || requestData.symbol.toUpperCase(),
-      type: requestData.type,
-      exchange: requestData.exchange || undefined,
-      country: requestData.country || undefined,
+      symbol: values.symbol.toUpperCase(),
+      name: values.name || values.symbol.toUpperCase(),
+      type: values.type,
+      exchange: values.exchange || undefined,
+      country: values.country || undefined,
     });
 
     setRequestSubmitted(true);
     setTimeout(() => {
       setShowRequestForm(false);
-      setRequestData({
-        symbol: "",
-        name: "",
-        type: "stock",
-        exchange: "",
-        country: "",
-      });
+      requestForm.reset();
       setRequestSubmitted(false);
     }, 2000);
   };
 
+  const handleOpenChange = (open: boolean) => {
+    if (!open) onClose();
+  };
+
+  const canGoBack = !!(selectedAsset || showRequestForm || showPendingRequests);
+  const handleBack = () => {
+    setSelectedAsset(null);
+    setShowRequestForm(false);
+    setShowPendingRequests(false);
+  };
+
   const getStageIcon = () => {
     switch (stageId) {
-      case "equities":
-        return <TrendingUp className="h-5 w-5" />;
-      case "crypto":
-        return <Coins className="h-5 w-5" />;
-      case "real-estate":
-        return <Building2 className="h-5 w-5" />;
-      default:
-        return <Plus className="h-5 w-5" />;
+      case "equities": return <TrendingUp className="h-5 w-5" />;
+      case "crypto": return <Coins className="h-5 w-5" />;
+      case "real-estate": return <Building2 className="h-5 w-5" />;
+      default: return <Plus className="h-5 w-5" />;
     }
   };
 
   return (
-    <AnimatePresence>
-      {isOpen && (
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          exit={{ opacity: 0 }}
-          className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm"
-          onClick={onClose}
-        >
-          <motion.div
-            initial={{ opacity: 0, scale: 0.95, y: 20 }}
-            animate={{ opacity: 1, scale: 1, y: 0 }}
-            exit={{ opacity: 0, scale: 0.95, y: 20 }}
-            onClick={(e) => e.stopPropagation()}
-            className="w-full max-w-lg rounded-2xl border border-white/[0.08] bg-zinc-900/95 shadow-2xl backdrop-blur-xl"
-          >
-            {/* Header */}
-            <div className="flex items-center justify-between border-b border-white/[0.08] px-6 py-4">
-              <div className="flex items-center gap-3">
-                <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-indigo-500/10 text-indigo-400">
-                  {getStageIcon()}
-                </div>
-                <div>
-                  <h2 className="font-serif text-xl font-light text-white">
-                    Add Asset
-                  </h2>
-                  <p className="text-xs text-zinc-500 capitalize">
-                    {stageId.replace("-", " ")}
-                  </p>
-                </div>
+    <Dialog open={isOpen} onOpenChange={handleOpenChange}>
+      <DialogContent className="sm:max-w-lg bg-zinc-900 border-white/[0.08] text-white p-0 gap-0 overflow-hidden flex flex-col h-[600px]">
+        
+        {/* Header */}
+        <div className="flex items-center justify-between border-b border-white/[0.08] px-6 py-4 shrink-0">
+          <div className="flex items-center gap-3">
+            {canGoBack ? (
+              <Button 
+                variant="ghost" 
+                size="icon" 
+                onClick={handleBack} 
+                className="h-10 w-10 rounded-xl bg-white/[0.05] text-zinc-400 hover:bg-white/[0.1] hover:text-white"
+              >
+                <ChevronLeft className="h-5 w-5" />
+              </Button>
+            ) : (
+              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-indigo-500/10 text-indigo-400">
+                {getStageIcon()}
               </div>
-              <div className="flex items-center gap-2">
-                <PendingRequestsBadge
-                  count={pendingCount}
-                  onClick={() => setShowPendingRequests(!showPendingRequests)}
-                />
-                <button
-                  onClick={onClose}
-                  className="flex h-8 w-8 items-center justify-center rounded-full bg-white/5 transition-colors hover:bg-white/10"
-                >
-                  <X className="h-4 w-4" />
-                </button>
-              </div>
+            )}
+            <div>
+              <DialogTitle className="font-serif text-xl font-light">
+                {selectedAsset ? selectedAsset.symbol : "Add Asset"}
+              </DialogTitle>
+              <DialogDescription className="text-xs text-zinc-500 capitalize">
+                {selectedAsset ? selectedAsset.name : stageId.replace("-", " ")}
+              </DialogDescription>
             </div>
+          </div>
+          {!canGoBack && (
+            <PendingRequestsBadge
+                count={pendingCount}
+                onClick={() => {
+                    setShowPendingRequests(!showPendingRequests);
+                    setSelectedAsset(null);
+                    setShowRequestForm(false);
+                }}
+            />
+          )}
+        </div>
 
-            <div className="p-6">
-              {showPendingRequests ? (
-                <div className="space-y-4">
-                  <div className="flex items-center justify-between">
-                    <h3 className="text-sm font-medium text-zinc-300">
-                      Your Pending Requests
-                    </h3>
-                    <button
-                      onClick={() => setShowPendingRequests(false)}
-                      className="text-xs text-indigo-400 hover:text-indigo-300"
-                    >
-                      Back to search
-                    </button>
-                  </div>
+        <div className="p-6 flex-1 flex flex-col min-h-0">
+          {showPendingRequests ? (
+            <div className="flex flex-col h-full space-y-4">
+               <h3 className="text-sm font-medium text-zinc-300 shrink-0">Your Pending Requests</h3>
+                <ScrollArea className="flex-1 w-full rounded-md border border-white/5 pr-4 max-h-full min-h-0 flex flex-col [&>[data-slot=scroll-area-viewport]]:flex-1">
+                    {userPendingRequests.length === 0 ? (
+                        <div className="py-8 text-center text-sm text-zinc-500">No pending requests</div>
+                    ) : (
+                        userPendingRequests.map((request) => (
+                           <div key={request.id} className="mb-2 rounded-xl border border-white/[0.05] bg-white/[0.02] p-4">
+                                <div className="flex items-start justify-between">
+                                    <div>
+                                        <div className="flex items-center gap-2">
+                                            <span className="font-medium text-white">{request.symbol}</span>
+                                            <RequestStatusBadge status={request.status} progress={request.progress} />
+                                        </div>
+                                        <p className="mt-0.5 text-sm text-zinc-500">{request.name}</p>
+                                    </div>
+                                    {request.status === "pending" && (
+                                        <Button variant="ghost" size="sm" onClick={() => portfolioStore.cancelAssetRequest(request.id)} className="h-6 text-xs text-zinc-500 hover:text-rose-400">
+                                            Cancel
+                                        </Button>
+                                    )}
+                                </div>
+                           </div> 
+                        ))
+                    )}
+                </ScrollArea>
+            </div>
+          ) : !selectedAsset ? (
+            <>
+              {/* Search State */}
+              <div className="relative mb-4 shrink-0">
+                <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-zinc-500" />
+                <Input
+                  placeholder="Search by symbol or name..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="pl-10 bg-white/[0.03] border-white/[0.08] focus-visible:ring-indigo-500/50"
+                  autoFocus={!showRequestForm}
+                />
+              </div>
 
-                  {userPendingRequests.length === 0 ? (
-                    <div className="py-8 text-center text-sm text-zinc-500">
-                      No pending requests
-                    </div>
-                  ) : (
-                    <div className="max-h-72 space-y-2 overflow-y-auto">
-                      {userPendingRequests.map((request) => (
-                        <div
-                          key={request.id}
-                          className="rounded-xl border border-white/[0.05] bg-white/[0.02] p-4"
-                        >
-                          <div className="flex items-start justify-between">
-                            <div>
-                              <div className="flex items-center gap-2">
-                                <span className="font-medium text-white">
-                                  {request.symbol}
-                                </span>
-                                <RequestStatusBadge
-                                  status={request.status}
-                                  progress={request.progress}
-                                />
-                              </div>
-                              <p className="mt-0.5 text-sm text-zinc-500">
-                                {request.name}
-                              </p>
-                              {request.exchange && (
-                                <p className="mt-1 text-xs text-zinc-600">
-                                  {request.exchange}{" "}
-                                  {request.country && `• ${request.country}`}
-                                </p>
-                              )}
-                            </div>
-                            {request.status === "pending" && (
-                              <button
-                                onClick={() =>
-                                  portfolioStore.cancelAssetRequest(request.id)
-                                }
-                                className="text-xs text-zinc-500 hover:text-rose-400"
-                              >
-                                Cancel
-                              </button>
-                            )}
-                          </div>
-
-                          {/* Progress bar for processing requests */}
-                          {request.status === "processing" && (
-                            <div className="mt-3">
-                              <div className="h-1 overflow-hidden rounded-full bg-white/[0.05]">
-                                <motion.div
-                                  className="h-full bg-indigo-500"
-                                  initial={{ width: 0 }}
-                                  animate={{ width: `${request.progress}%` }}
-                                  transition={{ duration: 0.5 }}
-                                />
-                              </div>
-                              {request.estimatedCompletion && (
-                                <p className="mt-1.5 text-xs text-zinc-600">
-                                  Est. completion:{" "}
-                                  {request.estimatedCompletion.toLocaleTimeString()}
-                                </p>
-                              )}
-                            </div>
-                          )}
-                        </div>
-                      ))}
-                    </div>
-                  )}
-                </div>
-              ) : !selectedAsset ? (
-                <>
-                  {/* Search */}
-                  <div className="relative mb-4">
-                    <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-zinc-500" />
-                    <input
-                      type="text"
-                      placeholder="Search by symbol or name..."
-                      value={searchQuery}
-                      onChange={(e) => setSearchQuery(e.target.value)}
-                      className="w-full rounded-xl border border-white/[0.08] bg-white/[0.03] py-3 pl-10 pr-4 text-white placeholder-zinc-500 outline-none transition-colors focus:border-indigo-500/50"
-                    />
-                  </div>
-
-                  {/* Asset List */}
-                  <div className="max-h-64 space-y-2 overflow-y-auto">
-                    {filteredAssets.length > 0 ? (
-                      filteredAssets.map((asset) => (
+              {!showRequestForm ? (
+                <ScrollArea className="flex-1 w-full rounded-md border border-white/5 max-h-full min-h-0 flex flex-col [&>[data-slot=scroll-area-viewport]]:flex-1">
+                  {filteredAssets.length > 0 ? (
+                    <div className="space-y-2 p-2 pt-0">
+                      {filteredAssets.map((asset) => (
                         <button
                           key={asset.symbol}
                           onClick={() => setSelectedAsset(asset)}
                           className="flex w-full items-center gap-3 rounded-xl bg-white/[0.03] p-3 transition-colors hover:bg-white/[0.06]"
                         >
                           <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-white/[0.05] text-sm font-medium text-zinc-300">
-                            {(asset as { icon?: string }).icon ||
-                              asset.symbol.slice(0, 2)}
+                            {(asset as { icon?: string }).icon || asset.symbol.slice(0, 2)}
                           </div>
                           <div className="flex-1 text-left">
-                            <p className="font-medium text-white">
-                              {asset.symbol}
-                            </p>
-                            <p className="text-xs text-zinc-500">
-                              {asset.name}
-                            </p>
+                            <p className="font-medium text-white">{asset.symbol}</p>
+                            <p className="text-xs text-zinc-500">{asset.name}</p>
                           </div>
                           <Plus className="h-4 w-4 text-zinc-500" />
                         </button>
-                      ))
-                    ) : (
-                      <div className="py-6 text-center">
-                        {pendingRequest ? (
-                          <div className="space-y-3">
-                            <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-amber-500/10">
-                              <Clock className="h-6 w-6 text-amber-400" />
-                            </div>
-                            <div>
-                              <p className="font-medium text-white">
-                                {pendingRequest.symbol}
-                              </p>
-                              <RequestStatusBadge
-                                status={pendingRequest.status}
-                                progress={pendingRequest.progress}
-                              />
-                            </div>
-                            <p className="text-sm text-zinc-500">
-                              You've already requested tracking for this asset.
-                            </p>
-                          </div>
-                        ) : !showRequestForm ? (
-                          <>
-                            <p className="mb-4 text-sm text-zinc-500">
-                              No assets found for "{searchQuery}"
-                            </p>
-                            <button
-                              onClick={() => {
+                      ))}
+                    </div>
+                  ) : (
+                    <div className="py-6 text-center">
+                        <p className="mb-4 text-sm text-zinc-500">No assets found for "{searchQuery}"</p>
+                        <Button
+                            variant="outline"
+                            onClick={() => {
                                 setShowRequestForm(true);
-                                setRequestData((prev) => ({
-                                  ...prev,
-                                  symbol: searchQuery,
-                                }));
-                              }}
-                              className="inline-flex items-center gap-2 rounded-lg bg-indigo-500/10 px-4 py-2 text-sm font-medium text-indigo-400 transition-colors hover:bg-indigo-500/20"
-                            >
-                              <Clock className="h-4 w-4" />
-                              Request Tracking
-                            </button>
-                          </>
-                        ) : (
-                          /* Enhanced request form with more fields */
-                          <div className="space-y-4 text-left">
-                            <div className="flex items-center gap-2">
-                              <Globe className="h-4 w-4 text-indigo-400" />
-                              <span className="text-sm font-medium text-zinc-300">
-                                Request Asset Tracking
-                              </span>
-                            </div>
-
-                            <div className="grid grid-cols-2 gap-3">
-                              <div>
-                                <label className="mb-1 block text-xs text-zinc-500">
-                                  Symbol *
-                                </label>
-                                <input
-                                  type="text"
-                                  placeholder="e.g., RELIANCE"
-                                  value={requestData.symbol}
-                                  onChange={(e) =>
-                                    setRequestData((prev) => ({
-                                      ...prev,
-                                      symbol: e.target.value.toUpperCase(),
-                                    }))
-                                  }
-                                  className="w-full rounded-lg border border-white/[0.08] bg-white/[0.03] px-3 py-2 text-sm text-white placeholder-zinc-600 outline-none focus:border-indigo-500/50"
-                                />
-                              </div>
-                              <div>
-                                <label className="mb-1 block text-xs text-zinc-500">
-                                  Name
-                                </label>
-                                <input
-                                  type="text"
-                                  placeholder="Company name"
-                                  value={requestData.name}
-                                  onChange={(e) =>
-                                    setRequestData((prev) => ({
-                                      ...prev,
-                                      name: e.target.value,
-                                    }))
-                                  }
-                                  className="w-full rounded-lg border border-white/[0.08] bg-white/[0.03] px-3 py-2 text-sm text-white placeholder-zinc-600 outline-none focus:border-indigo-500/50"
-                                />
-                              </div>
-                            </div>
-
-                            <div className="grid grid-cols-2 gap-3">
-                              <div>
-                                <label className="mb-1 block text-xs text-zinc-500">
-                                  Type
-                                </label>
-                                <div className="relative">
-                                  <select
-                                    value={requestData.type}
-                                    onChange={(e) =>
-                                      setRequestData((prev) => ({
-                                        ...prev,
-                                        type: e.target
-                                          .value as AssetRequest["type"],
-                                      }))
-                                    }
-                                    className="w-full appearance-none rounded-lg border border-white/[0.08] bg-white/[0.03] px-3 py-2 pr-8 text-sm text-white outline-none focus:border-indigo-500/50"
-                                  >
-                                    {assetTypes.map((t) => (
-                                      <option
-                                        key={t.value}
-                                        value={t.value}
-                                        className="bg-zinc-900"
-                                      >
-                                        {t.label}
-                                      </option>
-                                    ))}
-                                  </select>
-                                  <ChevronDown className="pointer-events-none absolute right-2 top-1/2 h-4 w-4 -translate-y-1/2 text-zinc-500" />
-                                </div>
-                              </div>
-                              <div>
-                                <label className="mb-1 block text-xs text-zinc-500">
-                                  Exchange
-                                </label>
-                                <div className="relative">
-                                  <select
-                                    value={requestData.exchange}
-                                    onChange={(e) =>
-                                      setRequestData((prev) => ({
-                                        ...prev,
-                                        exchange: e.target.value,
-                                      }))
-                                    }
-                                    className="w-full appearance-none rounded-lg border border-white/[0.08] bg-white/[0.03] px-3 py-2 pr-8 text-sm text-white outline-none focus:border-indigo-500/50"
-                                  >
-                                    <option value="" className="bg-zinc-900">
-                                      Select...
-                                    </option>
-                                    {exchanges.map((ex) => (
-                                      <option
-                                        key={ex.value}
-                                        value={ex.value}
-                                        className="bg-zinc-900"
-                                      >
-                                        {ex.label}
-                                      </option>
-                                    ))}
-                                  </select>
-                                  <ChevronDown className="pointer-events-none absolute right-2 top-1/2 h-4 w-4 -translate-y-1/2 text-zinc-500" />
-                                </div>
-                              </div>
-                            </div>
-
-                            <div className="flex gap-2">
-                              <button
-                                onClick={() => setShowRequestForm(false)}
-                                className="flex-1 rounded-lg border border-white/[0.08] py-2 text-sm text-zinc-400 transition-colors hover:bg-white/[0.03]"
-                              >
-                                Cancel
-                              </button>
-                              <button
-                                onClick={handleRequestAsset}
-                                disabled={
-                                  !requestData.symbol || requestSubmitted
-                                }
-                                className={cn(
-                                  "flex-1 rounded-lg py-2 text-sm font-medium transition-all",
-                                  requestSubmitted
-                                    ? "bg-emerald-500/20 text-emerald-400"
-                                    : "bg-indigo-500 text-white hover:bg-indigo-400 disabled:opacity-50",
-                                )}
-                              >
-                                {requestSubmitted ? (
-                                  <span className="flex items-center justify-center gap-2">
-                                    <CheckCircle2 className="h-4 w-4" />
-                                    Submitted!
-                                  </span>
-                                ) : (
-                                  "Submit Request"
-                                )}
-                              </button>
-                            </div>
-                          </div>
-                        )}
-                      </div>
-                    )}
-                  </div>
-                </>
+                                requestForm.setValue("symbol", searchQuery);
+                            }}
+                            className="bg-indigo-500/10 text-indigo-400 border-indigo-500/20 hover:bg-indigo-500/20"
+                        >
+                             <Clock className="mr-2 h-4 w-4" /> Request Tracking
+                        </Button>
+                    </div>
+                  )}
+                </ScrollArea>
               ) : (
-                <>
-                  {/* Selected Asset Form */}
-                  <div className="mb-6 flex items-center gap-3 rounded-xl bg-indigo-500/10 p-4">
-                    <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-white/[0.08] text-lg font-medium text-white">
-                      {(selectedAsset as { icon?: string }).icon ||
-                        selectedAsset.symbol.slice(0, 2)}
+                /* Request Form */
+                <ScrollArea className="flex-1 w-full -mr-6 pr-6 max-h-full min-h-0 flex flex-col [&>[data-slot=scroll-area-viewport]]:flex-1">
+                <form onSubmit={requestForm.handleSubmit(handleRequestAsset)} className="space-y-4 px-1">
+                    <div className="flex items-center gap-2 mb-2">
+                        <Globe className="h-4 w-4 text-indigo-400" />
+                        <span className="text-sm font-medium text-zinc-300">Request Asset Tracking</span>
                     </div>
-                    <div className="flex-1">
-                      <p className="font-medium text-white">
-                        {selectedAsset.symbol}
-                      </p>
-                      <p className="text-sm text-zinc-400">
-                        {selectedAsset.name}
-                      </p>
+                    <div className="grid grid-cols-2 gap-3">
+                        <Controller
+                            control={requestForm.control}
+                            name="symbol"
+                            render={({ field, fieldState }) => (
+                                <Field data-invalid={fieldState.invalid}>
+                                    <FieldLabel htmlFor={field.name} className="text-xs text-zinc-500 font-normal">Symbol</FieldLabel>
+                                    <Input
+                                        id={field.name}
+                                        {...field}
+                                        className="bg-white/[0.03] border-white/[0.08]"
+                                        placeholder="e.g. RELIANCE"
+                                        aria-invalid={fieldState.invalid}
+                                    />
+                                    {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
+                                </Field>
+                            )}
+                        />
+                         <Controller
+                            control={requestForm.control}
+                            name="name"
+                            render={({ field, fieldState }) => (
+                                <Field data-invalid={fieldState.invalid}>
+                                    <FieldLabel htmlFor={field.name} className="text-xs text-zinc-500 font-normal">Name</FieldLabel>
+                                    <Input
+                                        id={field.name}
+                                        {...field}
+                                        className="bg-white/[0.03] border-white/[0.08]"
+                                        placeholder="Company Name"
+                                        aria-invalid={fieldState.invalid}
+                                    />
+                                    {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
+                                </Field>
+                            )}
+                        />
                     </div>
-                    <button
-                      onClick={() => setSelectedAsset(null)}
-                      className="text-xs text-zinc-500 hover:text-white"
-                    >
-                      Change
-                    </button>
-                  </div>
-
-                  <div className="space-y-4">
-                    <div>
-                      <label className="mb-2 block text-sm text-zinc-400">
-                        Quantity
-                      </label>
-                      <input
-                        type="number"
-                        placeholder="0.00"
-                        value={quantity}
-                        onChange={(e) => setQuantity(e.target.value)}
-                        className="w-full rounded-xl border border-white/[0.08] bg-white/[0.03] px-4 py-3 text-white placeholder-zinc-500 outline-none transition-colors focus:border-indigo-500/50"
-                      />
+                    <div className="grid grid-cols-2 gap-3">
+                        <Controller
+                            control={requestForm.control}
+                            name="type"
+                            render={({ field, fieldState }) => (
+                                <Field data-invalid={fieldState.invalid}>
+                                    <FieldLabel htmlFor={field.name} className="text-xs text-zinc-500 font-normal">Type</FieldLabel>
+                                    <Select
+                                        name={field.name}
+                                        value={field.value}
+                                        onValueChange={field.onChange}
+                                    >
+                                        <SelectTrigger
+                                            id={field.name}
+                                            aria-invalid={fieldState.invalid}
+                                            className="bg-white/[0.03] border-white/[0.08]"
+                                        >
+                                            <SelectValue />
+                                        </SelectTrigger>
+                                        <SelectContent className="bg-zinc-900 border-white/[0.08] text-white">
+                                            {assetTypes.map(t => <SelectItem key={t.value} value={t.value}>{t.label}</SelectItem>)}
+                                        </SelectContent>
+                                    </Select>
+                                    {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
+                                </Field>
+                            )}
+                        />
+                         <Controller
+                            control={requestForm.control}
+                            name="exchange"
+                            render={({ field, fieldState }) => (
+                                <Field data-invalid={fieldState.invalid}>
+                                    <FieldLabel htmlFor={field.name} className="text-xs text-zinc-500 font-normal">Exchange</FieldLabel>
+                                     <Select
+                                        name={field.name}
+                                        value={field.value}
+                                        onValueChange={field.onChange}
+                                    >
+                                        <SelectTrigger
+                                            id={field.name}
+                                            aria-invalid={fieldState.invalid}
+                                            className="bg-white/[0.03] border-white/[0.08]"
+                                        >
+                                            <SelectValue placeholder="Optional" />
+                                        </SelectTrigger>
+                                        <SelectContent className="bg-zinc-900 border-white/[0.08] text-white">
+                                            {exchanges.map(e => <SelectItem key={e.value} value={e.value}>{e.label}</SelectItem>)}
+                                        </SelectContent>
+                                    </Select>
+                                    {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
+                                </Field>
+                            )}
+                        />
                     </div>
-                    <div>
-                      <label className="mb-2 block text-sm text-zinc-400">
-                        Price per unit ($)
-                      </label>
-                      <input
-                        type="number"
-                        placeholder="0.00"
-                        value={pricePerUnit}
-                        onChange={(e) => setPricePerUnit(e.target.value)}
-                        className="w-full rounded-xl border border-white/[0.08] bg-white/[0.03] px-4 py-3 text-white placeholder-zinc-500 outline-none transition-colors focus:border-indigo-500/50"
-                      />
+                    <div className="flex gap-2 pt-2">
+                        <Button type="button" variant="outline" className="flex-1 border-white/[0.08] bg-transparent text-zinc-400 hover:bg-white/[0.05]" onClick={() => setShowRequestForm(false)}>Cancel</Button>
+                        <Button type="submit" disabled={requestSubmitted} className="flex-1 bg-indigo-500 text-white hover:bg-indigo-400">
+                            {requestSubmitted ? "Submitted!" : "Submit Request"}
+                        </Button>
                     </div>
-
-                    {quantity && pricePerUnit && (
-                      <div className="rounded-xl bg-white/[0.03] p-4">
-                        <div className="flex items-center justify-between">
-                          <span className="text-sm text-zinc-400">
-                            Total Value
-                          </span>
-                          <span className="text-xl font-semibold text-white">
-                            $
-                            {(
-                              Number.parseFloat(quantity) *
-                              Number.parseFloat(pricePerUnit)
-                            ).toLocaleString("en-US", {
-                              minimumFractionDigits: 2,
-                            })}
-                          </span>
-                        </div>
-                      </div>
-                    )}
-
-                    <button
-                      onClick={handleAddAsset}
-                      disabled={!quantity || !pricePerUnit}
-                      className="w-full rounded-xl bg-emerald-600 py-3 font-medium text-white transition-colors hover:bg-emerald-500 disabled:opacity-50"
-                    >
-                      Add to Portfolio
-                    </button>
-                  </div>
-                </>
+                </form>
+                </ScrollArea>
               )}
-            </div>
-          </motion.div>
-        </motion.div>
-      )}
-    </AnimatePresence>
+            </>
+          ) : (
+            /* Add Asset Form (Input Quantity/Price) */
+             <div className="space-y-6">
+                  {/* Removed the asset info card that had the Change button as it's now in header */}
+                  
+                  <form onSubmit={addForm.handleSubmit(handleAddAsset)} className="space-y-4">
+                         <Controller
+                            control={addForm.control}
+                            name="quantity"
+                            render={({ field, fieldState }) => (
+                                <Field data-invalid={fieldState.invalid}>
+                                    <FieldLabel htmlFor={field.name} className="text-zinc-400 font-normal">Quantity</FieldLabel>
+                                    <Input
+                                        id={field.name}
+                                        type="number"
+                                        {...field}
+                                        className="bg-white/[0.03] border-white/[0.08] focus-visible:ring-indigo-500/50"
+                                        placeholder="0.00"
+                                        aria-invalid={fieldState.invalid}
+                                    />
+                                    {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
+                                </Field>
+                            )}
+                        />
+                         <Controller
+                            control={addForm.control}
+                            name="pricePerUnit"
+                            render={({ field, fieldState }) => (
+                                <Field data-invalid={fieldState.invalid}>
+                                    <FieldLabel htmlFor={field.name} className="text-zinc-400 font-normal">Price per unit ($)</FieldLabel>
+                                    <Input
+                                        id={field.name}
+                                        type="number"
+                                        {...field}
+                                        className="bg-white/[0.03] border-white/[0.08] focus-visible:ring-indigo-500/50"
+                                        placeholder="0.00"
+                                        aria-invalid={fieldState.invalid}
+                                    />
+                                    {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
+                                </Field>
+                            )}
+                        />
+                         
+                          {totalValue > 0 && (
+                           <div className="rounded-xl bg-white/[0.03] p-4 flex justify-between items-center">
+                             <span className="text-sm text-zinc-400">Total Value</span>
+                             <span className="text-xl font-semibold text-white">
+                               ${totalValue.toLocaleString("en-US", { minimumFractionDigits: 2 })}
+                             </span>
+                           </div>
+                         )}
+ 
+                         <Button type="submit" disabled={!addForm.formState.isValid} className="w-full bg-emerald-600 hover:bg-emerald-500 text-white py-6 text-lg">
+                             Add to Portfolio
+                         </Button>
+                     </form>
+              </div>
+           )}
+        </div>
+      </DialogContent>
+    </Dialog>
   );
 }

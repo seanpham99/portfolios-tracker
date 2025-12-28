@@ -128,56 +128,75 @@ describe('PortfoliosService', () => {
       expect(mockSupabaseClient.from).not.toHaveBeenCalled();
     });
 
-    it('should return all portfolios for user from DB and cache them', async () => {
+    it('should return all portfolios for user from DB with summary', async () => {
       mockCacheService.get.mockResolvedValue(null);
       const mockPortfolios = [mockPortfolio];
-      const mockSelect = jest.fn().mockReturnThis();
-      const mockEq = jest.fn().mockReturnThis();
-      const mockOrder = jest.fn().mockResolvedValue({
-        data: mockPortfolios,
-        error: null,
-      });
+      
+      // Mock Portfolios Chain
+      const mockPortfoliosChain = {
+        select: jest.fn().mockReturnThis(),
+        eq: jest.fn().mockReturnThis(),
+        order: jest.fn().mockResolvedValue({ data: mockPortfolios, error: null }),
+      };
 
-      mockSupabaseClient.from.mockReturnValue({
-        select: mockSelect,
-        eq: mockEq,
-        order: mockOrder,
-      });
+      // Mock Transactions Chain
+      const mockTransactionsChain = {
+        select: jest.fn().mockReturnThis(),
+        eq: jest.fn().mockResolvedValue({ data: [], error: null }),
+      };
 
-      mockSelect.mockReturnValue({ eq: mockEq });
-      mockEq.mockReturnValue({ order: mockOrder });
+      mockSupabaseClient.from.mockImplementation((table: string) => {
+        if (table === 'portfolios') return mockPortfoliosChain;
+        if (table === 'transactions') return mockTransactionsChain;
+        return { select: jest.fn() };
+      });
 
       const result = await service.findAll(mockUserId);
+      
+      const expectedPortfolios = mockPortfolios.map(p => ({
+        ...p,
+        netWorth: 0,
+        change24h: 0,
+        change24hPercent: 0,
+        allocation: [],
+      }));
 
-      expect(result).toEqual(mockPortfolios);
+      expect(result).toEqual(expectedPortfolios);
       expect(mockSupabaseClient.from).toHaveBeenCalledWith('portfolios');
-      expect(mockCacheService.set).toHaveBeenCalledWith(`portfolios:${mockUserId}`, mockPortfolios);
+      expect(mockSupabaseClient.from).toHaveBeenCalledWith('transactions');
+      expect(mockCacheService.set).toHaveBeenCalledWith(`portfolios:${mockUserId}`, expectedPortfolios);
     });
   });
 
   describe('findOne', () => {
-    it('should return a portfolio by id', async () => {
-      const mockSelect = jest.fn().mockReturnThis();
-      const mockEq1 = jest.fn().mockReturnThis();
-      const mockEq2 = jest.fn().mockReturnThis();
-      const mockSingle = jest.fn().mockResolvedValue({
-        data: mockPortfolio,
-        error: null,
-      });
+    it('should return a portfolio by id with summary', async () => {
+      // Mock Portfolios Chain
+      const mockPortfoliosChain = {
+        select: jest.fn().mockReturnThis(),
+        eq: jest.fn().mockReturnThis(),
+        single: jest.fn().mockResolvedValue({ data: mockPortfolio, error: null }),
+      };
 
-      mockSupabaseClient.from.mockReturnValue({
-        select: mockSelect,
-        eq: mockEq1,
-        single: mockSingle,
-      });
+      // Mock Transactions Chain
+      const mockTransactionsChain = {
+        select: jest.fn().mockReturnThis(),
+        eq: jest.fn().mockReturnThis(), // handle multiple eqs
+      };
+      // Configure transaction chain specifically
+      const mockTxEq1 = jest.fn().mockReturnThis();
+      const mockTxEq2 = jest.fn().mockResolvedValue({ data: [], error: null });
+      
+      mockTransactionsChain.eq.mockReturnValueOnce(mockTxEq1).mockReturnValueOnce(mockTxEq2);
 
-      mockSelect.mockReturnValue({ eq: mockEq1 });
-      mockEq1.mockReturnValue({ eq: mockEq2 });
-      mockEq2.mockReturnValue({ single: mockSingle });
+      mockSupabaseClient.from.mockImplementation((table: string) => {
+        if (table === 'portfolios') return mockPortfoliosChain;
+        if (table === 'transactions') return mockTransactionsChain;
+        return { select: jest.fn() };
+      });
 
       const result = await service.findOne(mockUserId, mockPortfolio.id);
 
-      expect(result).toEqual(mockPortfolio);
+      expect(result).toEqual({ ...mockPortfolio, netWorth: 0, change24h: 0, change24hPercent: 0, allocation: [] });
     });
 
     it('should throw NotFoundException when portfolio not found', async () => {
@@ -388,7 +407,7 @@ describe('PortfoliosService', () => {
       // Buy 1: 10 @ 100 = 1000. Qty=10.
       // Buy 2: 5 @ 120 = 600. Total Cost = 1600. Total Qty = 15. Avg = 106.666
       // Sell 1: 5 @ 150. Reduced Cost = 5 * 106.666 = 533.33. Remaining Cost = 1066.67. Remaining Qty = 10. Avg = 106.666.
-      expect(aapl!.avg_cost).toBeCloseTo(106.666, 3);
+      expect(aapl!.avg_cost).toBeCloseTo(106.667, 3);
       
       const vnd = result.find(h => h.symbol === 'VND');
       expect(vnd).toBeDefined();

@@ -60,7 +60,7 @@ development_status:
   2-5-transparent-methodology-basic-panels: done  # Code review complete
   2-6-asset-detail-page: ready-for-dev
   2-7-connection-settings: ready-for-dev
-  2-8-portfolio-first-dashboard-navigation: ready-for-dev  # NEW: Critical navigation fix from Party Mode discussion
+  2-8-portfolio-first-dashboard-navigation: review  # NEW: Critical navigation fix from Party Mode discussion
   epic-2-retrospective: optional
 
   epic-3: backlog

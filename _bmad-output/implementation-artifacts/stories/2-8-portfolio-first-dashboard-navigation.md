@@ -49,64 +49,67 @@ So that I can select which portfolio to view in detail and understand my wealth 
 
 ## Tasks / Subtasks
 
-- [ ] **Task 1: Create PortfolioCard Component**
-  - [ ] Create `apps/web/src/components/dashboard/portfolio-card.tsx`
-  - [ ] Display portfolio name, net worth, P/L, allocation indicator
-  - [ ] Add click handler to navigate to `/portfolio/:id`
-  - [ ] Add hover effects and loading skeleton
+- [x] **Task 1: Data Layer & API Client (Frontend/Backend)**
+  - [x] **API Client:** Update `apps/web/src/api/client.ts` to include:
+    - [x] `getPortfolios()`
+    - [x] `getPortfolioHoldings(portfolioId: string)`
+  - [x] **Hooks:** Create `apps/web/src/api/hooks/use-portfolios.ts` (fetch all portfolios).
+  - [x] **Hooks:** Update `useHoldings` to accept `portfolioId` parameter.
+  - [x] **Backend:** Add `GET /portfolios/:id/holdings` to `PortfoliosController`.
+  - [x] **Backend:** Ensure `GET /portfolios` returns `netWorth` and `change24h` summary fields.
 
-- [ ] **Task 2: Update Dashboard Route (`/dashboard`)**
-  - [ ] Refactor `_protected.dashboard.tsx` to show portfolio list
-  - [ ] Use `usePortfolios()` hook to fetch user's portfolios
-  - [ ] Implement grid layout for PortfolioCards
-  - [ ] Add Empty state with Create Portfolio CTA
+- [x] **Task 2: Create PortfolioCard Component**
+  - [x] Create `apps/web/src/components/dashboard/portfolio-card.tsx`
+  - [x] Display portfolio name, net worth, P/L (value + %), and allocation mini-indicator (donut/bar).
+  - [x] Add click handler to navigate to `/portfolio/:id`.
+  - [x] Add hover effects and loading skeleton.
 
-- [ ] **Task 3: Create Portfolio Detail Route (`/portfolio/:id`)**
-  - [ ] Create `_protected.portfolio.$id.tsx` route file
-  - [ ] Move UnifiedHoldingsTable, charts, and stats here
-  - [ ] Pass `portfolioId` to components
+- [x] **Task 3: Update Dashboard Page (`/dashboard`)**
+  - [x] Refactor `apps/web/src/routes/_protected._layout.dashboard.tsx` to replace current view.
+  - [x] Use `usePortfolios()` to fetch data.
+  - [x] Render grid of `PortfolioCard` components.
+  - [x] **Empty State:** If no portfolios, show "Create Your First Portfolio" CTA (use `@repo/ui/components/empty`).
+  - [x] **Cleanup:** Refactor or remove `portfolio-selector.tsx` if it becomes obsolete.
 
-- [ ] **Task 4: Update Holdings Hook & API**
-  - [ ] Update `useHoldings()` to accept `portfolioId` parameter
-  - [ ] Add `GET /portfolios/:id/holdings` endpoint to backend
-  - [ ] Update `PortfoliosService.getHoldings(userId, portfolioId)`
+- [x] **Task 4: Create Portfolio Detail Route (`/portfolio/:id`)**
+  - [x] Create `apps/web/src/routes/_protected._layout.portfolio.$id.tsx` (Must use `_protected._layout` prefix to inherit header/nav).
+  - [x] Fetch portfolio details using `usePortfolios`.
+  - [x] Display Portfolio Header (Name, Net Worth).
+  - [ ] **Error Handling:** Add 404/Empty state if portfolio ID is invalid or not found.
+  - [x] Move `UnifiedHoldingsTable` and summary stats to this route.
+  - [ ] Add "Back to Dashboard" breadcrumb/link at top.
+  - [x] Wire up `useHoldings(portfolioId)` to the table.
+  - [x] **Charts:** Include `PortfolioHistoryChart` and `AllocationDonut` (use existing components, maybe filtered by portfolio context).
 
-- [ ] **Task 5: Update Navigation & Breadcrumbs**
-  - [ ] Add back navigation from portfolio detail to dashboard
-  - [ ] Update sidebar active state for portfolio routes
-  - [ ] Ensure URL reflects current portfolio context
+- [x] **Task 5: Cleanup & Refinement**
+  - [x] Ensure `UnifiedHoldingsTable` works correctly without `portfolioId` (fetching all), or refactor it to strictly require it (current implementation allows optional).
+  - [x] Remove legacy `UnifiedDashboardLayout.tsx` and `PortfolioSelector.tsx`.
+  - [x] Update `sprint-status.yaml` to verify progress.
 
 ## Dev Notes
 
-- **Breaking Change:** This restructures the frontend navigation significantly
-- **Migration:** Current `/dashboard` content moves to `/portfolio/:id`
-- **Dependencies:** Stories 2.4 (UnifiedHoldingsTable) and 2.5 (MethodologyPanel) continue to work after this change
-- **Empty States:** Use `@repo/ui/components/empty` for both dashboard (no portfolios) and holdings table (no holdings in portfolio)
+- **Route Naming:** Use `_protected._layout.portfolio.$id.tsx` to ensure the page renders *inside* the main app layout (Header, Sidebar). Using `_protected.portfolio...` would break the layout.
+- **Breaking Change:** This moves the primary holdings view from `/dashboard` to `/portfolio/:id`.
+- **API Client:** Ensure `apps/web/src/api/client.ts` is the single source of truth for fetcher functions.
+- **Empty States:**
+  - Dashboard: "No Portfolios found" -> CTA to create.
+  - Detail: "No Holdings found" -> CTA to add first transaction.
+- **Navigation:** Deep linking to `/portfolio/:id` should work correctly.
 
 ### API Changes
 
-**New Endpoint:**
+**New/Updated Endpoints:**
 ```
-GET /portfolios/:id/holdings
-Authorization: Bearer <token>
-Response: HoldingDto[]
-```
-
-**Hook Signature Change:**
-```typescript
-// Before
-useHoldings() => HoldingDto[]
-
-// After  
-useHoldings(portfolioId: string) => HoldingDto[]
+GET /portfolios (Update: Include Net Worth/PL summary props)
+GET /portfolios/:id/holdings (New: Get holdings for specific portfolio)
 ```
 
-### Route Structure
+### Route Structure (React Router 7)
 
 ```
-/dashboard                    → PortfolioListPage (NEW)
-/portfolio/:id                → PortfolioDetailPage (moves current dashboard here)
-/portfolio/:id/asset/:symbol  → AssetDetailPage (future story)
+apps/web/src/routes/
+  _protected._layout.dashboard.tsx      # Portfolio List (Index)
+  _protected._layout.portfolio.$id.tsx  # Portfolio Detail (Holdings)
 ```
 
 ## References

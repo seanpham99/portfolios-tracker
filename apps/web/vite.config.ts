@@ -22,7 +22,7 @@ export default defineConfig((configEnv) => {
     // We can override or extend test config here if needed
     test: {
       setupFiles: "./test/setup.ts",
-      include: ["src/__tests__/**/*.test.{ts,tsx}", "src/components/**/*.test.{ts,tsx}"],
+      include: ["src/__tests__/**/*.test.{ts,tsx}", "src/components/**/*.test.{ts,tsx}", "src/api/**/*.test.{ts,tsx}", "src/hooks/**/*.test.{ts,tsx}"],
     },
   };
 

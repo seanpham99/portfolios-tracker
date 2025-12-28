@@ -5,7 +5,8 @@
     "description": "Portfolio intelligence platform",
     "workspaces": [
         "apps/*",
-        "packages/*"
+        "packages/*",
+        "services/*"
     ],
     "scripts": {
         "build": "turbo build",

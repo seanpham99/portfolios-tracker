@@ -1,5 +1,5 @@
-import { UnifiedDashboardLayout } from "@/components/unified-dashboard-layout";
+import { Navigate } from "react-router";
 
 export default function Home() {
-  return <UnifiedDashboardLayout />;
+  return <Navigate to="/dashboard" replace />;
 }

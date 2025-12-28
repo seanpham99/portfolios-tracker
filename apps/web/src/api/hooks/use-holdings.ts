@@ -1,18 +1,10 @@
 import { useQuery } from '@tanstack/react-query';
-import { apiFetch } from '../client';
-import { HoldingDto as Holding } from '@repo/api-types';
+import { getPortfolioHoldings, getAllHoldings } from '../client';
 
-
-export const useHoldings = () => {
+export const useHoldings = (portfolioId?: string) => {
   return useQuery({
-    queryKey: ['holdings'],
-    queryFn: async () => {
-      const response = await apiFetch('/portfolios/holdings');
-      if (!response.ok) {
-        throw new Error('Failed to fetch holdings');
-      }
-      return response.json() as Promise<Holding[]>;
-    },
+    queryKey: ['holdings', portfolioId || 'all'],
+    queryFn: () => portfolioId ? getPortfolioHoldings(portfolioId) : getAllHoldings(),
     refetchInterval: 60000,
   });
 };

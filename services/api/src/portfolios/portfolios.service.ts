@@ -7,9 +7,10 @@ import {
 import { SupabaseClient, PostgrestError } from '@supabase/supabase-js';
 import { Database } from '@repo/database-types';
 import { CreatePortfolioDto, UpdatePortfolioDto } from './dto';
-import { CreateTransactionDto, HoldingDto } from '@repo/api-types';
+import { CreateTransactionDto, HoldingDto, CalculationMethod } from '@repo/api-types';
 import { Portfolio } from './portfolio.entity';
 import { CacheService } from '../cache';
+
 
 /**
  * Service for portfolio CRUD operations
@@ -308,6 +309,9 @@ export class PortfoliosService {
           currency: asset.currency,
           total_quantity: entry.qty,
           avg_cost: entry.qty > 0 ? entry.cost / entry.qty : 0,
+          // Methodology transparency fields
+          calculationMethod: CalculationMethod.WEIGHTED_AVG,
+          dataSource: 'Manual Entry', // Future: could be 'Binance via CCXT', 'vnstock', etc.
         };
       })
       .filter(h => h.total_quantity > 0); // Only return active holdings

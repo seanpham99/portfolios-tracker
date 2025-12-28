@@ -203,21 +203,34 @@ graph LR
 
 ## Screen Specifications (Dev Ready)
 
-### 1. Dashboard (`/dashboard`)
-The command center. Shows performance of the **currently selected portfolio**.
-- **Layout:** `DashboardLayout` (Sidebar + Top Bar with Portfolio Selector).
+### 1. Dashboard (`/dashboard`) - Portfolio List View
+The entry point after login. Displays **all user portfolios as cards**, not holdings directly.
+
+- **Layout:** `DashboardLayout` (Sidebar + Top Bar)
 - **Primary Components:**
-    - `PortfolioSelector`: Dropdown to switch between "Personal", "Family", etc.
-    - `PortfolioHistoryChart`: Time-series Net Worth data (1D/1W/1M/YTD/ALL).
-    - `AllocationDonut`: Asset class breakdown (VN / US / Crypto).
-    - `SummaryStats`: Net Worth, 24h P/L, Cash Balance.
-    - `UnifiedHoldingsTable`: List of all assets.
-        - Cols: Name, Ticker, Type (Badge), Price, 24h %, Value (Base Currency), P/L.
+    - `PortfolioCardList`: Grid of portfolio summary cards
+        - Each card shows: Portfolio name, Net Worth, P/L (absolute + %), allocation mini-donut
+        - Click card → navigates to `/portfolio/:id`
+    - `CreatePortfolioCard`: CTA card to create new portfolio
+    - `TotalNetWorthSummary`: Aggregated net worth across ALL portfolios (optional header)
+- **Empty State:** If no portfolios, show Empty component with "Create Your First Portfolio" CTA
 
 ### 2. Portfolio Detail (`/portfolio/:id`)
-*Note: In v1.0, the Dashboard acts as the Portfolio Detail view for the selected portfolio. Separate detail pages are for metadata management (renaming, deleting).*
+Drill-down view for a **single portfolio**. This is where the UnifiedHoldingsTable lives.
 
-### 3. Asset Detail (`/asset/:symbol`)
+- **Layout:** `DashboardLayout` with portfolio context in header
+- **Primary Components:**
+    - `PortfolioHeader`: Portfolio name, Net Worth, P/L, base currency
+    - `PortfolioHistoryChart`: Time-series Net Worth data (1D/1W/1M/YTD/ALL)
+    - `AllocationDonut`: Asset class breakdown (VN / US / Crypto)
+    - `SummaryStats`: Net Worth, 24h P/L, Cash Balance
+    - `UnifiedHoldingsTable`: List of holdings for **THIS portfolio only**
+        - Cols: Expand icon, Name, Ticker, Type (Badge), Price, 24h %, Value (Base Currency), P/L
+        - Filter bar: [All] [VN] [US] [Crypto]
+        - Row expansion → MethodologyPanel (Story 2.5)
+- **API:** `GET /portfolios/:id/holdings`
+
+### 3. Asset Detail (`/portfolio/:id/asset/:symbol`)
 Deep dive into a specific holding.
 - **Components:**
     - `TradingViewWidget`: Advanced charting.
@@ -254,22 +267,24 @@ API Management.
 
 ## Information Architecture
 
-- Global structure: Dashboard (tabbed VN/US/Crypto) → Portfolio → Asset → Transaction.
-- Navigation: Top tabs on desktop/tablet; bottom tab bar on mobile; settings and connections in a dedicated area.
-- Content hierarchy: Summary cards first, drill-down details second; charts defer mounting until visible.
+- **Global structure:** Dashboard (portfolio list) → Portfolio Detail (holdings with asset-class filters) → Asset → Transaction.
+- **Navigation flow:** Dashboard shows portfolio cards; clicking a card drills into portfolio detail with UnifiedHoldingsTable; clicking a holding expands MethodologyPanel or navigates to Asset Detail.
+- **Content hierarchy:** Portfolio cards first, then holdings list with filtering; charts and detailed analytics in Portfolio Detail and Asset Detail views.
 
 ## Core Screens
 
-### Dashboard (Home)
+### Dashboard (Home) - `/dashboard`
 
-- Enhanced Tabbed Navigation with badges: `VN Stocks (count • value)`, `US Equities`, `Crypto`.
-- Summary metrics: Net worth, allocations by asset class, top movers, freshness badge.
-- Quick actions: Add transaction, connect exchange, create portfolio.
+- **Portfolio List View:** Grid of portfolio cards showing name, net worth, P/L, allocation mini-donut.
+- Click card → navigate to Portfolio Detail (`/portfolio/:id`).
+- Summary header: Total net worth across all portfolios (optional).
+- Quick actions: Create portfolio, connect exchange.
 
-### Portfolio Detail
+### Portfolio Detail - `/portfolio/:id`
 
-- Holdings table with virtualization; filters (asset class, sector, account).
-- Allocation donut, performance sparklines, methodology toggle.
+- **Holdings table** (`UnifiedHoldingsTable`) with asset-class filter bar: [All] [VN] [US] [Crypto].
+- Row expansion → MethodologyPanel (Story 2.5).
+- Allocation donut, net worth chart, performance sparklines.
 - Staleness indicators; polling status; export actions.
 
 ### Asset Detail
@@ -362,14 +377,28 @@ Based on user feedback, the design has shifted from an "Asset Class Silo" approa
 
 ### Gap Analysis (v1.0 Implementation)
 
-**Current State:**
-- `DashboardLayout` is currently implemented with rigid Tabs ("VN/US/Crypto") which conflicts with the new Unified direction.
-- **Critical Mismatch:** The code forces segregation; the requirement is now Aggregation.
+**Current State (2025-12-28):**
+- `DashboardLayout` currently shows a single portfolio's holdings directly (via `UnifiedHoldingsTable`)
+- **Critical Mismatch:** Dashboard should show **portfolio LIST first**, then drill into portfolio detail
+- Current implementation treats `/dashboard` as if it were `/portfolio/:id` — missing the portfolio selection layer
+
+**Clarified Requirements (Party Mode Discussion 2025-12-28):**
+- `/dashboard` → Shows portfolio cards (list view)
+- `/portfolio/:id` → Shows portfolio detail with UnifiedHoldingsTable
+- Asset-class tabs (VN/US/Crypto) are **filters within** Portfolio Detail, not top-level navigation
 
 **Missing Components & Pages:**
-1.  **Unified Portfolio Components:**
-    - `PortfolioPerformanceChart`: Time-series value chart.
-    - `AllocationDonut`: Asset class breakdown.
-    - `UnifiedHoldingsTable`: Mixed-asset list with "Type" column.
-2.  **Asset Detail Page:** (`/asset/:id`) - No route or component exists.
-3.  **Transaction History:** (`/transactions`) - Skeleton only.
+1.  **Dashboard Portfolio List:**
+    - `PortfolioCard`: Card showing portfolio name, net worth, P/L, mini-donut
+    - `PortfolioCardList`: Grid layout of portfolio cards
+    - `CreatePortfolioCard`: CTA to create new portfolio
+2.  **Portfolio Detail Route:** (`/portfolio/:id`) - Currently dashboard IS this, needs to be separate route
+3.  **Asset Detail Page:** (`/portfolio/:id/asset/:symbol`) - No route or component exists
+4.  **API Endpoint:** `GET /portfolios/:id/holdings` - Missing, currently uses aggregate endpoint
+
+**Implementation Priority:**
+1. Create `PortfolioCard` component
+2. Update `/dashboard` to show portfolio list
+3. Create `/portfolio/:id` route with current dashboard content
+4. Update `useHoldings` hook to accept `portfolioId` parameter
+5. Add backend `GET /portfolios/:id/holdings` endpoint

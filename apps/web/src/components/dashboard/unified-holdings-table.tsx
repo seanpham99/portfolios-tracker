@@ -1,21 +1,36 @@
-import { useMemo, useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import { 
   useReactTable, 
   getCoreRowModel, 
-  getSortedRowModel, 
+  getSortedRowModel,
+  getExpandedRowModel,
   flexRender, 
   createColumnHelper, 
-  SortingState 
+  SortingState,
+  ExpandedState
 } from '@tanstack/react-table';
-import { ArrowUpRight, ArrowDownRight, TrendingUp, Filter } from "lucide-react";
-import { useHoldings } from '../../api/hooks/use-holdings';
+import { ArrowUpRight, ArrowDownRight, TrendingUp, Filter, ChevronRight, Briefcase, Plus } from "lucide-react";
+import { AnimatePresence } from 'framer-motion';
+import { Link } from 'react-router';
+import { useHoldings } from '@/api/hooks/use-holdings';
 import { HoldingDto as Holding } from '@repo/api-types';
+import { MethodologyPanel } from '@/components/common/methodology-panel';
+import { 
+  Empty, 
+  EmptyHeader, 
+  EmptyMedia, 
+  EmptyTitle, 
+  EmptyDescription, 
+  EmptyContent 
+} from '@repo/ui/components/empty';
+import { Button } from '@repo/ui/components/button';
 
 const columnHelper = createColumnHelper<Holding>();
 
 export function UnifiedHoldingsTable() {
-  const { data: allHoldings = [], isLoading } = useHoldings();
+  const { data: allHoldings = [], isLoading, isError } = useHoldings();
   const [sorting, setSorting] = useState<SortingState>([]);
+  const [expanded, setExpanded] = useState<ExpandedState>({});
   const [filter, setFilter] = useState<'ALL' | 'VN' | 'US' | 'CRYPTO'>('ALL');
 
   const holdings = useMemo(() => {
@@ -29,6 +44,24 @@ export function UnifiedHoldingsTable() {
   }, [allHoldings, filter]);
 
   const columns = useMemo(() => [
+    // Expansion trigger column
+    columnHelper.display({
+      id: 'expander',
+      header: () => null,
+      cell: ({ row }) => (
+        <button
+          onClick={row.getToggleExpandedHandler()}
+          className="flex h-8 w-8 items-center justify-center rounded-lg text-zinc-500 transition-colors hover:bg-white/5 hover:text-zinc-300"
+          aria-label={row.getIsExpanded() ? 'Hide methodology' : 'Show methodology'}
+          aria-expanded={row.getIsExpanded()}
+          aria-controls={`methodology-${row.id}`}
+        >
+          <ChevronRight 
+            className={`h-4 w-4 transition-transform duration-200 ${row.getIsExpanded() ? 'rotate-90' : ''}`} 
+          />
+        </button>
+      ),
+    }),
     columnHelper.accessor('symbol', {
       header: 'Asset',
       cell: info => (
@@ -122,10 +155,13 @@ export function UnifiedHoldingsTable() {
     columns,
     state: {
       sorting,
+      expanded,
     },
     onSortingChange: setSorting,
+    onExpandedChange: setExpanded,
     getCoreRowModel: getCoreRowModel(),
     getSortedRowModel: getSortedRowModel(),
+    getExpandedRowModel: getExpandedRowModel(),
   });
 
   return (
@@ -172,18 +208,63 @@ export function UnifiedHoldingsTable() {
           </thead>
           <tbody className="divide-y divide-white/5">
             {isLoading ? (
-                <tr><td colSpan={6} className="px-6 py-8 text-center text-zinc-500">Loading holdings...</td></tr>
-            ) : holdings.length === 0 ? (
-                <tr><td colSpan={6} className="px-6 py-8 text-center text-zinc-500">No holdings found</td></tr>
+                <tr><td colSpan={7} className="p-0">
+                  <div className="flex items-center justify-center py-12 text-zinc-500">
+                    <div className="animate-pulse flex items-center gap-2">
+                      <div className="h-2 w-2 rounded-full bg-zinc-500"></div>
+                      <div className="h-2 w-2 rounded-full bg-zinc-500 animation-delay-150"></div>
+                      <div className="h-2 w-2 rounded-full bg-zinc-500 animation-delay-300"></div>
+                    </div>
+                    <span className="ml-3">Loading holdings...</span>
+                  </div>
+                </td></tr>
+            ) : isError || holdings.length === 0 ? (
+                <tr><td colSpan={7} className="p-0">
+                  <Empty className="py-12">
+                    <EmptyHeader>
+                      <EmptyMedia variant="icon" className="bg-zinc-800 text-zinc-400">
+                        <Briefcase className="h-5 w-5" />
+                      </EmptyMedia>
+                      <EmptyTitle className="text-white">No holdings yet</EmptyTitle>
+                      <EmptyDescription>
+                        Start building your portfolio by adding your first transaction.
+                      </EmptyDescription>
+                    </EmptyHeader>
+                    <EmptyContent>
+                      <Button asChild size="sm" className="gap-1.5">
+                        <Link to="/transactions/new">
+                          <Plus className="h-4 w-4" />
+                          Add Transaction
+                        </Link>
+                      </Button>
+                    </EmptyContent>
+                  </Empty>
+                </td></tr>
             ) : (
                 table.getRowModel().rows.map(row => (
-                  <tr key={row.id} className="group hover:bg-white/5 transition-colors">
-                    {row.getVisibleCells().map(cell => (
-                      <td key={cell.id} className="px-6 py-4">
-                        {flexRender(cell.column.columnDef.cell, cell.getContext())}
-                      </td>
-                    ))}
-                  </tr>
+                  <React.Fragment key={row.id}>
+                    <tr className="group hover:bg-white/5 transition-colors">
+                      {row.getVisibleCells().map(cell => (
+                        <td key={cell.id} className="px-6 py-4">
+                          {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                        </td>
+                      ))}
+                    </tr>
+                    {row.getIsExpanded() && (
+                      <tr>
+                        <td colSpan={7} className="p-0">
+                          <AnimatePresence>
+                            <div id={`methodology-${row.id}`}>
+                              <MethodologyPanel
+                                calculationMethod={row.original.calculationMethod}
+                                dataSource={row.original.dataSource}
+                              />
+                            </div>
+                          </AnimatePresence>
+                        </td>
+                      </tr>
+                    )}
+                  </React.Fragment>
                 ))
             )}
           </tbody>

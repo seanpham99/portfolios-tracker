@@ -330,6 +330,8 @@ describe('PortfoliosService', () => {
 
   describe('getHoldings', () => {
     it('should aggregate holdings from transactions correctly', async () => {
+      mockCacheService.get.mockResolvedValue(null); // No cache
+      
       // Mock transactions with joined data
       const mockTransactions = [
         {
@@ -337,28 +339,28 @@ describe('PortfoliosService', () => {
           quantity: 10,
           price: 100,
           type: 'BUY',
-          assets: { symbol: 'AAPL', name: 'Apple', asset_class: 'US Equity', market: 'US', currency: 'USD' },
+          assets: { id: 'asset-1', symbol: 'AAPL', name_en: 'Apple', asset_class: 'US Equity', market: 'US', currency: 'USD' },
         },
         {
           asset_id: 'asset-1',
           quantity: 5,
           price: 120, // Total Buy Cost: 1000 + 600 = 1600. Total Buy Qty: 15. Avg: 106.66
           type: 'BUY',
-          assets: { symbol: 'AAPL', name: 'Apple', asset_class: 'US Equity', market: 'US', currency: 'USD' },
+          assets: { id: 'asset-1', symbol: 'AAPL', name_en: 'Apple', asset_class: 'US Equity', market: 'US', currency: 'USD' },
         },
         {
           asset_id: 'asset-1',
           quantity: 5,
           price: 150, // SELL. Remaining Qty: 10. Avg Cost should remain ~106.66
           type: 'SELL',
-          assets: { symbol: 'AAPL', name: 'Apple', asset_class: 'US Equity', market: 'US', currency: 'USD' },
+          assets: { id: 'asset-1', symbol: 'AAPL', name_en: 'Apple', asset_class: 'US Equity', market: 'US', currency: 'USD' },
         },
         {
           asset_id: 'asset-2',
           quantity: 100,
           price: 1,
           type: 'BUY',
-          assets: { symbol: 'VND', name: 'Vietnam Dong', asset_class: 'Cash', market: 'VN', currency: 'VND' },
+          assets: { id: 'asset-2', symbol: 'VND', name_en: 'Vietnam Dong', asset_class: 'Cash', market: 'VN', currency: 'VND' },
         },
       ];
 
@@ -392,6 +394,49 @@ describe('PortfoliosService', () => {
       expect(vnd).toBeDefined();
       expect(vnd!.total_quantity).toBe(100);
       expect(vnd!.avg_cost).toBe(1);
+    });
+
+    it('should include methodology transparency fields (calculationMethod and dataSource)', async () => {
+      // Mock transactions
+      const mockTransactions = [
+        {
+          asset_id: 'asset-1',
+          quantity: 10,
+          price: 100,
+          type: 'BUY',
+          assets: { 
+            id: 'asset-1',
+            symbol: 'AAPL', 
+            name_en: 'Apple Inc.', 
+            asset_class: 'US Equity', 
+            market: 'US', 
+            currency: 'USD' 
+          },
+        },
+      ];
+
+      // Mock Supabase chain
+      const mockSelect = jest.fn().mockReturnThis();
+      const mockEq = jest.fn().mockResolvedValue({
+        data: mockTransactions,
+        error: null,
+      });
+
+      mockSupabaseClient.from.mockReturnValue({
+        select: mockSelect,
+        eq: mockEq,
+      });
+      mockSelect.mockReturnValue({ eq: mockEq });
+      mockCacheService.get.mockResolvedValue(null); // No cache
+
+      const result = await service.getHoldings(mockUserId);
+
+      expect(result).toHaveLength(1);
+      const holding = result[0];
+      
+      // Verify methodology fields are populated
+      expect(holding.calculationMethod).toBe('WEIGHTED_AVG');
+      expect(holding.dataSource).toBe('Manual Entry');
     });
   });
 });

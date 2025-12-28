@@ -143,7 +143,8 @@ Dimensional modeling + ClickHouse columnar storage yields fast analytics, clean 
 
 ### User Success
 
-- Consolidated multi‑asset view across VN stocks, US equities, and crypto in one unified dashboard; ≤ 3 clicks to drill from net worth → portfolio → asset → transaction.
+- **Portfolio-First Navigation:** Dashboard displays a list of portfolio cards; clicking a portfolio drills into that portfolio's unified holdings view with asset-class filtering. Navigation flow: **Dashboard (portfolio list) → Portfolio Detail (holdings) → Asset Detail (transactions)**; ≤ 3 clicks to drill from dashboard → portfolio → asset → transaction.
+- Consolidated multi‑asset view within each portfolio across VN stocks, US equities, and crypto.
 - Time‑to‑first‑complete‑portfolio ≤ 15 minutes (from signup to consolidated view via manual entry).
 - Add transactions quickly: manual entry ≤ 30 seconds per transaction with autocomplete and keyboard shortcuts.
 - Crypto API sync: ≥ 98% successful connection rate for Binance and OKX; real-time balance sync within 5 seconds.

@@ -1,4 +1,5 @@
-import { IsString, IsNumber, IsOptional } from 'class-validator';
+import { IsString, IsNumber, IsOptional, IsEnum } from 'class-validator';
+import { CalculationMethod } from './calculation-method.enum';
 
 export class HoldingDto {
   @IsString()
@@ -43,4 +44,14 @@ export class HoldingDto {
   @IsNumber()
   @IsOptional()
   pl_percent?: number;
+
+  // Methodology transparency fields
+  @IsEnum(CalculationMethod)
+  @IsOptional()
+  calculationMethod?: CalculationMethod;
+
+  @IsString()
+  @IsOptional()
+  dataSource?: string;
 }
+

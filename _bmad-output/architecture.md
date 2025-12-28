@@ -709,6 +709,7 @@ GET    /portfolios/:id
 PATCH  /portfolios/:id
 DELETE /portfolios/:id
 GET    /portfolios/:id/summary          # Aggregation endpoint
+GET    /portfolios/:id/holdings         # Holdings for specific portfolio
 
 # Transactions
 GET    /portfolios/:id/transactions
@@ -860,6 +861,78 @@ function TransactionForm({ portfolioId }) {
 **Zustand Use Case:** Keep Zustand for UI-only state (theme, modal visibility, sidebar state)
 
 ---
+
+#### Decision 3.2: Frontend Route Architecture
+
+**Choice:** Portfolio-First Navigation with Drill-Down
+
+**Rationale:**
+
+-   Users manage multiple portfolios (e.g., "Personal Wealth", "Family Trust", "Trading Bot")
+-   Dashboard should show portfolio overview first, then drill into portfolio detail
+-   Aligns with PRD requirement: ≤ 3 clicks from dashboard → portfolio → asset → transaction
+
+**Route Structure:**
+
+```
+/                           # Redirect to /dashboard
+/login                      # Authentication
+/signup                     # Registration
+
+/dashboard                  # Portfolio List (cards with summary)
+                           # Shows: Portfolio name, Net Worth, P/L, allocation mini-chart
+                           # Click card → navigates to /portfolio/:id
+
+/portfolio/:id              # Portfolio Detail (Holdings + Analytics)
+                           # Shows: Net Worth chart, Allocation donut, Holdings table
+                           # Holdings table has asset-class filter (All/VN/US/Crypto)
+                           # Click row → expands methodology panel (Story 2.5)
+                           # Click asset → navigates to /portfolio/:id/asset/:symbol
+
+/portfolio/:id/asset/:symbol  # Asset Detail (Transactions + Chart)
+                           # Shows: TradingView chart, Transaction history, P/L breakdown
+
+/settings                   # User settings
+/settings/connections       # Exchange API connections (Binance, OKX)
+```
+
+**Navigation Flow:**
+
+```
+┌─────────────────────────────────────────────────────────────────┐
+│ /dashboard                                                       │
+│ ┌──────────────┐ ┌──────────────┐ ┌──────────────┐              │
+│ │ Personal     │ │ Family       │ │ + Create     │              │
+│ │ Wealth       │ │ Trust        │ │ Portfolio    │              │
+│ │ $65,450      │ │ ₫500M        │ │              │              │
+│ │ +5.5% YTD    │ │ -2.3% YTD    │ │              │              │
+│ └──────┬───────┘ └──────────────┘ └──────────────┘              │
+│        │ Click (1)                                               │
+│        ▼                                                         │
+├─────────────────────────────────────────────────────────────────┤
+│ /portfolio/:id                                                   │
+│ ┌─────────────────────────────────────────────────────────────┐ │
+│ │ Personal Wealth | $65,450 | +$3,450 (+5.5%)                 │ │
+│ ├─────────────────────────────────────────────────────────────┤ │
+│ │ [All] [VN] [US] [Crypto]  ← Asset Class Filters             │ │
+│ │ ▶ AAPL | US Equity | $150 | +2.3% | $15,000                 │ │
+│ │   └─ MethodologyPanel (cost basis, data source) ← Click (2) │ │
+│ └─────────────────────────────────────────────────────────────┘ │
+│        │ Click asset row (3)                                     │
+│        ▼                                                         │
+├─────────────────────────────────────────────────────────────────┤
+│ /portfolio/:id/asset/:symbol                                     │
+│ ┌─────────────────────────────────────────────────────────────┐ │
+│ │ AAPL - Apple Inc. | TradingView Chart                       │ │
+│ │ Transaction History | P/L Breakdown                         │ │
+│ └─────────────────────────────────────────────────────────────┘ │
+└─────────────────────────────────────────────────────────────────┘
+```
+
+**Affects:** React Router configuration, DashboardPage component, navigation state
+
+---
+
 
 ### Error Handling & Resilience
 

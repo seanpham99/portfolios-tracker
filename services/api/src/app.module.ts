@@ -8,6 +8,7 @@ import { PortfoliosModule } from './portfolios';
 import { AssetsModule } from './assets/assets.module';
 import { UsersModule } from './users/users.module';
 import { CacheModule } from './cache';
+import { ConnectionsModule } from './connections';
 
 @Module({
   imports: [
@@ -24,6 +25,7 @@ import { CacheModule } from './cache';
     PortfoliosModule,
     AssetsModule,
     UsersModule,
+    ConnectionsModule,
   ],
   controllers: [AppController],
   providers: [AppService],

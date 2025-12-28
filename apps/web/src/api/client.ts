@@ -1,4 +1,4 @@
-import { type PortfolioSummaryDto, type HoldingDto, type AssetDetailsResponseDto } from '@repo/api-types';
+import { type PortfolioSummaryDto, type HoldingDto, type AssetDetailsResponseDto, type ConnectionDto, type CreateConnectionDto, type ValidationResultDto } from '@repo/api-types';
 import { apiFetch } from '@/lib/api';
 
 export * from '@/lib/api';
@@ -82,4 +82,58 @@ export async function addTransaction(portfolioId: string, transaction: any): Pro
     throw new Error(errorData.message || 'Failed to add transaction');
   }
   return response.json();
+}
+
+// ============ Connections API ============
+
+/**
+ * Fetch all user connections
+ */
+export async function getConnections(): Promise<ConnectionDto[]> {
+  const response = await apiFetch('/connections');
+  if (!response.ok) {
+    throw new Error('Failed to fetch connections');
+  }
+  return response.json();
+}
+
+/**
+ * Create a new connection
+ */
+export async function createConnection(data: CreateConnectionDto): Promise<ConnectionDto> {
+  const response = await apiFetch('/connections', {
+    method: 'POST',
+    body: JSON.stringify(data),
+  });
+  if (!response.ok) {
+    const errorData = await response.json().catch(() => ({}));
+    throw new Error(errorData.message || 'Failed to create connection');
+  }
+  return response.json();
+}
+
+/**
+ * Validate connection credentials (dry-run)
+ */
+export async function validateConnection(data: CreateConnectionDto): Promise<ValidationResultDto> {
+  const response = await apiFetch('/connections/validate', {
+    method: 'POST',
+    body: JSON.stringify(data),
+  });
+  if (!response.ok) {
+    throw new Error('Failed to validate connection');
+  }
+  return response.json();
+}
+
+/**
+ * Delete a connection
+ */
+export async function deleteConnection(id: string): Promise<void> {
+  const response = await apiFetch(`/connections/${id}`, {
+    method: 'DELETE',
+  });
+  if (!response.ok) {
+    throw new Error('Failed to delete connection');
+  }
 }

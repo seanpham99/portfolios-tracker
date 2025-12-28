@@ -161,6 +161,50 @@ export type Database = {
           },
         ];
       };
+      user_connections: {
+        Row: {
+          api_key: string;
+          api_secret_encrypted: string;
+          created_at: string | null;
+          exchange_id: Database["public"]["Enums"]["exchange_id"];
+          id: string;
+          last_synced_at: string | null;
+          status: Database["public"]["Enums"]["connection_status"] | null;
+          updated_at: string | null;
+          user_id: string;
+        };
+        Insert: {
+          api_key: string;
+          api_secret_encrypted: string;
+          created_at?: string | null;
+          exchange_id: Database["public"]["Enums"]["exchange_id"];
+          id?: string;
+          last_synced_at?: string | null;
+          status?: Database["public"]["Enums"]["connection_status"] | null;
+          updated_at?: string | null;
+          user_id: string;
+        };
+        Update: {
+          api_key?: string;
+          api_secret_encrypted?: string;
+          created_at?: string | null;
+          exchange_id?: Database["public"]["Enums"]["exchange_id"];
+          id?: string;
+          last_synced_at?: string | null;
+          status?: Database["public"]["Enums"]["connection_status"] | null;
+          updated_at?: string | null;
+          user_id?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "user_connections_user_id_fkey";
+            columns: ["user_id"];
+            isOneToOne: false;
+            referencedRelation: "users";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
       user_preferences: {
         Row: {
           audit_metadata: Json;
@@ -244,7 +288,8 @@ export type Database = {
       show_trgm: { Args: { "": string }; Returns: string[] };
     };
     Enums: {
-      [_ in never]: never;
+      connection_status: "active" | "invalid" | "disconnected";
+      exchange_id: "binance" | "okx";
     };
     CompositeTypes: {
       [_ in never]: never;
@@ -374,11 +419,26 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      connection_status: ["active", "invalid", "disconnected"],
+      exchange_id: ["binance", "okx"],
+    },
   },
 } as const;
 
 // Schema: public
+// Enums
+export enum ConnectionStatus {
+  active = "active",
+  invalid = "invalid",
+  disconnected = "disconnected",
+}
+
+export enum ExchangeId {
+  binance = "binance",
+  okx = "okx",
+}
+
 // Tables
 export type Assets = Database["public"]["Tables"]["assets"]["Row"];
 export type InsertAssets = Database["public"]["Tables"]["assets"]["Insert"];
@@ -395,6 +455,13 @@ export type InsertTransactions =
   Database["public"]["Tables"]["transactions"]["Insert"];
 export type UpdateTransactions =
   Database["public"]["Tables"]["transactions"]["Update"];
+
+export type UserConnections =
+  Database["public"]["Tables"]["user_connections"]["Row"];
+export type InsertUserConnections =
+  Database["public"]["Tables"]["user_connections"]["Insert"];
+export type UpdateUserConnections =
+  Database["public"]["Tables"]["user_connections"]["Update"];
 
 export type UserPreferences =
   Database["public"]["Tables"]["user_preferences"]["Row"];

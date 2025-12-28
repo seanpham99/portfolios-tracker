@@ -370,6 +370,29 @@ fin-sight/
 └── package.json                # Existing root package.json
 ```
 
+> [!IMPORTANT]
+> **Shared Packages Must Be Framework-Agnostic**
+>
+> Packages under `packages/` are imported by BOTH frontend (`apps/web`) and backend (`services/api`). They MUST NOT contain framework-specific dependencies.
+>
+> **Allowed Dependencies:**
+> - ✅ Plain TypeScript (classes, interfaces, enums, types)
+> - ✅ Framework-agnostic validators (`class-validator`, `zod`)
+> - ✅ Utility libraries that work in both Node.js and browser (`date-fns`, `lodash`)
+>
+> **Prohibited Dependencies:**
+> - ❌ `@nestjs/*` packages (backend-only)
+> - ❌ React-specific packages (frontend-only)
+> - ❌ Node.js-only packages (`fs`, `path`, etc.)
+> - ❌ Browser-only APIs
+>
+> **For API Documentation:** Apply `@nestjs/swagger` decorators in backend controllers/services, NOT in shared DTOs. The plain TypeScript classes from shared packages can be referenced in `@ApiResponse({ type: SomeDto })` without needing decorators on the DTO itself.
+>
+> **Example Violation Found (2025-12-28):**
+> - `packages/api-types/src/connection.dto.ts` incorrectly imported `@nestjs/swagger`
+> - **Fix:** Removed all `@ApiProperty` decorators, kept only `class-validator` decorators
+> - **Result:** Frontend can now safely import DTOs without bundling NestJS code
+
 #### 4. Docker Deployment - Self-Hosted Strategy
 
 **Docker Compose for Development:**

@@ -104,6 +104,7 @@ export default function PortfolioDetailPage() {
         isOpen={isAddAssetOpen} 
         onClose={() => setIsAddAssetOpen(false)} 
         stageId="all"
+        portfolioId={id!}
       />
     </div>
   );

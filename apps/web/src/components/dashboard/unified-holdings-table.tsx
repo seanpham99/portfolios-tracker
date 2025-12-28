@@ -73,15 +73,18 @@ export function UnifiedHoldingsTable({ portfolioId, onAddAsset }: UnifiedHolding
     columnHelper.accessor('symbol', {
       header: 'Asset',
       cell: info => (
-        <div className="flex items-center gap-3">
-            <div className="flex h-8 w-8 items-center justify-center rounded-full bg-white/5 text-xs font-medium text-white">
+        <Link 
+          to={`/portfolio/${portfolioId || 'all'}/asset/${info.getValue()}`}
+          className="flex items-center gap-3 transition-colors hover:opacity-80 group"
+        >
+            <div className="flex h-8 w-8 items-center justify-center rounded-full bg-white/5 text-xs font-medium text-white group-hover:bg-white/10 transition-colors">
                 {info.getValue()[0]}
             </div>
             <div>
-                <div className="font-medium text-white">{info.getValue()}</div>
+                <div className="font-medium text-white group-hover:text-emerald-400 transition-colors">{info.getValue()}</div>
                 <div className="text-xs text-zinc-500">{info.row.original.name}</div>
             </div>
-        </div>
+        </Link>
       ),
     }),
     columnHelper.accessor('asset_class', {

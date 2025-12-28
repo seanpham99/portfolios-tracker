@@ -1,5 +1,10 @@
-import { Navigate } from "react-router";
+import { redirect } from "react-router";
+
+export async function loader() {
+  return redirect("/dashboard");
+}
 
 export default function Home() {
-  return <Navigate to="/dashboard" replace />;
+  // This should never render due to the loader redirect
+  return null;
 }

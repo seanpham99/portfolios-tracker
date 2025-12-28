@@ -232,6 +232,19 @@ So that I can trust the accuracy of the platform.
 **Then** a collapsible panel should appear explaining the FIFO or Weighted Average Cost formulas
 **And** the source of the asset's price data must be prominently displayed.
 
+### Story 2.9: User Preferences & Mock Cleanup
+
+As a User,
+I want my dashboard settings (base currency, refresh preferences) to persist across sessions,
+So that I have a consistent, trusted experience without "fake" mock data.
+
+**Acceptance Criteria:**
+
+**Given** the Settings page
+**When** I change my "Base Currency" or "Refresh Interval"
+**Then** the new values should be saved to the database (`user_preferences` table) and persisted on reload
+**And** the "Popular Assets" list should be fetched from the API instead of a hardcoded local file.
+
 ## Epic 3: Professional Crypto Automation
 
 Users can achieve "magic moment" tracking by syncing Binance and OKX balances effortlessly via read-only API access.

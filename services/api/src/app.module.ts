@@ -6,6 +6,7 @@ import { AppService } from './app.service';
 import { SupabaseModule } from './supabase';
 import { PortfoliosModule } from './portfolios';
 import { AssetsModule } from './assets/assets.module';
+import { UsersModule } from './users/users.module';
 import { CacheModule } from './cache';
 
 @Module({
@@ -22,6 +23,7 @@ import { CacheModule } from './cache';
     CacheModule,
     PortfoliosModule,
     AssetsModule,
+    UsersModule,
   ],
   controllers: [AppController],
   providers: [AppService],

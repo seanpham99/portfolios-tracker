@@ -1,4 +1,4 @@
-import { type PortfolioSummaryDto, type HoldingDto } from '@repo/api-types';
+import { type PortfolioSummaryDto, type HoldingDto, type AssetDetailsResponseDto } from '@repo/api-types';
 import { apiFetch } from '@/lib/api';
 
 export * from '@/lib/api';
@@ -44,6 +44,42 @@ export async function getAllHoldings(): Promise<HoldingDto[]> {
   const response = await apiFetch('/portfolios/holdings');
   if (!response.ok) {
     throw new Error('Failed to fetch holdings');
+  }
+  return response.json();
+}
+
+/**
+ * Fetch detailed asset performance and history
+ */
+export async function getAssetDetails(portfolioId: string, symbol: string): Promise<AssetDetailsResponseDto> {
+  const response = await apiFetch(`/portfolios/${portfolioId}/assets/${symbol}/details`);
+  if (!response.ok) {
+    throw new Error(`Failed to fetch asset details for ${symbol}`);
+  }
+  return response.json();
+}
+/**
+ * Search for assets by symbol or name
+ */
+export async function searchAssets(query: string): Promise<any[]> {
+  const response = await apiFetch(`/assets/search?q=${encodeURIComponent(query)}`);
+  if (!response.ok) {
+    throw new Error('Failed to search assets');
+  }
+  return response.json();
+}
+
+/**
+ * Add a transaction to a portfolio
+ */
+export async function addTransaction(portfolioId: string, transaction: any): Promise<any> {
+  const response = await apiFetch(`/portfolios/${portfolioId}/transactions`, {
+    method: 'POST',
+    body: JSON.stringify(transaction),
+  });
+  if (!response.ok) {
+    const errorData = await response.json().catch(() => ({}));
+    throw new Error(errorData.message || 'Failed to add transaction');
   }
   return response.json();
 }

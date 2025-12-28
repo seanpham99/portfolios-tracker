@@ -7,7 +7,13 @@ import {
 import { SupabaseClient, PostgrestError } from '@supabase/supabase-js';
 import { Database } from '@repo/database-types';
 import { CreatePortfolioDto, UpdatePortfolioDto } from './dto';
-import { HoldingDto, CalculationMethod, PortfolioSummaryDto, CreateTransactionDto } from '@repo/api-types';
+import { 
+  HoldingDto, 
+  CalculationMethod, 
+  PortfolioSummaryDto, 
+  CreateTransactionDto,
+  AssetDetailsResponseDto 
+} from '@repo/api-types';
 import { Portfolio } from './portfolio.entity';
 import { CacheService } from '../cache';
 
@@ -328,7 +334,7 @@ export class PortfoliosService {
     }>();
 
     for (const tx of (transactions || [])) {
-      if (!tx.assets) continue;
+      if (!tx.assets || (Array.isArray(tx.assets) && tx.assets.length === 0)) continue;
 
       const assetId = tx.asset_id;
       if (!holdingsMap.has(assetId)) {
@@ -364,7 +370,7 @@ export class PortfoliosService {
           symbol: entry.asset.symbol,
           name: entry.asset.name_en || entry.asset.name_local || entry.asset.symbol,
           asset_class: entry.asset.asset_class,
-          market: entry.asset.market,
+          market: entry.asset.market ?? undefined,
           currency: entry.asset.currency,
           total_quantity: entry.qty,
           avg_cost: entry.qty > 0 ? entry.cost / entry.qty : 0,
@@ -409,5 +415,117 @@ export class PortfoliosService {
     await this.cacheService.invalidatePortfolio(userId, portfolioId);
 
     return data;
+  }
+  /**
+   * Get detailed asset performance and history for a specific portfolio
+   */
+  async getAssetDetails(
+    userId: string,
+    portfolioId: string,
+    symbol: string,
+  ): Promise<AssetDetailsResponseDto> {
+    // 1. Verify portfolio exists and belongs to user
+    await this.findOne(userId, portfolioId);
+
+    // 2. Fetch all transactions for this symbol in this portfolio to determine the asset_id
+    // This resolves ambiguity if the same symbol exists across different markets
+    const { data: transactions, error: txError } = await this.supabase
+      .from('transactions')
+      .select(`
+        id,
+        type,
+        quantity,
+        price,
+        fee,
+        transaction_date,
+        notes,
+        assets!inner (
+            id,
+            symbol,
+            name_en,
+            name_local,
+            asset_class,
+            market,
+            currency
+        )
+      `)
+      .eq('portfolio_id', portfolioId)
+      .eq('assets.symbol', symbol)
+      .order('transaction_date', { ascending: true });
+
+    if (txError) throw txError;
+    if (!transactions || transactions.length === 0) {
+        throw new NotFoundException(`No transactions found for asset ${symbol} in this portfolio`);
+    }
+
+    // Since we filtered by assets!inner.symbol, all transactions belong to the same unique asset in this context
+    const asset = (transactions[0] as any).assets;
+
+    // 3. Calculate Metrics
+    let totalQty = 0;
+    let totalCost = 0;
+    let realizedPL = 0;
+    
+    const txDtos = transactions.map(tx => ({
+        id: tx.id,
+        type: tx.type as 'BUY' | 'SELL',
+        quantity: tx.quantity,
+        price: tx.price,
+        date: tx.transaction_date,
+        fee: tx.fee ?? 0,
+        notes: tx.notes ?? undefined
+    }));
+
+    for (const tx of transactions) {
+        if (tx.type === 'BUY') {
+            totalQty += tx.quantity;
+            totalCost += (tx.quantity * tx.price) + (tx.fee || 0);
+        } else if (tx.type === 'SELL') {
+            const currentAvgCost = totalQty > 0 ? totalCost / totalQty : 0;
+            const costBasis = currentAvgCost * tx.quantity;
+            const proceeds = (tx.quantity * tx.price) - (tx.fee || 0);
+            
+            realizedPL += (proceeds - costBasis);
+            
+            totalQty -= tx.quantity;
+            totalCost -= costBasis;
+        }
+    }
+
+    // Handle float precision
+    if (Math.abs(totalQty) < 0.000001) {
+        totalQty = 0;
+        totalCost = 0;
+    }
+
+    const avgCost = totalQty > 0 ? totalCost / totalQty : 0;
+    const currentPrice = transactions[transactions.length - 1].price; 
+    const currentValue = totalQty * currentPrice;
+    const unrealizedPL = currentValue - (totalQty * avgCost);
+    
+    return {
+        details: {
+            asset_id: asset.id,
+            symbol: asset.symbol,
+            name: asset.name_en || asset.name_local || asset.symbol,
+            asset_class: asset.asset_class,
+            market: asset.market ?? 'Unknown',
+            currency: asset.currency,
+            total_quantity: totalQty,
+            avg_cost: avgCost,
+            current_price: currentPrice,
+            current_value: currentValue,
+            total_return_abs: unrealizedPL + realizedPL,
+            total_return_pct: (totalCost > 0) ? (unrealizedPL + realizedPL) / totalCost * 100 : 0,
+            unrealized_pl: unrealizedPL,
+            unrealized_pl_pct: (avgCost > 0) ? (currentPrice - avgCost) / avgCost * 100 : 0,
+            realized_pl: realizedPL,
+            asset_gain: unrealizedPL,
+            fx_gain: 0, 
+            calculation_method: CalculationMethod.WEIGHTED_AVG,
+            last_updated: new Date().toISOString()
+        },
+        transactions: txDtos
+    };
   }
 }

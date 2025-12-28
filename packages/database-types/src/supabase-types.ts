@@ -168,7 +168,9 @@ export type Database = {
           consent_granted: boolean;
           consent_version: string;
           created_at: string;
+          currency: string;
           id: string;
+          refresh_interval: number;
           updated_at: string;
           user_id: string;
         };
@@ -178,7 +180,9 @@ export type Database = {
           consent_granted?: boolean;
           consent_version: string;
           created_at?: string;
+          currency?: string;
           id?: string;
+          refresh_interval?: number;
           updated_at?: string;
           user_id: string;
         };
@@ -188,7 +192,9 @@ export type Database = {
           consent_granted?: boolean;
           consent_version?: string;
           created_at?: string;
+          currency?: string;
           id?: string;
+          refresh_interval?: number;
           updated_at?: string;
           user_id?: string;
         };

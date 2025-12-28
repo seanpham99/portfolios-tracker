@@ -7,5 +7,7 @@ onlyBuiltDependencies:
   - '@nestjs/core'
   - '@scarf/scarf'
   - '@swc/core'
+  - core-js-pure
   - esbuild
   - supabase
+  - unrs-resolver

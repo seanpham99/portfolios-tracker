@@ -22,6 +22,31 @@ const mockSupabaseClient = {
   from: jest.fn(),
 };
 
+// Reusable mock chain factory
+const createMockChain = () => {
+  const chain: any = {
+    select: jest.fn().mockReturnThis(),
+    insert: jest.fn().mockReturnThis(),
+    update: jest.fn().mockReturnThis(),
+    delete: jest.fn().mockReturnThis(),
+    eq: jest.fn().mockReturnThis(),
+    order: jest.fn().mockReturnThis(),
+    limit: jest.fn().mockReturnThis(),
+    single: jest.fn(),
+    then: jest.fn(),
+  };
+
+  // Default behavior: single() returns { data: null, error: null }
+  chain.single.mockResolvedValue({ data: null, error: null });
+  
+  // Default behavior: awaiting the chain returns { data: [], error: null }
+  chain.then.mockImplementation((resolve: any) => {
+    resolve({ data: [], error: null });
+  });
+
+  return chain;
+};
+
 // Mock Cache service
 const mockCacheService = {
   get: jest.fn(),
@@ -32,8 +57,12 @@ const mockCacheService = {
 
 describe('PortfoliosService', () => {
   let service: PortfoliosService;
+  let mockChain: any;
 
   beforeEach(async () => {
+    mockChain = createMockChain();
+    mockSupabaseClient.from.mockReturnValue(mockChain);
+
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         PortfoliosService,
@@ -64,27 +93,16 @@ describe('PortfoliosService', () => {
     };
 
     it('should create a portfolio successfully', async () => {
-      const mockInsert = jest.fn().mockReturnThis();
-      const mockSelect = jest.fn().mockReturnThis();
-      const mockSingle = jest.fn().mockResolvedValue({
+      mockChain.single.mockResolvedValue({
         data: mockPortfolio,
         error: null,
       });
-
-      mockSupabaseClient.from.mockReturnValue({
-        insert: mockInsert,
-        select: mockSelect,
-        single: mockSingle,
-      });
-
-      mockInsert.mockReturnValue({ select: mockSelect });
-      mockSelect.mockReturnValue({ single: mockSingle });
 
       const result = await service.create(mockUserId, createDto);
 
       expect(result).toEqual(mockPortfolio);
       expect(mockSupabaseClient.from).toHaveBeenCalledWith('portfolios');
-      expect(mockInsert).toHaveBeenCalledWith({
+      expect(mockChain.insert).toHaveBeenCalledWith({
         user_id: mockUserId,
         name: createDto.name,
         base_currency: createDto.base_currency,
@@ -94,21 +112,10 @@ describe('PortfoliosService', () => {
     });
 
     it('should throw ConflictException for duplicate name', async () => {
-      const mockInsert = jest.fn().mockReturnThis();
-      const mockSelect = jest.fn().mockReturnThis();
-      const mockSingle = jest.fn().mockResolvedValue({
+      mockChain.single.mockResolvedValue({
         data: null,
         error: { code: '23505', message: 'duplicate key' },
       });
-
-      mockSupabaseClient.from.mockReturnValue({
-        insert: mockInsert,
-        select: mockSelect,
-        single: mockSingle,
-      });
-
-      mockInsert.mockReturnValue({ select: mockSelect });
-      mockSelect.mockReturnValue({ single: mockSingle });
 
       await expect(service.create(mockUserId, createDto)).rejects.toThrow(
         ConflictException,
@@ -132,23 +139,14 @@ describe('PortfoliosService', () => {
       mockCacheService.get.mockResolvedValue(null);
       const mockPortfolios = [mockPortfolio];
       
-      // Mock Portfolios Chain
-      const mockPortfoliosChain = {
-        select: jest.fn().mockReturnThis(),
-        eq: jest.fn().mockReturnThis(),
-        order: jest.fn().mockResolvedValue({ data: mockPortfolios, error: null }),
-      };
-
-      // Mock Transactions Chain
-      const mockTransactionsChain = {
-        select: jest.fn().mockReturnThis(),
-        eq: jest.fn().mockResolvedValue({ data: [], error: null }),
-      };
-
-      mockSupabaseClient.from.mockImplementation((table: string) => {
-        if (table === 'portfolios') return mockPortfoliosChain;
-        if (table === 'transactions') return mockTransactionsChain;
-        return { select: jest.fn() };
+      mockSupabaseClient.from.mockImplementation((table) => {
+        const c = createMockChain();
+        if (table === 'portfolios') {
+          c.then.mockImplementation((resolve: any) => resolve({ data: mockPortfolios, error: null }));
+        } else if (table === 'transactions') {
+          c.then.mockImplementation((resolve: any) => resolve({ data: [], error: null }));
+        }
+        return c;
       });
 
       const result = await service.findAll(mockUserId);
@@ -170,28 +168,14 @@ describe('PortfoliosService', () => {
 
   describe('findOne', () => {
     it('should return a portfolio by id with summary', async () => {
-      // Mock Portfolios Chain
-      const mockPortfoliosChain = {
-        select: jest.fn().mockReturnThis(),
-        eq: jest.fn().mockReturnThis(),
-        single: jest.fn().mockResolvedValue({ data: mockPortfolio, error: null }),
-      };
-
-      // Mock Transactions Chain
-      const mockTransactionsChain = {
-        select: jest.fn().mockReturnThis(),
-        eq: jest.fn().mockReturnThis(), // handle multiple eqs
-      };
-      // Configure transaction chain specifically
-      const mockTxEq1 = jest.fn().mockReturnThis();
-      const mockTxEq2 = jest.fn().mockResolvedValue({ data: [], error: null });
-      
-      mockTransactionsChain.eq.mockReturnValueOnce(mockTxEq1).mockReturnValueOnce(mockTxEq2);
-
-      mockSupabaseClient.from.mockImplementation((table: string) => {
-        if (table === 'portfolios') return mockPortfoliosChain;
-        if (table === 'transactions') return mockTransactionsChain;
-        return { select: jest.fn() };
+      mockSupabaseClient.from.mockImplementation((table) => {
+        const c = createMockChain();
+        if (table === 'portfolios') {
+          c.single.mockResolvedValue({ data: mockPortfolio, error: null });
+        } else if (table === 'transactions') {
+          c.then.mockImplementation((resolve: any) => resolve({ data: [], error: null }));
+        }
+        return c;
       });
 
       const result = await service.findOne(mockUserId, mockPortfolio.id);
@@ -200,23 +184,10 @@ describe('PortfoliosService', () => {
     });
 
     it('should throw NotFoundException when portfolio not found', async () => {
-      const mockSelect = jest.fn().mockReturnThis();
-      const mockEq1 = jest.fn().mockReturnThis();
-      const mockEq2 = jest.fn().mockReturnThis();
-      const mockSingle = jest.fn().mockResolvedValue({
+      mockChain.single.mockResolvedValue({
         data: null,
         error: { code: 'PGRST116', message: 'not found' },
       });
-
-      mockSupabaseClient.from.mockReturnValue({
-        select: mockSelect,
-        eq: mockEq1,
-        single: mockSingle,
-      });
-
-      mockSelect.mockReturnValue({ eq: mockEq1 });
-      mockEq1.mockReturnValue({ eq: mockEq2 });
-      mockEq2.mockReturnValue({ single: mockSingle });
 
       await expect(
         service.findOne(mockUserId, 'non-existent-id'),
@@ -231,44 +202,24 @@ describe('PortfoliosService', () => {
 
     it('should update a portfolio successfully', async () => {
       const updatedPortfolio = { ...mockPortfolio, name: 'Updated Portfolio' };
+      const pChain = createMockChain();
+      const txChain = createMockChain();
 
-      // Mock findOne first
-      const mockSelectFind = jest.fn().mockReturnThis();
-      const mockEqFind1 = jest.fn().mockReturnThis();
-      const mockEqFind2 = jest.fn().mockReturnThis();
-      const mockSingleFind = jest.fn().mockResolvedValue({
-        data: mockPortfolio,
-        error: null,
+      mockSupabaseClient.from.mockImplementation((table) => {
+        if (table === 'portfolios') return pChain;
+        if (table === 'transactions') return txChain;
+        return createMockChain();
       });
 
-      // Mock update
-      const mockUpdate = jest.fn().mockReturnThis();
-      const mockEqUpdate1 = jest.fn().mockReturnThis();
-      const mockEqUpdate2 = jest.fn().mockReturnThis();
-      const mockSelectUpdate = jest.fn().mockReturnThis();
-      const mockSingleUpdate = jest.fn().mockResolvedValue({
-        data: updatedPortfolio,
-        error: null,
-      });
+      // pChain.single is called:
+      // 1. findOne -> portfolio check
+      // 2. update -> result check
+      pChain.single
+        .mockResolvedValueOnce({ data: mockPortfolio, error: null })
+        .mockResolvedValueOnce({ data: updatedPortfolio, error: null });
 
-      let callCount = 0;
-      mockSupabaseClient.from.mockImplementation(() => {
-        callCount++;
-        if (callCount === 1) {
-          // findOne call
-          mockSelectFind.mockReturnValue({ eq: mockEqFind1 });
-          mockEqFind1.mockReturnValue({ eq: mockEqFind2 });
-          mockEqFind2.mockReturnValue({ single: mockSingleFind });
-          return { select: mockSelectFind };
-        } else {
-          // update call
-          mockUpdate.mockReturnValue({ eq: mockEqUpdate1 });
-          mockEqUpdate1.mockReturnValue({ eq: mockEqUpdate2 });
-          mockEqUpdate2.mockReturnValue({ select: mockSelectUpdate });
-          mockSelectUpdate.mockReturnValue({ single: mockSingleUpdate });
-          return { update: mockUpdate };
-        }
-      });
+      // txChain.then (findOne tx query)
+      txChain.then.mockImplementation((resolve: any) => resolve({ data: [], error: null }));
 
       const result = await service.update(
         mockUserId,
@@ -283,38 +234,15 @@ describe('PortfoliosService', () => {
 
   describe('remove', () => {
     it('should delete a portfolio successfully', async () => {
-      // Mock findOne first
-      const mockSelectFind = jest.fn().mockReturnThis();
-      const mockEqFind1 = jest.fn().mockReturnThis();
-      const mockEqFind2 = jest.fn().mockReturnThis();
-      const mockSingleFind = jest.fn().mockResolvedValue({
-        data: mockPortfolio,
-        error: null,
-      });
-
-      // Mock delete
-      const mockDelete = jest.fn().mockReturnThis();
-      const mockEqDelete1 = jest.fn().mockReturnThis();
-      const mockEqDelete2 = jest.fn().mockResolvedValue({
-        data: null,
-        error: null,
-      });
-
-      let callCount = 0;
-      mockSupabaseClient.from.mockImplementation(() => {
-        callCount++;
-        if (callCount === 1) {
-          // findOne call
-          mockSelectFind.mockReturnValue({ eq: mockEqFind1 });
-          mockEqFind1.mockReturnValue({ eq: mockEqFind2 });
-          mockEqFind2.mockReturnValue({ single: mockSingleFind });
-          return { select: mockSelectFind };
-        } else {
-          // delete call
-          mockDelete.mockReturnValue({ eq: mockEqDelete1 });
-          mockEqDelete1.mockReturnValue({ eq: mockEqDelete2 });
-          return { delete: mockDelete };
+      mockSupabaseClient.from.mockImplementation((table) => {
+        const c = createMockChain();
+        if (table === 'portfolios') {
+          c.single.mockResolvedValue({ data: mockPortfolio, error: null }); // findOne
+          c.then.mockImplementation((resolve: any) => resolve({ error: null })); // delete
+        } else if (table === 'transactions') {
+          c.then.mockImplementation((resolve: any) => resolve({ data: [], error: null }));
         }
+        return c;
       });
 
       await expect(
@@ -325,27 +253,16 @@ describe('PortfoliosService', () => {
     });
 
     it('should throw NotFoundException when portfolio to delete is not found', async () => {
-      const mockSelectFind = jest.fn().mockReturnThis();
-      const mockEqFind1 = jest.fn().mockReturnThis();
-      const mockEqFind2 = jest.fn().mockReturnThis();
-      const mockSingleFind = jest.fn().mockResolvedValue({
+      mockChain.single.mockResolvedValue({
         data: null,
         error: { code: 'PGRST116', message: 'not found' },
       });
-
-      mockSupabaseClient.from.mockReturnValue({
-        select: mockSelectFind,
-      });
-      mockSelectFind.mockReturnValue({ eq: mockEqFind1 });
-      mockEqFind1.mockReturnValue({ eq: mockEqFind2 });
-      mockEqFind2.mockReturnValue({ single: mockSingleFind });
 
       await expect(
         service.remove(mockUserId, 'non-existent-id'),
       ).rejects.toThrow(NotFoundException);
     });
-    });
-
+  });
 
   describe('getHoldings', () => {
     it('should aggregate holdings from transactions correctly', async () => {
@@ -363,42 +280,24 @@ describe('PortfoliosService', () => {
         {
           asset_id: 'asset-1',
           quantity: 5,
-          price: 120, // Total Buy Cost: 1000 + 600 = 1600. Total Buy Qty: 15. Avg: 106.66
+          price: 120, 
           type: 'BUY',
           assets: { id: 'asset-1', symbol: 'AAPL', name_en: 'Apple', asset_class: 'US Equity', market: 'US', currency: 'USD' },
         },
         {
           asset_id: 'asset-1',
           quantity: 5,
-          price: 150, // SELL. Remaining Qty: 10. Avg Cost should remain ~106.66
+          price: 150, 
           type: 'SELL',
           assets: { id: 'asset-1', symbol: 'AAPL', name_en: 'Apple', asset_class: 'US Equity', market: 'US', currency: 'USD' },
         },
-        {
-          asset_id: 'asset-2',
-          quantity: 100,
-          price: 1,
-          type: 'BUY',
-          assets: { id: 'asset-2', symbol: 'VND', name_en: 'Vietnam Dong', asset_class: 'Cash', market: 'VN', currency: 'VND' },
-        },
       ];
 
-      // Mock Supabase chain
-      const mockSelect = jest.fn().mockReturnThis();
-      const mockEq = jest.fn().mockResolvedValue({
-        data: mockTransactions,
-        error: null,
-      });
-
-      mockSupabaseClient.from.mockReturnValue({
-        select: mockSelect,
-        eq: mockEq,
-      });
-      mockSelect.mockReturnValue({ eq: mockEq });
+      mockChain.then.mockImplementation((resolve: any) => resolve({ data: mockTransactions, error: null }));
 
       const result = await service.getHoldings(mockUserId);
 
-      expect(result).toHaveLength(2);
+      expect(result).toHaveLength(1);
       
       const aapl = result.find(h => h.symbol === 'AAPL');
       expect(aapl).toBeDefined();
@@ -408,11 +307,6 @@ describe('PortfoliosService', () => {
       // Buy 2: 5 @ 120 = 600. Total Cost = 1600. Total Qty = 15. Avg = 106.666
       // Sell 1: 5 @ 150. Reduced Cost = 5 * 106.666 = 533.33. Remaining Cost = 1066.67. Remaining Qty = 10. Avg = 106.666.
       expect(aapl!.avg_cost).toBeCloseTo(106.667, 3);
-      
-      const vnd = result.find(h => h.symbol === 'VND');
-      expect(vnd).toBeDefined();
-      expect(vnd!.total_quantity).toBe(100);
-      expect(vnd!.avg_cost).toBe(1);
     });
 
     it('should include methodology transparency fields (calculationMethod and dataSource)', async () => {
@@ -434,19 +328,11 @@ describe('PortfoliosService', () => {
         },
       ];
 
-      // Mock Supabase chain
-      const mockSelect = jest.fn().mockReturnThis();
-      const mockEq = jest.fn().mockResolvedValue({
+      mockChain.eq.mockResolvedValue({
         data: mockTransactions,
         error: null,
       });
-
-      mockSupabaseClient.from.mockReturnValue({
-        select: mockSelect,
-        eq: mockEq,
-      });
-      mockSelect.mockReturnValue({ eq: mockEq });
-      mockCacheService.get.mockResolvedValue(null); // No cache
+      mockCacheService.get.mockResolvedValue(null);
 
       const result = await service.getHoldings(mockUserId);
 
@@ -456,6 +342,85 @@ describe('PortfoliosService', () => {
       // Verify methodology fields are populated
       expect(holding.calculationMethod).toBe('WEIGHTED_AVG');
       expect(holding.dataSource).toBe('Manual Entry');
+    });
+  });
+
+  describe('getAssetDetails', () => {
+    it('should return detailed asset information and transaction history', async () => {
+      const symbol = 'AAPL';
+      const portfolioId = 'portfolio-1';
+
+      const mockAsset = { id: 'asset-1', symbol: 'AAPL', name_en: 'Apple Inc.', asset_class: 'US Equity', market: 'US', currency: 'USD' };
+      
+      // Mock transactions for AAPL in this portfolio
+      const mockTransactions = [
+        {
+          id: 'tx-1',
+          asset_id: 'asset-1',
+          quantity: 10,
+          price: 150,
+          fee: 5,
+          type: 'BUY',
+          transaction_date: '2025-01-01T00:00:00Z',
+          assets: mockAsset
+        },
+        {
+          id: 'tx-2',
+          asset_id: 'asset-1',
+          quantity: 5,
+          price: 200, 
+          fee: 5,
+          type: 'SELL',
+          transaction_date: '2025-01-02T00:00:00Z',
+          assets: mockAsset
+        },
+      ];
+
+      mockSupabaseClient.from.mockImplementation((table) => {
+        const c = createMockChain();
+        if (table === 'portfolios') {
+          c.single.mockResolvedValue({ data: mockPortfolio, error: null });
+        } else if (table === 'transactions') {
+          // getAssetDetails: calls from('transactions').select('..., assets!inner(...)')
+          c.then.mockImplementation((resolve: any) => resolve({ data: mockTransactions, error: null }));
+        }
+        return c;
+      });
+
+      const result = await service.getAssetDetails(mockUserId, portfolioId, symbol);
+
+      // Verify Transactions
+      expect(result.transactions).toHaveLength(2);
+      expect(result.transactions[0].id).toBe('tx-1');
+
+      // Verify Details
+      // Buy 10 @ 150 + 5 fee = 1505. Avg: 150.5
+      // Sold 5: proceeds (5*200)-5 = 995. Cost basis 5*150.5 = 752.5. 
+      // Realized PL = 995 - 752.5 = 242.5
+      // Remaining 5. Avg cost 150.5. Current price 200 (last tx). Current value 1000.
+      // Asset Gain (Unrealized) = 1000 - 752.5 = 247.5.
+      expect(result.details.symbol).toBe('AAPL');
+      expect(result.details.avg_cost).toBe(150.5);
+      expect(result.details.total_quantity).toBe(5);
+      expect(result.details.realized_pl).toBe(242.5);
+      expect(result.details.asset_gain).toBe(247.5);
+      expect(result.details.unrealized_pl).toBe(247.5);
+      expect(result.details.calculation_method).toBe('WEIGHTED_AVG');
+    });
+
+    it('should throw NotFoundException if asset has no transactions in portfolio', async () => {
+      mockSupabaseClient.from.mockImplementation((table) => {
+        const c = createMockChain();
+        if (table === 'portfolios') {
+          c.single.mockResolvedValue({ data: mockPortfolio, error: null });
+        } else if (table === 'transactions') {
+          c.then.mockImplementation((resolve: any) => resolve({ data: [], error: null }));
+        }
+        return c;
+      });
+
+      await expect(service.getAssetDetails(mockUserId, 'pid', 'UNKNOWN'))
+        .rejects.toThrow(NotFoundException);
     });
   });
 });

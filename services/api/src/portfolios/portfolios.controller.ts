@@ -13,11 +13,11 @@ import {
 } from '@nestjs/common';
 import { PortfoliosService } from './portfolios.service';
 import { CreatePortfolioDto, UpdatePortfolioDto } from './dto';
-import { CreateTransactionDto, HoldingDto } from '@repo/api-types';
+import { CreateTransactionDto, HoldingDto, PortfolioSummaryDto, AssetDetailsResponseDto } from '@repo/api-types';
 import { Portfolio } from './portfolio.entity';
 import { AuthGuard } from './guards/auth.guard';
 import { UserId } from './decorators/user-id.decorator';
-import { PortfolioSummaryDto } from '@repo/api-types';
+
 
 /**
  * Controller for portfolio management endpoints
@@ -57,6 +57,21 @@ export class PortfoliosController {
   }
 
    /**
+   * GET /portfolios/:id/holdings - Get holdings for specific portfolio
+   */
+  /**
+   * GET /portfolios/:id/assets/:symbol/details - Get details for asset in portfolio
+   */
+  @Get(':id/assets/:symbol/details')
+  async getAssetDetails(
+    @UserId() userId: string,
+    @Param('id', ParseUUIDPipe) id: string,
+    @Param('symbol') symbol: string,
+  ): Promise<AssetDetailsResponseDto> {
+    return this.portfoliosService.getAssetDetails(userId, id, symbol);
+  }
+
+  /**
    * GET /portfolios/:id/holdings - Get holdings for specific portfolio
    */
   @Get(':id/holdings')

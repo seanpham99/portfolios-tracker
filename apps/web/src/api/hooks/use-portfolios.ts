@@ -1,5 +1,6 @@
-import { useQuery } from '@tanstack/react-query';
-import { getPortfolios, getPortfolio } from '../client';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { getPortfolios, getPortfolio, addTransaction, searchAssets } from '../client';
+import { TransactionType } from '@repo/api-types';
 
 export const usePortfolios = () => {
   return useQuery({
@@ -17,5 +18,35 @@ export const usePortfolio = (id: string) => {
     enabled: !!id,
     staleTime: 30 * 1000,
     gcTime: 5 * 60 * 1000,
+  });
+};
+
+export const useSearchAssets = (query: string) => {
+  return useQuery({
+    queryKey: ['assets', 'search', query],
+    queryFn: () => searchAssets(query),
+    enabled: query.length >= 2,
+    staleTime: 5 * 60 * 1000, // Assets don't change often
+  });
+};
+
+export const useAddTransaction = (portfolioId: string) => {
+  const queryClient = useQueryClient();
+  
+  return useMutation({
+    mutationFn: (transaction: {
+      asset_id: string;
+      type: TransactionType;
+      quantity: number;
+      price: number;
+      fee?: number;
+      notes?: string;
+    }) => addTransaction(portfolioId, { ...transaction, portfolio_id: portfolioId }),
+    onSuccess: () => {
+      // Invalidate portfolio and holdings queries
+      queryClient.invalidateQueries({ queryKey: ['portfolio', portfolioId] });
+      queryClient.invalidateQueries({ queryKey: ['holdings', portfolioId] });
+      queryClient.invalidateQueries({ queryKey: ['holdings', 'all'] });
+    },
   });
 };

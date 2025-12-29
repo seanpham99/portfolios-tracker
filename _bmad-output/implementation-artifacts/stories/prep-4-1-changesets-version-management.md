@@ -1,6 +1,6 @@
 # Story Prep-4.1: Changesets for Version Management
 
-Status: backlog
+Status: review
 
 ## Story
 
@@ -30,48 +30,48 @@ So that I can track changes across packages and publish releases with confidence
 
 ## Tasks / Subtasks
 
-- [ ] **Task 1: Install & Initialize Changesets**
-  - [ ] Run `pnpm add -Dw @changesets/cli`
-  - [ ] Run `pnpm changeset init`
-  - [ ] Verify `.changeset/` folder created with `config.json` and `README.md`
+- [x] **Task 1: Install & Initialize Changesets**
+  - [x] Run `pnpm add -Dw @changesets/cli`
+  - [x] Run `pnpm changeset init`
+  - [x] Verify `.changeset/` folder created with `config.json` and `README.md`
 
-- [ ] **Task 2: Configure Changeset Settings**
-  - [ ] Edit `.changeset/config.json`:
-    - Set `baseBranch: "main"`
+- [x] **Task 2: Configure Changeset Settings**
+  - [x] Edit `.changeset/config.json`:
+    - Set `baseBranch: "master"` (repo uses master, not main)
     - Set `access: "restricted"` (private packages)
     - Configure `ignore: []` if any packages should be excluded
-  - [ ] Verify all workspace packages are detected
+  - [x] Verify all workspace packages are detected
 
-- [ ] **Task 3: Add Package.json Scripts**
-  - [ ] Add to root `package.json`:
+- [x] **Task 3: Add Package.json Scripts**
+  - [x] Add to root `package.json`:
     - `"changeset": "changeset"`
     - `"changeset:version": "changeset version"`
     - `"changeset:publish": "changeset publish"`
-  - [ ] Test `pnpm changeset add` command
+  - [x] Test `pnpm changeset add` command
 
-- [ ] **Task 4: Create Sample Changeset**
-  - [ ] Run `pnpm changeset add` for test change
-  - [ ] Select `@repo/api-types` package
-  - [ ] Choose `patch` bump
-  - [ ] Verify `.changeset/[random-name].md` created
+- [x] **Task 4: Create Sample Changeset**
+  - [x] Run `pnpm changeset add` for test change
+  - [x] Select `@repo/api-types` package
+  - [x] Choose `patch` bump
+  - [x] Verify `.changeset/[random-name].md` created
 
-- [ ] **Task 5: Test Version Bumping**
-  - [ ] Run `pnpm changeset:version`
-  - [ ] Verify package.json versions updated
-  - [ ] Verify CHANGELOG.md created/updated
-  - [ ] Commit changes with `chore: test changeset workflow`
+- [x] **Task 5: Test Version Bumping**
+  - [x] Run `pnpm changeset:version`
+  - [x] Verify package.json versions updated
+  - [x] Verify CHANGELOG.md created/updated
+  - [x] Commit changes with `chore: test changeset workflow`
 
-- [ ] **Task 6: Document Workflow**
-  - [ ] Create/update `CONTRIBUTING.md` with:
+- [x] **Task 6: Document Workflow**
+  - [x] Create/update `CONTRIBUTING.md` with:
     - When to create changesets (feature, fix, breaking change)
     - How to run changeset commands
     - Conventional commit types mapping to bump types
-  - [ ] Add examples of good changeset descriptions
+  - [x] Add examples of good changeset descriptions
 
-- [ ] **Task 7: (Optional) CI Integration**
-  - [ ] Create `.github/workflows/changeset-check.yml`
-  - [ ] Add step to validate changeset presence on PRs
-  - [ ] Exclude `chore:`, `docs:`, `test:` commits from check
+- [x] **Task 7: (Optional) CI Integration**
+  - [x] Create `.github/workflows/changeset-check.yml`
+  - [x] Add step to validate changeset presence on PRs
+  - [x] Exclude `chore:`, `docs:`, `test:` commits from check
 
 ## Technical Guidelines
 
@@ -83,16 +83,38 @@ So that I can track changes across packages and publish releases with confidence
 
 **Date:** 2025-12-29
 
-**Files to Create:**
+**Implementation Plan:**
+Implemented automated version management using Changesets CLI for the Turborepo monorepo. The workflow enables atomic version bumps across multiple packages with automatic CHANGELOG generation.
 
-- `.changeset/config.json`
-- `.changeset/README.md`
-- `CONTRIBUTING.md` (or update if exists)
-- (Optional) `.github/workflows/changeset-check.yml`
+**Key Implementation Details:**
+1. **Base Branch Configuration:** Updated config to use `master` (not `main`) to match repository's actual branch structure
+2. **Package Detection:** Verified all 9 workspace packages are correctly detected (apps/web, services/api, packages/*)
+3. **Version Workflow:** Successfully tested patch bump on @repo/api-types (0.0.1 → 0.0.2)
+4. **Documentation:** Created comprehensive CONTRIBUTING.md with changeset workflow, conventional commits mapping, and examples
+5. **CI Integration:** Added GitHub Actions workflow to validate changeset presence on PRs for feat/fix commits
 
-**Files to Modify:**
+**Files Created:**
+- `.changeset/config.json` - Changesets configuration with baseBranch: "master"
+- `.changeset/README.md` - Auto-generated changeset usage instructions
+- `CONTRIBUTING.md` - Comprehensive contributor guide with changeset workflow
+- `.github/workflows/changeset-check.yml` - PR validation workflow
+- `packages/api-types/CHANGELOG.md` - Auto-generated changelog (from test)
 
-- `package.json` (root) - add scripts
+**Files Modified:**
+- `package.json` (root) - Added changeset, changeset:version, changeset:publish scripts
+
+**Completion Notes:**
+✅ All acceptance criteria satisfied:
+1. `pnpm changeset` prompts for package selection and change description
+2. `pnpm changeset:version` atomically bumps versions and updates CHANGELOGs
+3. GitHub Action validates changeset presence for non-chore commits on PRs
+
+**Testing:**
+- Installed @changesets/cli successfully
+- Created sample changeset for @repo/api-types
+- Ran changeset:version to verify version bump (0.0.1 → 0.0.2)
+- Verified CHANGELOG.md generation
+- Committed with "chore: test changeset workflow"
 
 ## References
 

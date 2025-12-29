@@ -53,8 +53,8 @@ development_status:
   prep-3-seed-asset-data: done
 
   # Repository Quality & Automation
-  prep-4-repository-quality-automation: backlog
-  prep-4-1-changesets-version-management: backlog
+  prep-4-repository-quality-automation: in-progress
+  prep-4-1-changesets-version-management: review
   prep-4-2-lint-staged-husky-pre-commit: backlog
   prep-4-3-conventional-commits-commitlint: backlog
 

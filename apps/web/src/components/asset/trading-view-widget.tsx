@@ -22,7 +22,7 @@ function TradingViewWidget({ symbol }: { symbol: string }) {
 
       // If it looks like a crypto (ends in USDT, BTC, ETH)
       if (s.endsWith("USDT") || s.endsWith("BTC") || s.endsWith("ETH")) {
-        return `BINANCE:${s}`;
+        return `BINANCE:${s}USDT`;
       }
 
       // Default to NASDAQ for demo if not specified

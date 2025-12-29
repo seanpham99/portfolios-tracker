@@ -25,11 +25,17 @@ workflow_path: "method-brownfield"
 workflow_status:
   # PREREQUISITE: Documentation (if undocumented)
   document-project:
-    status: docs/index.md
-    agent: analyst
+    status: completed
+    agent: pm
     command: document-project
     phase: prerequisite
     purpose: "Understand existing codebase before planning"
+    completed: "2025-12-29"
+    note: "Comprehensive planning artifacts supersede technical docs - see PRD, Architecture, Project Context"
+    artifacts:
+      - "_bmad-output/prd.md"
+      - "_bmad-output/architecture.md"
+      - "_bmad-output/project-context.md"
 
   # PHASE 0: Discovery (Optional - User Selected)
   research:

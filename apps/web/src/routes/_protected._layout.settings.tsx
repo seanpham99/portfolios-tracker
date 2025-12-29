@@ -3,7 +3,13 @@ import { Currency } from "@repo/api-types";
 import { ArrowRight, Link as LinkIcon } from "lucide-react";
 import { Link } from "react-router";
 import { Button } from "@repo/ui/components/button";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@repo/ui/components/card";
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+  CardDescription,
+} from "@repo/ui/components/card";
 import { Spinner } from "@repo/ui/components/spinner";
 import { Slider } from "@repo/ui/components/slider";
 
@@ -34,16 +40,22 @@ export default function SettingsPage() {
       <Card>
         <CardHeader>
           <CardTitle>Currency</CardTitle>
-          <CardDescription>Select your preferred display currency</CardDescription>
+          <CardDescription>
+            Select your preferred display currency
+          </CardDescription>
         </CardHeader>
         <CardContent>
           <div className="flex gap-2">
-            {([Currency.USD, Currency.VND, Currency.EUR, Currency.GBP] as const).map((currency) => (
+            {(
+              [Currency.USD, Currency.VND, Currency.EUR, Currency.GBP] as const
+            ).map((currency) => (
               <Button
                 key={currency}
                 onClick={() => updateSettings.mutate({ currency })}
                 disabled={updateSettings.isPending}
-                variant={settings?.currency === currency ? "default" : "outline"}
+                variant={
+                  settings?.currency === currency ? "default" : "outline"
+                }
                 size="sm"
               >
                 {currency}
@@ -94,8 +106,12 @@ export default function SettingsPage() {
                     <LinkIcon className="h-4 w-4 text-primary" />
                   </div>
                   <div>
-                    <h4 className="font-medium text-sm">Exchange Connections</h4>
-                    <p className="text-xs text-muted-foreground">Connect Binance, OKX for auto-sync</p>
+                    <h4 className="font-medium text-sm">
+                      Exchange Connections
+                    </h4>
+                    <p className="text-xs text-muted-foreground">
+                      Connect Binance, OKX for auto-sync
+                    </p>
                   </div>
                 </div>
                 <ArrowRight className="h-5 w-5 text-muted-foreground" />

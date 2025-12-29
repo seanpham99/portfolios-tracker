@@ -10,4 +10,4 @@ import { PortfoliosModule } from '../portfolios/portfolios.module';
   providers: [UsersService],
   exports: [UsersService],
 })
-export class UsersModule { }
+export class UsersModule {}

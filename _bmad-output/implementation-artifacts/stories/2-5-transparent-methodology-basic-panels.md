@@ -35,9 +35,10 @@ So that I can trust the accuracy of the platform.
 ## Dev Agent Record
 
 ### Implementation Plan
+
 - [x] **Task 1: Extend Shared API Contracts**
   - [x] Created `CalculationMethod` enum in `@repo/api-types`
-  - [x] Extended `HoldingDto` with `calculationMethod` and `dataSource` fields  
+  - [x] Extended `HoldingDto` with `calculationMethod` and `dataSource` fields
   - [x] Updated NestJS `PortfoliosService.getHoldings()` to populate methodology fields
   - [x] Added unit tests for methodology field population
 
@@ -49,9 +50,11 @@ So that I can trust the accuracy of the platform.
   - [x] Used `AnimatePresence` for smooth slide/fade transitions
 
 ### Debug Log
-*(No blocking issues encountered)*
+
+_(No blocking issues encountered)_
 
 ### Completion Notes
+
 - ✅ **Backend:** `HoldingDto` extended with `calculationMethod` (enum) and `dataSource` fields
 - ✅ **Shared Types:** `CalculationMethod` enum created with `WEIGHTED_AVG` and `FIFO` values
 - ✅ **Service Logic:** All holdings now return `calculationMethod: WEIGHTED_AVG` and `dataSource: Manual Entry`
@@ -66,6 +69,7 @@ So that I can trust the accuracy of the platform.
 - ✅ **(Review Fix 4):** Cleaned up import formatting and extracted animation duration constant
 
 ## File List
+
 - packages/api-types/src/calculation-method.enum.ts
 - packages/api-types/src/holding.dto.ts
 - packages/api-types/src/index.ts
@@ -74,7 +78,8 @@ So that I can trust the accuracy of the platform.
 - apps/web/src/components/common/methodology-panel.tsx
 - apps/web/src/components/dashboard/unified-holdings-table.tsx
 
-##  Change Log
+## Change Log
+
 - 2025-12-28: Story 2.5 implemented - Added methodology transparency with row expansion panels
 - 2025-12-28: (Review Fix) Replaced plain empty state with shared Empty component from @repo/ui with proper CTA
 - 2025-12-28: (Code Review) Fixed 4 issues: prefers-reduced-motion support, React Fragment keys, import cleanup, animation constants

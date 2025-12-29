@@ -64,7 +64,7 @@ So that malicious sites cannot perform actions on my behalf.
           includeSubDomains: true,
           preload: true,
         },
-      })
+      }),
     );
     ```
 

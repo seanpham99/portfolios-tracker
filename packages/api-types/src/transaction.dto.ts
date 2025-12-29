@@ -1,8 +1,17 @@
-import { IsEnum, IsNotEmpty, IsNumber, IsOptional, IsString, IsUUID, Min, IsDateString } from 'class-validator';
+import {
+  IsEnum,
+  IsNotEmpty,
+  IsNumber,
+  IsOptional,
+  IsString,
+  IsUUID,
+  Min,
+  IsDateString,
+} from "class-validator";
 
 export enum TransactionType {
-  BUY = 'BUY',
-  SELL = 'SELL',
+  BUY = "BUY",
+  SELL = "SELL",
 }
 
 export class CreateTransactionDto {
@@ -19,12 +28,12 @@ export class CreateTransactionDto {
   type: TransactionType;
 
   @IsNumber()
-  @Min(0.00000001, { message: 'Quantity must be greater than 0' })
+  @Min(0.00000001, { message: "Quantity must be greater than 0" })
   @IsNotEmpty()
   quantity: number;
 
   @IsNumber()
-  @Min(0.01, { message: 'Price must be greater than 0' })
+  @Min(0.01, { message: "Price must be greater than 0" })
   @IsNotEmpty()
   price: number;
 
@@ -33,7 +42,10 @@ export class CreateTransactionDto {
   @IsOptional()
   fee?: number;
 
-  @IsDateString({}, { message: 'Transaction date must be a valid ISO 8601 date string' })
+  @IsDateString(
+    {},
+    { message: "Transaction date must be a valid ISO 8601 date string" },
+  )
   @IsOptional()
   transaction_date?: string;
 
@@ -48,12 +60,12 @@ export class UpdateTransactionDto {
   type?: TransactionType;
 
   @IsNumber()
-  @Min(0.00000001, { message: 'Quantity must be greater than 0' })
+  @Min(0.00000001, { message: "Quantity must be greater than 0" })
   @IsOptional()
   quantity?: number;
 
   @IsNumber()
-  @Min(0.01, { message: 'Price must be greater than 0' })
+  @Min(0.01, { message: "Price must be greater than 0" })
   @IsOptional()
   price?: number;
 
@@ -62,7 +74,10 @@ export class UpdateTransactionDto {
   @IsOptional()
   fee?: number;
 
-  @IsDateString({}, { message: 'Transaction date must be a valid ISO 8601 date string' })
+  @IsDateString(
+    {},
+    { message: "Transaction date must be a valid ISO 8601 date string" },
+  )
   @IsOptional()
   transaction_date?: string;
 

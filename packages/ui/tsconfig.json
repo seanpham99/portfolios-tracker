@@ -1,21 +1,17 @@
 {
-    "files": [],
-    "references": [
-        {
-            "path": "./tsconfig.app.json"
-        },
-        {
-            "path": "./tsconfig.node.json"
-        }
-    ],
-    "compilerOptions": {
-        "paths": {
-            "@/*": [
-                "./src/*"
-            ],
-            "@repo/ui/*": [
-                "./src/*"
-            ]
-        }
+  "files": [],
+  "references": [
+    {
+      "path": "./tsconfig.app.json"
+    },
+    {
+      "path": "./tsconfig.node.json"
     }
+  ],
+  "compilerOptions": {
+    "paths": {
+      "@/*": ["./src/*"],
+      "@repo/ui/*": ["./src/*"]
+    }
+  }
 }

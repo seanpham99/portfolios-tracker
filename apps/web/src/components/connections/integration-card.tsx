@@ -4,11 +4,21 @@
  * Story: 2.7 Connection Settings
  */
 
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@repo/ui/components/card';
-import { Button } from '@repo/ui/components/button';
-import { Badge } from '@repo/ui/components/badge';
-import { ExchangeId, ConnectionStatus, type ConnectionDto } from '@repo/api-types';
-import { cn } from '@repo/ui/lib/utils';
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@repo/ui/components/card";
+import { Button } from "@repo/ui/components/button";
+import { Badge } from "@repo/ui/components/badge";
+import {
+  ExchangeId,
+  ConnectionStatus,
+  type ConnectionDto,
+} from "@repo/api-types";
+import { cn } from "@repo/ui/lib/utils";
 
 // Exchange logos as simple SVG icons
 const EXCHANGE_LOGOS: Record<ExchangeId, React.ReactNode> = {
@@ -40,13 +50,15 @@ const EXCHANGE_LOGOS: Record<ExchangeId, React.ReactNode> = {
 };
 
 const EXCHANGE_NAMES: Record<ExchangeId, string> = {
-  [ExchangeId.BINANCE]: 'Binance',
-  [ExchangeId.OKX]: 'OKX',
+  [ExchangeId.BINANCE]: "Binance",
+  [ExchangeId.OKX]: "OKX",
 };
 
 const EXCHANGE_DESCRIPTIONS: Record<ExchangeId, string> = {
-  [ExchangeId.BINANCE]: 'Connect your Binance account to automatically sync spot balances.',
-  [ExchangeId.OKX]: 'Connect your OKX account to automatically sync spot balances.',
+  [ExchangeId.BINANCE]:
+    "Connect your Binance account to automatically sync spot balances.",
+  [ExchangeId.OKX]:
+    "Connect your OKX account to automatically sync spot balances.",
 };
 
 interface IntegrationCardProps {
@@ -68,15 +80,17 @@ export function IntegrationCard({
   const status = connection?.status ?? ConnectionStatus.DISCONNECTED;
 
   const statusColors: Record<ConnectionStatus, string> = {
-    [ConnectionStatus.ACTIVE]: 'bg-green-500/10 text-green-500 border-green-500/20',
-    [ConnectionStatus.INVALID]: 'bg-red-500/10 text-red-500 border-red-500/20',
-    [ConnectionStatus.DISCONNECTED]: 'bg-muted text-muted-foreground border-muted',
+    [ConnectionStatus.ACTIVE]:
+      "bg-green-500/10 text-green-500 border-green-500/20",
+    [ConnectionStatus.INVALID]: "bg-red-500/10 text-red-500 border-red-500/20",
+    [ConnectionStatus.DISCONNECTED]:
+      "bg-muted text-muted-foreground border-muted",
   };
 
   const statusLabels: Record<ConnectionStatus, string> = {
-    [ConnectionStatus.ACTIVE]: 'Connected',
-    [ConnectionStatus.INVALID]: 'Error',
-    [ConnectionStatus.DISCONNECTED]: 'Not Connected',
+    [ConnectionStatus.ACTIVE]: "Connected",
+    [ConnectionStatus.INVALID]: "Error",
+    [ConnectionStatus.DISCONNECTED]: "Not Connected",
   };
 
   return (
@@ -86,14 +100,16 @@ export function IntegrationCard({
           {EXCHANGE_LOGOS[exchange]}
         </div>
         <div className="flex-1">
-          <CardTitle className="text-lg text-white">{EXCHANGE_NAMES[exchange]}</CardTitle>
+          <CardTitle className="text-lg text-white">
+            {EXCHANGE_NAMES[exchange]}
+          </CardTitle>
           <CardDescription className="text-sm text-zinc-400">
             {EXCHANGE_DESCRIPTIONS[exchange]}
           </CardDescription>
         </div>
         <Badge
           variant="outline"
-          className={cn('capitalize', statusColors[status])}
+          className={cn("capitalize", statusColors[status])}
         >
           {statusLabels[status]}
         </Badge>
@@ -105,7 +121,10 @@ export function IntegrationCard({
               <p>API Key: {connection.apiKeyMasked}</p>
             )}
             {connection.lastSyncedAt && (
-              <p>Last synced: {new Date(connection.lastSyncedAt).toLocaleString()}</p>
+              <p>
+                Last synced:{" "}
+                {new Date(connection.lastSyncedAt).toLocaleString()}
+              </p>
             )}
           </div>
         )}

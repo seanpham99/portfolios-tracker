@@ -1,5 +1,5 @@
-import { IsString, IsNumber, IsOptional, IsEnum } from 'class-validator';
-import { CalculationMethod } from './calculation-method.enum';
+import { IsString, IsNumber, IsOptional, IsEnum } from "class-validator";
+import { CalculationMethod } from "./calculation-method.enum";
 
 export class HoldingDto {
   @IsString()
@@ -27,7 +27,7 @@ export class HoldingDto {
   @IsString()
   @IsOptional()
   currency?: string;
-  
+
   // Computed on frontend or optional backend fields
   @IsNumber()
   @IsOptional()
@@ -54,4 +54,3 @@ export class HoldingDto {
   @IsOptional()
   dataSource?: string;
 }
-

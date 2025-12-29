@@ -85,7 +85,7 @@ So that injection attacks (SQL/XSS/NoSQL) are prevented.
         forbidNonWhitelisted: true, // Reject unknown properties
         transform: true, // Auto-transform payloads to DTO instances
         disableErrorMessages: process.env.NODE_ENV === "production", // Hide details in prod
-      })
+      }),
     );
     ```
 
@@ -114,13 +114,14 @@ So that injection attacks (SQL/XSS/NoSQL) are prevented.
 
     export function StripHTML() {
       return Transform(({ value }) =>
-        sanitizeHtml(value, { allowedTags: [], allowedAttributes: {} })
+        sanitizeHtml(value, { allowedTags: [], allowedAttributes: {} }),
       );
     }
     ```
 
 - [ ] **Task 5: File Upload Validation (Future-Proof)**
   - [ ] Create `FileValidationPipe`:
+
     ```typescript
     @Injectable()
     export class FileValidationPipe implements PipeTransform {
@@ -140,6 +141,7 @@ So that injection attacks (SQL/XSS/NoSQL) are prevented.
       }
     }
     ```
+
   - [ ] Test with various file types
 
 - [ ] **Task 6: SQL Injection Protection Audit**

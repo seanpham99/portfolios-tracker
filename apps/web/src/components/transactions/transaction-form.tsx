@@ -1,10 +1,22 @@
-import { useActionState, useState, useEffect, useOptimistic, useId } from "react";
+import {
+  useActionState,
+  useState,
+  useEffect,
+  useOptimistic,
+  useId,
+} from "react";
 import { AssetAutocomplete } from "./asset-autocomplete";
 import { Assets } from "@repo/database-types";
 import { Button } from "@repo/ui/components/button";
 import { Input } from "@repo/ui/components/input";
 import { Label } from "@repo/ui/components/label";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@repo/ui/components/select";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@repo/ui/components/select";
 import { cn } from "@repo/ui/lib/utils";
 import { apiFetch } from "@/lib/api";
 
@@ -12,7 +24,7 @@ interface Transaction {
   id: string;
   portfolio_id: string;
   asset_id: string;
-  type: 'BUY' | 'SELL';
+  type: "BUY" | "SELL";
   quantity: number;
   price: number;
   fee: number;
@@ -48,12 +60,12 @@ async function submitTransactionAction(prevState: any, formData: FormData) {
       body: JSON.stringify({
         portfolio_id: portfolioId,
         asset_id: assetId,
-        type: type || 'BUY',
+        type: type || "BUY",
         quantity: Number(quantity),
         price: Number(price),
         fee: Number(fee || 0),
         notes: notes ? String(notes) : undefined,
-      })
+      }),
     });
 
     if (!res.ok) {
@@ -61,7 +73,9 @@ async function submitTransactionAction(prevState: any, formData: FormData) {
       try {
         const err = await res.json();
         errMessage = err.message || err.error || errMessage;
-      } catch { /* ignore parse error */ }
+      } catch {
+        /* ignore parse error */
+      }
       return { error: errMessage };
     }
 
@@ -81,14 +95,20 @@ export function TransactionForm({
   onSuccess?: (transaction: Transaction) => void;
   existingTransactions?: Transaction[];
 }) {
-  const [state, formAction, isPending] = useActionState(submitTransactionAction, null);
+  const [state, formAction, isPending] = useActionState(
+    submitTransactionAction,
+    null,
+  );
   const [selectedAsset, setSelectedAsset] = useState<Assets | null>(null);
   const [type, setType] = useState("BUY");
 
   // Optimistic UI: Show transaction immediately while API call is in flight
   const [optimisticTransactions, addOptimisticTransaction] = useOptimistic(
     existingTransactions,
-    (current: Transaction[], newTransaction: Transaction) => [newTransaction, ...current]
+    (current: Transaction[], newTransaction: Transaction) => [
+      newTransaction,
+      ...current,
+    ],
   );
 
   // Generate unique IDs for form labels
@@ -111,7 +131,7 @@ export function TransactionForm({
         id: `optimistic-${Date.now()}`,
         portfolio_id: portfolioId,
         asset_id: selectedAsset.id,
-        type: type as 'BUY' | 'SELL',
+        type: type as "BUY" | "SELL",
         quantity: Number(formData.get("quantity")),
         price: Number(formData.get("price")),
         fee: Number(formData.get("fee") || 0),
@@ -120,7 +140,7 @@ export function TransactionForm({
       };
       addOptimisticTransaction(optimisticTx);
     }
-    
+
     // Call actual form action
     formAction(formData);
   };
@@ -211,19 +231,26 @@ export function TransactionForm({
               type="submit"
               className={cn(
                 "w-full font-semibold transition-all",
-                type === 'BUY'
+                type === "BUY"
                   ? "bg-emerald-600 hover:bg-emerald-500 text-white"
-                  : "bg-rose-600 hover:bg-rose-500 text-white"
+                  : "bg-rose-600 hover:bg-rose-500 text-white",
               )}
               disabled={isPending || !selectedAsset}
             >
-              {isPending ? "Saving..." : (type === 'BUY' ? "Confirm Purchase" : "Confirm Sale")}
+              {isPending
+                ? "Saving..."
+                : type === "BUY"
+                  ? "Confirm Purchase"
+                  : "Confirm Sale"}
             </Button>
           </div>
         </fieldset>
 
         {state?.error && (
-          <p className="text-red-500 text-sm font-medium text-center" role="alert">
+          <p
+            className="text-red-500 text-sm font-medium text-center"
+            role="alert"
+          >
             {state.error}
           </p>
         )}
@@ -232,23 +259,34 @@ export function TransactionForm({
       {/* Optimistic UI List */}
       {optimisticTransactions.length > 0 && (
         <div className="border-t pt-4">
-          <h4 className="text-sm font-medium mb-3 text-muted-foreground">Recent Activity</h4>
+          <h4 className="text-sm font-medium mb-3 text-muted-foreground">
+            Recent Activity
+          </h4>
           <div className="space-y-3">
             {optimisticTransactions.slice(0, 3).map((tx) => (
-              <div 
-                key={tx.id} 
+              <div
+                key={tx.id}
                 className={cn(
-                  "flex justify-between items-center text-sm p-3 rounded-md border transition-all", 
-                  tx.id.startsWith('optimistic') 
-                    ? "bg-muted/50 opacity-70 border-dashed animate-pulse" 
-                    : "bg-card"
+                  "flex justify-between items-center text-sm p-3 rounded-md border transition-all",
+                  tx.id.startsWith("optimistic")
+                    ? "bg-muted/50 opacity-70 border-dashed animate-pulse"
+                    : "bg-card",
                 )}
               >
                 <div className="flex flex-col">
-                  <span className={cn("font-semibold", tx.type === 'BUY' ? "text-emerald-500" : "text-rose-500")}>
-                    {tx.type} {tx.asset_symbol || 'Asset'}
+                  <span
+                    className={cn(
+                      "font-semibold",
+                      tx.type === "BUY" ? "text-emerald-500" : "text-rose-500",
+                    )}
+                  >
+                    {tx.type} {tx.asset_symbol || "Asset"}
                   </span>
-                  {tx.notes && <span className="text-xs text-muted-foreground truncate max-w-[150px]">{tx.notes}</span>}
+                  {tx.notes && (
+                    <span className="text-xs text-muted-foreground truncate max-w-[150px]">
+                      {tx.notes}
+                    </span>
+                  )}
                 </div>
                 <div className="font-mono text-xs">
                   {tx.quantity} @ {tx.price}

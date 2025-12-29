@@ -55,6 +55,7 @@ So that I spend less than 30 seconds per entry.
 ## Dev Agent Record
 
 ### Implementation Notes - 2025-12-27
+
 - **Database:** Created `transactions` table with RLS policies and indexes for `pg_trgm`.
 - **Backend:**
   - Generated `AssetsModule` with `AssetsService` and `AssetsController`.
@@ -75,9 +76,10 @@ So that I spend less than 30 seconds per entry.
 **Total Action Items:** 15 (8 High, 5 Medium, 2 Low) → All Fixed
 
 #### Fixes Applied:
+
 - [x] [HIGH] Added `pg_trgm` extension to migration
 - [x] [HIGH] Added authentication headers to `AssetAutocomplete` API calls
-- [x] [HIGH] Added authentication headers to `TransactionForm` API calls  
+- [x] [HIGH] Added authentication headers to `TransactionForm` API calls
 - [x] [HIGH] Implemented Upstash Redis cache invalidation via `CacheModule`
 - [x] [HIGH] Implemented `useOptimistic` in `TransactionForm`
 - [x] [HIGH] Fixed price validation (min 0.01 instead of 0)
@@ -92,6 +94,7 @@ So that I spend less than 30 seconds per entry.
 - [x] [LOW] Centralized API URL configuration
 
 ### File List
+
 - supabase/migrations/20251227190000_create_transactions_table.sql
 - services/api/src/assets/assets.service.ts
 - services/api/src/assets/assets.controller.ts
@@ -107,7 +110,7 @@ So that I spend less than 30 seconds per entry.
 - apps/web/src/lib/api.ts
 - apps/web/src/components/transactions/asset-autocomplete.tsx
 - apps/web/src/components/transactions/transaction-form.tsx
-- apps/web/src/components/transactions/__tests__/asset-autocomplete.test.tsx
-- apps/web/src/components/transactions/__tests__/transaction-form.test.tsx
+- apps/web/src/components/transactions/**tests**/asset-autocomplete.test.tsx
+- apps/web/src/components/transactions/**tests**/transaction-form.test.tsx
 - apps/web/src/types/asset.ts
 - apps/web/src/hooks/use-debounce.ts

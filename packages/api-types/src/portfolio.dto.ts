@@ -1,6 +1,6 @@
-import { type Database } from '@repo/database-types';
+import { type Database } from "@repo/database-types";
 
-export type Portfolio = Database['public']['Tables']['portfolios']['Row'];
+export type Portfolio = Database["public"]["Tables"]["portfolios"]["Row"];
 
 export interface PortfolioSummaryDto extends Portfolio {
   netWorth: number;

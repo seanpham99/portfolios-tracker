@@ -27,16 +27,28 @@ export default function Layout() {
 
           <div className="flex items-center gap-6">
             <nav className="flex items-center gap-6 text-sm">
-              <Link className="text-zinc-400 transition-colors hover:text-white" to="/">
+              <Link
+                className="text-zinc-400 transition-colors hover:text-white"
+                to="/"
+              >
                 Overview
               </Link>
-              <Link className="text-zinc-400 transition-colors hover:text-white" to="/history">
+              <Link
+                className="text-zinc-400 transition-colors hover:text-white"
+                to="/history"
+              >
                 History
               </Link>
-              <Link className="text-zinc-400 transition-colors hover:text-white" to="/analytics">
+              <Link
+                className="text-zinc-400 transition-colors hover:text-white"
+                to="/analytics"
+              >
                 Analytics
               </Link>
-              <Link className="text-zinc-400 transition-colors hover:text-white" to="/settings">
+              <Link
+                className="text-zinc-400 transition-colors hover:text-white"
+                to="/settings"
+              >
                 Settings
               </Link>
             </nav>
@@ -62,7 +74,8 @@ export default function Layout() {
 
       <footer className="border-t border-white/6 px-8 py-4">
         <p className="text-xs text-zinc-600">
-          Portfolios Tracker – All your assets in one place. © {new Date().getFullYear()} All rights reserved.
+          Portfolios Tracker – All your assets in one place. ©{" "}
+          {new Date().getFullYear()} All rights reserved.
         </p>
       </footer>
     </div>

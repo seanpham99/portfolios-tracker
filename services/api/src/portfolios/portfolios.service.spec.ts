@@ -38,7 +38,7 @@ const createMockChain = () => {
 
   // Default behavior: single() returns { data: null, error: null }
   chain.single.mockResolvedValue({ data: null, error: null });
-  
+
   // Default behavior: awaiting the chain returns { data: [], error: null }
   chain.then.mockImplementation((resolve: any) => {
     resolve({ data: [], error: null });
@@ -108,7 +108,9 @@ describe('PortfoliosService', () => {
         base_currency: createDto.base_currency,
         description: createDto.description,
       });
-      expect(mockCacheService.del).toHaveBeenCalledWith(`portfolios:${mockUserId}`);
+      expect(mockCacheService.del).toHaveBeenCalledWith(
+        `portfolios:${mockUserId}`,
+      );
     });
 
     it('should throw ConflictException for duplicate name', async () => {
@@ -129,29 +131,35 @@ describe('PortfoliosService', () => {
       mockCacheService.get.mockResolvedValue(mockPortfolios);
 
       const result = await service.findAll(mockUserId);
-      
+
       expect(result).toEqual(mockPortfolios);
-      expect(mockCacheService.get).toHaveBeenCalledWith(`portfolios:${mockUserId}`);
+      expect(mockCacheService.get).toHaveBeenCalledWith(
+        `portfolios:${mockUserId}`,
+      );
       expect(mockSupabaseClient.from).not.toHaveBeenCalled();
     });
 
     it('should return all portfolios for user from DB with summary', async () => {
       mockCacheService.get.mockResolvedValue(null);
       const mockPortfolios = [mockPortfolio];
-      
+
       mockSupabaseClient.from.mockImplementation((table) => {
         const c = createMockChain();
         if (table === 'portfolios') {
-          c.then.mockImplementation((resolve: any) => resolve({ data: mockPortfolios, error: null }));
+          c.then.mockImplementation((resolve: any) =>
+            resolve({ data: mockPortfolios, error: null }),
+          );
         } else if (table === 'transactions') {
-          c.then.mockImplementation((resolve: any) => resolve({ data: [], error: null }));
+          c.then.mockImplementation((resolve: any) =>
+            resolve({ data: [], error: null }),
+          );
         }
         return c;
       });
 
       const result = await service.findAll(mockUserId);
-      
-      const expectedPortfolios = mockPortfolios.map(p => ({
+
+      const expectedPortfolios = mockPortfolios.map((p) => ({
         ...p,
         netWorth: 0,
         change24h: 0,
@@ -162,7 +170,10 @@ describe('PortfoliosService', () => {
       expect(result).toEqual(expectedPortfolios);
       expect(mockSupabaseClient.from).toHaveBeenCalledWith('portfolios');
       expect(mockSupabaseClient.from).toHaveBeenCalledWith('transactions');
-      expect(mockCacheService.set).toHaveBeenCalledWith(`portfolios:${mockUserId}`, expectedPortfolios);
+      expect(mockCacheService.set).toHaveBeenCalledWith(
+        `portfolios:${mockUserId}`,
+        expectedPortfolios,
+      );
     });
   });
 
@@ -173,14 +184,22 @@ describe('PortfoliosService', () => {
         if (table === 'portfolios') {
           c.single.mockResolvedValue({ data: mockPortfolio, error: null });
         } else if (table === 'transactions') {
-          c.then.mockImplementation((resolve: any) => resolve({ data: [], error: null }));
+          c.then.mockImplementation((resolve: any) =>
+            resolve({ data: [], error: null }),
+          );
         }
         return c;
       });
 
       const result = await service.findOne(mockUserId, mockPortfolio.id);
 
-      expect(result).toEqual({ ...mockPortfolio, netWorth: 0, change24h: 0, change24hPercent: 0, allocation: [] });
+      expect(result).toEqual({
+        ...mockPortfolio,
+        netWorth: 0,
+        change24h: 0,
+        change24hPercent: 0,
+        allocation: [],
+      });
     });
 
     it('should throw NotFoundException when portfolio not found', async () => {
@@ -219,7 +238,9 @@ describe('PortfoliosService', () => {
         .mockResolvedValueOnce({ data: updatedPortfolio, error: null });
 
       // txChain.then (findOne tx query)
-      txChain.then.mockImplementation((resolve: any) => resolve({ data: [], error: null }));
+      txChain.then.mockImplementation((resolve: any) =>
+        resolve({ data: [], error: null }),
+      );
 
       const result = await service.update(
         mockUserId,
@@ -228,7 +249,10 @@ describe('PortfoliosService', () => {
       );
 
       expect(result).toEqual(updatedPortfolio);
-      expect(mockCacheService.invalidatePortfolio).toHaveBeenCalledWith(mockUserId, mockPortfolio.id);
+      expect(mockCacheService.invalidatePortfolio).toHaveBeenCalledWith(
+        mockUserId,
+        mockPortfolio.id,
+      );
     });
   });
 
@@ -240,7 +264,9 @@ describe('PortfoliosService', () => {
           c.single.mockResolvedValue({ data: mockPortfolio, error: null }); // findOne
           c.then.mockImplementation((resolve: any) => resolve({ error: null })); // delete
         } else if (table === 'transactions') {
-          c.then.mockImplementation((resolve: any) => resolve({ data: [], error: null }));
+          c.then.mockImplementation((resolve: any) =>
+            resolve({ data: [], error: null }),
+          );
         }
         return c;
       });
@@ -248,8 +274,11 @@ describe('PortfoliosService', () => {
       await expect(
         service.remove(mockUserId, mockPortfolio.id),
       ).resolves.toBeUndefined();
-      
-      expect(mockCacheService.invalidatePortfolio).toHaveBeenCalledWith(mockUserId, mockPortfolio.id);
+
+      expect(mockCacheService.invalidatePortfolio).toHaveBeenCalledWith(
+        mockUserId,
+        mockPortfolio.id,
+      );
     });
 
     it('should throw NotFoundException when portfolio to delete is not found', async () => {
@@ -267,7 +296,7 @@ describe('PortfoliosService', () => {
   describe('getHoldings', () => {
     it('should aggregate holdings from transactions correctly', async () => {
       mockCacheService.get.mockResolvedValue(null); // No cache
-      
+
       // Mock transactions with joined data
       const mockTransactions = [
         {
@@ -275,31 +304,54 @@ describe('PortfoliosService', () => {
           quantity: 10,
           price: 100,
           type: 'BUY',
-          assets: { id: 'asset-1', symbol: 'AAPL', name_en: 'Apple', asset_class: 'US Equity', market: 'US', currency: 'USD' },
+          assets: {
+            id: 'asset-1',
+            symbol: 'AAPL',
+            name_en: 'Apple',
+            asset_class: 'US Equity',
+            market: 'US',
+            currency: 'USD',
+          },
         },
         {
           asset_id: 'asset-1',
           quantity: 5,
-          price: 120, 
+          price: 120,
           type: 'BUY',
-          assets: { id: 'asset-1', symbol: 'AAPL', name_en: 'Apple', asset_class: 'US Equity', market: 'US', currency: 'USD' },
+          assets: {
+            id: 'asset-1',
+            symbol: 'AAPL',
+            name_en: 'Apple',
+            asset_class: 'US Equity',
+            market: 'US',
+            currency: 'USD',
+          },
         },
         {
           asset_id: 'asset-1',
           quantity: 5,
-          price: 150, 
+          price: 150,
           type: 'SELL',
-          assets: { id: 'asset-1', symbol: 'AAPL', name_en: 'Apple', asset_class: 'US Equity', market: 'US', currency: 'USD' },
+          assets: {
+            id: 'asset-1',
+            symbol: 'AAPL',
+            name_en: 'Apple',
+            asset_class: 'US Equity',
+            market: 'US',
+            currency: 'USD',
+          },
         },
       ];
 
-      mockChain.then.mockImplementation((resolve: any) => resolve({ data: mockTransactions, error: null }));
+      mockChain.then.mockImplementation((resolve: any) =>
+        resolve({ data: mockTransactions, error: null }),
+      );
 
       const result = await service.getHoldings(mockUserId);
 
       expect(result).toHaveLength(1);
-      
-      const aapl = result.find(h => h.symbol === 'AAPL');
+
+      const aapl = result.find((h) => h.symbol === 'AAPL');
       expect(aapl).toBeDefined();
       expect(aapl!.total_quantity).toBe(10);
       // Avg Cost Logic:
@@ -317,13 +369,13 @@ describe('PortfoliosService', () => {
           quantity: 10,
           price: 100,
           type: 'BUY',
-          assets: { 
+          assets: {
             id: 'asset-1',
-            symbol: 'AAPL', 
-            name_en: 'Apple Inc.', 
-            asset_class: 'US Equity', 
-            market: 'US', 
-            currency: 'USD' 
+            symbol: 'AAPL',
+            name_en: 'Apple Inc.',
+            asset_class: 'US Equity',
+            market: 'US',
+            currency: 'USD',
           },
         },
       ];
@@ -338,7 +390,7 @@ describe('PortfoliosService', () => {
 
       expect(result).toHaveLength(1);
       const holding = result[0];
-      
+
       // Verify methodology fields are populated
       expect(holding.calculationMethod).toBe('WEIGHTED_AVG');
       expect(holding.dataSource).toBe('Manual Entry');
@@ -350,8 +402,15 @@ describe('PortfoliosService', () => {
       const symbol = 'AAPL';
       const portfolioId = 'portfolio-1';
 
-      const mockAsset = { id: 'asset-1', symbol: 'AAPL', name_en: 'Apple Inc.', asset_class: 'US Equity', market: 'US', currency: 'USD' };
-      
+      const mockAsset = {
+        id: 'asset-1',
+        symbol: 'AAPL',
+        name_en: 'Apple Inc.',
+        asset_class: 'US Equity',
+        market: 'US',
+        currency: 'USD',
+      };
+
       // Mock transactions for AAPL in this portfolio
       const mockTransactions = [
         {
@@ -362,17 +421,17 @@ describe('PortfoliosService', () => {
           fee: 5,
           type: 'BUY',
           transaction_date: '2025-01-01T00:00:00Z',
-          assets: mockAsset
+          assets: mockAsset,
         },
         {
           id: 'tx-2',
           asset_id: 'asset-1',
           quantity: 5,
-          price: 200, 
+          price: 200,
           fee: 5,
           type: 'SELL',
           transaction_date: '2025-01-02T00:00:00Z',
-          assets: mockAsset
+          assets: mockAsset,
         },
       ];
 
@@ -382,12 +441,18 @@ describe('PortfoliosService', () => {
           c.single.mockResolvedValue({ data: mockPortfolio, error: null });
         } else if (table === 'transactions') {
           // getAssetDetails: calls from('transactions').select('..., assets!inner(...)')
-          c.then.mockImplementation((resolve: any) => resolve({ data: mockTransactions, error: null }));
+          c.then.mockImplementation((resolve: any) =>
+            resolve({ data: mockTransactions, error: null }),
+          );
         }
         return c;
       });
 
-      const result = await service.getAssetDetails(mockUserId, portfolioId, symbol);
+      const result = await service.getAssetDetails(
+        mockUserId,
+        portfolioId,
+        symbol,
+      );
 
       // Verify Transactions
       expect(result.transactions).toHaveLength(2);
@@ -395,7 +460,7 @@ describe('PortfoliosService', () => {
 
       // Verify Details
       // Buy 10 @ 150 + 5 fee = 1505. Avg: 150.5
-      // Sold 5: proceeds (5*200)-5 = 995. Cost basis 5*150.5 = 752.5. 
+      // Sold 5: proceeds (5*200)-5 = 995. Cost basis 5*150.5 = 752.5.
       // Realized PL = 995 - 752.5 = 242.5
       // Remaining 5. Avg cost 150.5. Current price 200 (last tx). Current value 1000.
       // Asset Gain (Unrealized) = 1000 - 752.5 = 247.5.
@@ -414,13 +479,16 @@ describe('PortfoliosService', () => {
         if (table === 'portfolios') {
           c.single.mockResolvedValue({ data: mockPortfolio, error: null });
         } else if (table === 'transactions') {
-          c.then.mockImplementation((resolve: any) => resolve({ data: [], error: null }));
+          c.then.mockImplementation((resolve: any) =>
+            resolve({ data: [], error: null }),
+          );
         }
         return c;
       });
 
-      await expect(service.getAssetDetails(mockUserId, 'pid', 'UNKNOWN'))
-        .rejects.toThrow(NotFoundException);
+      await expect(
+        service.getAssetDetails(mockUserId, 'pid', 'UNKNOWN'),
+      ).rejects.toThrow(NotFoundException);
     });
   });
 });

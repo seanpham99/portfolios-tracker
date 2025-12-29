@@ -1,4 +1,4 @@
 export enum CalculationMethod {
-  WEIGHTED_AVG = 'WEIGHTED_AVG',
-  FIFO = 'FIFO',
+  WEIGHTED_AVG = "WEIGHTED_AVG",
+  FIFO = "FIFO",
 }

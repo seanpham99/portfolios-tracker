@@ -265,6 +265,59 @@ chore(deps): update React to 19.2.3
 test(api): add integration tests for portfolio service
 ```
 
+### Commitlint Enforcement
+
+- Format: `<type>(<scope>): <subject>` (scope optional)
+- Allowed types: `feat`, `fix`, `docs`, `style`, `refactor`, `perf`, `test`, `chore`, `revert`
+- Scope: Optional; include feature or package name when helpful (e.g., `api`, `web`)
+- Subject: Imperative mood, concise; acronyms permitted (e.g., `README`)
+- Hook: Enforced via Husky `commit-msg` using Commitlint
+
+Failed commits will show helpful errors and not be recorded.
+
+### Changelog Generation
+
+- For commit-history-based changelogs grouped by type (feat/fix/chore/etc.):
+
+```bash
+pnpm changelog
+```
+
+- This updates `CHANGELOG.md` using the Conventional Commits preset.
+- For releases across the monorepo, we use Changesets:
+  - Create changesets for release-impacting changes: `pnpm changeset`
+  - Version and publish: `pnpm changeset:version`, `pnpm changeset:publish`
+
+Clarification: Conventional commits improve history readability; Changesets drive version bumps and release notes per package.
+
+### Interactive Commits (Commitizen)
+
+- Run interactive guided commits:
+
+```bash
+pnpm commit
+```
+
+- This prompts for type, scope, and subject following the Conventional Commits spec.
+
+### Commit Message Template
+
+Use the local template to stay consistent:
+
+```
+<type>(<scope>): <subject>
+
+[optional body]
+
+[optional footer]
+```
+
+To use globally:
+
+```bash
+git config commit.template .gitmessage
+```
+
 ## Code Quality Standards
 
 ### TypeScript

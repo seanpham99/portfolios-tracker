@@ -1,10 +1,10 @@
-import { createClient } from './supabase/client';
+import { createClient } from "./supabase/client";
 
 /**
  * Get the API base URL from environment
  */
 export function getApiUrl(): string {
-  return import.meta.env.VITE_API_URL || 'http://localhost:3000';
+  return import.meta.env.VITE_API_URL || "http://localhost:3000";
 }
 
 /**
@@ -13,16 +13,18 @@ export function getApiUrl(): string {
  */
 export async function getAuthHeaders(): Promise<HeadersInit> {
   const supabase = createClient();
-  const { data: { session } } = await supabase.auth.getSession();
-  
+  const {
+    data: { session },
+  } = await supabase.auth.getSession();
+
   const headers: HeadersInit = {
-    'Content-Type': 'application/json',
+    "Content-Type": "application/json",
   };
-  
+
   if (session?.access_token) {
-    headers['Authorization'] = `Bearer ${session.access_token}`;
+    headers["Authorization"] = `Bearer ${session.access_token}`;
   }
-  
+
   return headers;
 }
 
@@ -30,12 +32,12 @@ export async function getAuthHeaders(): Promise<HeadersInit> {
  * Authenticated fetch wrapper for API calls
  */
 export async function apiFetch(
-  endpoint: string, 
-  options: RequestInit = {}
+  endpoint: string,
+  options: RequestInit = {},
 ): Promise<Response> {
   const url = `${getApiUrl()}${endpoint}`;
   const authHeaders = await getAuthHeaders();
-  
+
   return fetch(url, {
     ...options,
     headers: {

@@ -1,25 +1,25 @@
 /**
  * DTOs for Connection Settings
  * Story: 2.7 Connection Settings
- * 
+ *
  * NOTE: This package is shared between @repo/web (frontend) and @repo/api (backend).
  * DO NOT import @nestjs/swagger or any backend-specific dependencies here.
  * Use only plain TypeScript and framework-agnostic validation decorators.
  */
 
-import { IsEnum, IsNotEmpty, IsString } from 'class-validator';
+import { IsEnum, IsNotEmpty, IsString } from "class-validator";
 
 /** Supported exchange types */
 export enum ExchangeId {
-  BINANCE = 'binance',
-  OKX = 'okx',
+  BINANCE = "binance",
+  OKX = "okx",
 }
 
 /** Connection status */
 export enum ConnectionStatus {
-  ACTIVE = 'active',
-  INVALID = 'invalid',
-  DISCONNECTED = 'disconnected',
+  ACTIVE = "active",
+  INVALID = "invalid",
+  DISCONNECTED = "disconnected",
 }
 
 /**

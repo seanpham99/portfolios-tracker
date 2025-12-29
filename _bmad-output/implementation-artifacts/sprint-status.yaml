@@ -56,7 +56,7 @@ development_status:
   prep-4-repository-quality-automation: in-progress
   prep-4-1-changesets-version-management: done
   prep-4-2-lint-staged-husky-pre-commit: done
-  prep-4-3-conventional-commits-commitlint: backlog
+  prep-4-3-conventional-commits-commitlint: review
 
   # Security Hardening & Compliance
   prep-5-security-hardening-compliance: backlog

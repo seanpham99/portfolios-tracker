@@ -16,10 +16,12 @@ import { ConnectionsModule } from './connections';
       isGlobal: true,
       envFilePath: ['.env.local', '.env'],
     }),
-    ThrottlerModule.forRoot([{
-      ttl: 60000,
-      limit: 100, // Global limit: 100 req/min
-    }]),
+    ThrottlerModule.forRoot([
+      {
+        ttl: 60000,
+        limit: 100, // Global limit: 100 req/min
+      },
+    ]),
     SupabaseModule,
     CacheModule,
     PortfoliosModule,

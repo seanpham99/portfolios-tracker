@@ -82,11 +82,11 @@ Claude 3.5 Sonnet (Antigravity) → Claude 4.5 Sonnet (Code Review)
 - packages/database-types/src/supabase-types.ts
 - apps/web/src/lib/supabase/preferences.ts
 - apps/web/src/components/auth/privacy-consent-modal.tsx
-- apps/web/src/routes/_protected.tsx
+- apps/web/src/routes/\_protected.tsx
 - apps/web/src/routes/consent-required.tsx
-- apps/web/src/routes/_auth.login.tsx
-- apps/web/src/__tests__/privacy-consent-modal.test.tsx
-- apps/web/src/__tests__/auth.login.test.tsx
+- apps/web/src/routes/\_auth.login.tsx
+- apps/web/src/**tests**/privacy-consent-modal.test.tsx
+- apps/web/src/**tests**/auth.login.test.tsx
 - apps/web/package.json
 - apps/web/template.env
 

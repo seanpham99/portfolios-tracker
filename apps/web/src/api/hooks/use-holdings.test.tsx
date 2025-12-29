@@ -1,11 +1,11 @@
-import { describe, it, expect, vi } from 'vitest';
-import { renderHook, waitFor } from '@testing-library/react';
-import { useHoldings } from './use-holdings';
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import * as client from '../client';
+import { describe, it, expect, vi } from "vitest";
+import { renderHook, waitFor } from "@testing-library/react";
+import { useHoldings } from "./use-holdings";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import * as client from "../client";
 
 // Mock client
-vi.mock('../client', () => ({
+vi.mock("../client", () => ({
   getPortfolioHoldings: vi.fn(),
   getAllHoldings: vi.fn(),
   getPortfolios: vi.fn(),
@@ -14,15 +14,17 @@ vi.mock('../client', () => ({
 
 const createWrapper = () => {
   const queryClient = new QueryClient();
-  return ({ children }: { children: React.ReactNode }) => (
+  const Wrapper = ({ children }: { children: React.ReactNode }) => (
     <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
   );
+  Wrapper.displayName = "Wrapper";
+  return Wrapper;
 };
 
-describe('useHoldings', () => {
-  it('should fetch holdings for specific portfolio', async () => {
-    const portfolioId = '123';
-    const mockHoldings = [{ asset_symbol: 'AAPL', quantity: 10 }];
+describe("useHoldings", () => {
+  it("should fetch holdings for specific portfolio", async () => {
+    const portfolioId = "123";
+    const mockHoldings = [{ asset_symbol: "AAPL", quantity: 10 }];
     (client.getPortfolioHoldings as any).mockResolvedValue(mockHoldings);
 
     // we pass portfolioId now
@@ -36,9 +38,9 @@ describe('useHoldings', () => {
     expect(result.current.data).toEqual(mockHoldings);
   });
 
-  it('should fetch all holdings if portfolioId is missing', async () => {
-     (client.getAllHoldings as any).mockResolvedValue([]);
-     
+  it("should fetch all holdings if portfolioId is missing", async () => {
+    (client.getAllHoldings as any).mockResolvedValue([]);
+
     const { result } = renderHook(() => useHoldings(undefined), {
       wrapper: createWrapper(),
     });

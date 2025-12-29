@@ -76,7 +76,10 @@ export class CacheService {
   /**
    * Invalidate all portfolio-related cache keys for a user
    */
-  async invalidatePortfolio(userId: string, portfolioId: string): Promise<void> {
+  async invalidatePortfolio(
+    userId: string,
+    portfolioId: string,
+  ): Promise<void> {
     await this.invalidatePattern(`portfolio:${userId}:${portfolioId}:*`);
     await this.invalidatePattern(`holdings:${userId}:*`);
     await this.del(`portfolios:${userId}`);

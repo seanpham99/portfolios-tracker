@@ -61,11 +61,13 @@ so that I can securely access my portfolio data.
 ## Dev Notes
 
 ### Schema Design Decisions
+
 - **No `username` or `website` fields**: Not needed for MVP. Can be added later via migration.
 - **No delete policy**: Prevents users from deleting their profile while keeping their auth account (zombie state).
 - **Google avatar auto-captured**: Trigger extracts `picture` from Google's user metadata.
 
 ### SQL Style Guide (Mandatory)
+
 - Use **lowercase** for all SQL.
 - Use **snake_case** for tables and columns.
 - All tables in `public` schema MUST have RLS enabled.
@@ -73,6 +75,7 @@ so that I can securely access my portfolio data.
 - Wrap `auth.uid()` with `select` for performance: `(select auth.uid())`.
 
 ### Auth Routes Structure
+
 - `apps/web/src/routes/_auth.tsx` - Layout wrapper
 - `apps/web/src/routes/_auth.login.tsx` - Login page (Google + Email)
 - `apps/web/src/routes/_auth.sign-up.tsx` - Sign-up page (Google + Email)
@@ -82,11 +85,13 @@ so that I can securely access my portfolio data.
 - `apps/web/src/routes/logout.tsx` - Logout action
 
 ### Type Generation Flow
+
 ```
 supabase db push → pnpm db:gen-types → packages/database-types/src/supabase-types.ts
 ```
 
 ### References
+
 - [Source: .cursor/rules/create-migration.mdc]
 - [Source: .cursor/rules/create-rls-policies.mdc]
 - [External: Supabase Google OAuth](https://supabase.com/docs/guides/auth/social-login/auth-google)
@@ -94,18 +99,22 @@ supabase db push → pnpm db:gen-types → packages/database-types/src/supabase-
 ## Dev Agent Record
 
 ### Agent Model Used
+
 Claude 3.5 Sonnet (Amelia)
 
 ### Code Review
+
 - **Reviewer:** Claude 3.5 Sonnet (different model instance)
 - **Date:** 2025-12-26
 - **Issues Found:** 1 High (untracked file), 1 Medium (zombie risk)
 - **Resolution:** HIGH fixed (git add), MEDIUM fixed (delete policy removed)
 
 ### Verification
+
 - ✅ Google OAuth tested and working on dev server
 
 ### File List
+
 - `package.json` (modified - added db:gen-types script)
 - `packages/database-types/src/index.ts` (modified)
 - `packages/database-types/src/supabase-types.ts` (created/regenerated)

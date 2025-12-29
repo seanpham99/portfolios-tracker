@@ -29,20 +29,20 @@
 
 ### High-Priority Risks (Score ≥6)
 
-| Risk ID | Category | Description                                                                 | Probability | Impact | Score | Mitigation                                                                 | Owner | Timeline   |
-| ------- | -------- | --------------------------------------------------------------------------- | ----------- | ------ | ----- | -------------------------------------------------------------------------- | ----- | ---------- |
-| R-001   | DATA     | Data mismatch between Supabase (holdings) and ClickHouse (prices)           | 2           | 3      | 6     | API-level integration tests with mocked dual-database responses            | Tech  | 2025-12-30 |
-| R-002   | SEC      | Supabase RLS bypass allows users to view other users' portfolios            | 2           | 3      | 6     | Automated security gate verifying RBAC/RLS at the database/API boundary    | Sec   | 2025-12-30 |
-| R-003   | BUS      | Payment webhook failure (SePay/Polar) prevents feature unlocks              | 2           | 3      | 6     | Idempotent webhook tests with mock provider signatures and retry scenarios | Tech  | 2025-12-30 |
-| R-004   | PERF     | ClickHouse analytics queries exceed 500ms P95 latency under concurrent load | 2           | 3      | 6     | Load testing with k6 specifically targeting the analytics/aggregation layer| Tech  | 2025-12-30 |
-| R-005   | TECH     | Crypto API integration (CCXT) hits rate limits or token refresh fails       | 3           | 2      | 6     | Circuit breaker and retry logic validation with network interception       | Tech  | 2025-12-30 |
+| Risk ID | Category | Description                                                                 | Probability | Impact | Score | Mitigation                                                                  | Owner | Timeline   |
+| ------- | -------- | --------------------------------------------------------------------------- | ----------- | ------ | ----- | --------------------------------------------------------------------------- | ----- | ---------- |
+| R-001   | DATA     | Data mismatch between Supabase (holdings) and ClickHouse (prices)           | 2           | 3      | 6     | API-level integration tests with mocked dual-database responses             | Tech  | 2025-12-30 |
+| R-002   | SEC      | Supabase RLS bypass allows users to view other users' portfolios            | 2           | 3      | 6     | Automated security gate verifying RBAC/RLS at the database/API boundary     | Sec   | 2025-12-30 |
+| R-003   | BUS      | Payment webhook failure (SePay/Polar) prevents feature unlocks              | 2           | 3      | 6     | Idempotent webhook tests with mock provider signatures and retry scenarios  | Tech  | 2025-12-30 |
+| R-004   | PERF     | ClickHouse analytics queries exceed 500ms P95 latency under concurrent load | 2           | 3      | 6     | Load testing with k6 specifically targeting the analytics/aggregation layer | Tech  | 2025-12-30 |
+| R-005   | TECH     | Crypto API integration (CCXT) hits rate limits or token refresh fails       | 3           | 2      | 6     | Circuit breaker and retry logic validation with network interception        | Tech  | 2025-12-30 |
 
 ### Medium-Priority Risks (Score 3-4)
 
-| Risk ID | Category | Description                                              | Probability | Impact | Score | Mitigation                                               | Owner |
-| ------- | -------- | -------------------------------------------------------- | ----------- | ------ | ----- | -------------------------------------------------------- | ----- |
+| Risk ID | Category | Description                                             | Probability | Impact | Score | Mitigation                                                | Owner |
+| ------- | -------- | ------------------------------------------------------- | ----------- | ------ | ----- | --------------------------------------------------------- | ----- |
 | R-006   | OPS      | Airflow ETL failure leads to stale market data (>5 min) | 2           | 2      | 4     | Health check status tests and UI staleness badge triggers | Ops   |
-| R-007   | BUS      | Incorrect TWR/MWR calculation logic                      | 1           | 3      | 3     | Unit testing of valuation engine with varied data lots   | Tech  |
+| R-007   | BUS      | Incorrect TWR/MWR calculation logic                     | 1           | 3      | 3     | Unit testing of valuation engine with varied data lots    | Tech  |
 
 ### Low-Priority Risks (Score 1-2)
 
@@ -59,13 +59,13 @@
 
 **Criteria**: Blocks core journey + High risk (≥6) + No workaround
 
-| Requirement                              | Test Level | Risk Link | Test Count | Owner | Notes                                       |
-| ---------------------------------------- | ---------- | --------- | ---------- | ----- | ------------------------------------------- |
-| User Authentication & Profile            | E2E        | R-002     | 2          | QA    | Google OAuth and Email/Pass validation      |
-| Portfolio & Account CRUD                 | API        | R-002     | 4          | DEV   | Verify Supabase RLS isolation               |
-| Manual Transaction Entry (Autocomplete)  | E2E        | BUS       | 2          | QA    | Focus on speed and symbol search            |
-| Portfolio Valuation (Dual-DB Aggreg)     | API        | R-001     | 4          | DEV   | Mocked ClickHouse + Postgres response join  |
-| Payment Success Flow (Webhook)           | API        | R-003     | 3          | QA    | Signature verification & Tier change        |
+| Requirement                             | Test Level | Risk Link | Test Count | Owner | Notes                                      |
+| --------------------------------------- | ---------- | --------- | ---------- | ----- | ------------------------------------------ |
+| User Authentication & Profile           | E2E        | R-002     | 2          | QA    | Google OAuth and Email/Pass validation     |
+| Portfolio & Account CRUD                | API        | R-002     | 4          | DEV   | Verify Supabase RLS isolation              |
+| Manual Transaction Entry (Autocomplete) | E2E        | BUS       | 2          | QA    | Focus on speed and symbol search           |
+| Portfolio Valuation (Dual-DB Aggreg)    | API        | R-001     | 4          | DEV   | Mocked ClickHouse + Postgres response join |
+| Payment Success Flow (Webhook)          | API        | R-003     | 3          | QA    | Signature verification & Tier change       |
 
 **Total P0**: 15 tests, 16 hours
 
@@ -73,12 +73,12 @@
 
 **Criteria**: Important features + Medium risk (3-4) + Common workflows
 
-| Requirement                            | Test Level | Risk Link | Test Count | Owner | Notes                                       |
-| -------------------------------------- | ---------- | --------- | ---------- | ----- | ------------------------------------------- |
-| Crypto Balance Sync (CCXT)             | API        | R-005     | 4          | DEV   | Mocked exchange responses and rate limits   |
-| Technical Indicators (RSI/MACD)        | API/Unit   | BUS       | 6          | DEV   | External vs Fallback internal calculation   |
-| Multi-Currency Conversion (FX Gain)    | Unit       | BUS       | 8          | DEV   | Separation of asset vs currency GAIN/LOSS   |
-| Admin Reconciliation Dashboard         | E2E        | R-003     | 3          | QA    | Verify sync between webhooks and DB records |
+| Requirement                         | Test Level | Risk Link | Test Count | Owner | Notes                                       |
+| ----------------------------------- | ---------- | --------- | ---------- | ----- | ------------------------------------------- |
+| Crypto Balance Sync (CCXT)          | API        | R-005     | 4          | DEV   | Mocked exchange responses and rate limits   |
+| Technical Indicators (RSI/MACD)     | API/Unit   | BUS       | 6          | DEV   | External vs Fallback internal calculation   |
+| Multi-Currency Conversion (FX Gain) | Unit       | BUS       | 8          | DEV   | Separation of asset vs currency GAIN/LOSS   |
+| Admin Reconciliation Dashboard      | E2E        | R-003     | 3          | QA    | Verify sync between webhooks and DB records |
 
 **Total P1**: 21 tests, 12 hours
 
@@ -110,13 +110,13 @@
 
 ### Test Development Effort
 
-| Priority  | Count  | Hours/Test | Total Hours | Notes                            |
-| --------- | ------ | ---------- | ----------- | -------------------------------- |
-| P0        | 8      | 2.0        | 16          | Complex dual-DB and Auth setup   |
-| P1        | 12     | 1.0        | 12          | Standard feature coverage        |
-| P2        | 10     | 0.5        | 5           | Simple scenarios and edge cases  |
-| P3        | 5      | 1.0        | 5           | Performance (k6) and Accessibility|
-| **Total** | **35** | **-**      | **38**      | **~5 days**                      |
+| Priority  | Count  | Hours/Test | Total Hours | Notes                              |
+| --------- | ------ | ---------- | ----------- | ---------------------------------- |
+| P0        | 8      | 2.0        | 16          | Complex dual-DB and Auth setup     |
+| P1        | 12     | 1.0        | 12          | Standard feature coverage          |
+| P2        | 10     | 0.5        | 5           | Simple scenarios and edge cases    |
+| P3        | 5      | 1.0        | 5           | Performance (k6) and Accessibility |
+| **Total** | **35** | **-**      | **38**      | **~5 days**                        |
 
 ### Prerequisites
 

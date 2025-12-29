@@ -134,11 +134,13 @@ The product bridges a critical gap: no existing platform offers unified VN + US 
 **Decision:** Adopt **Unified Portfolio Dashboard** as the primary interaction model.
 
 **Rationale:**
+
 - **Professional Context:** Asset managers and serious investors view wealth holistically, regardless of asset class (VN vs US vs Crypto). Segregation creates friction.
 - **Scalability:** The system must support **Multiple Portfolios** (e.g., "Personal Fund", "Family Trust", "Trading Bot"). A unified view per portfolio is scalable; rigid asset-class tabs are not.
 - **Risk Management:** Aggregated allocation views (Donut Chart) allow immediate risk assessment across all holdings.
 
 **Key Features:**
+
 1.  **Multi-Portfolio Architecture:** Users can switch between different portfolios. Each portfolio has its own unified dashboard.
 2.  **Unified Holdings Table:** Mixing VN Stocks, US Equities, and Crypto in one sortable, filterable list.
 3.  **Performance-First:** Large time-series chart showing aggregated Net Worth history.
@@ -148,6 +150,7 @@ The product bridges a critical gap: no existing platform offers unified VN + US 
 ## User Journeys (Flows)
 
 ### 1. Daily Check-In & Portfolio Review
+
 **Goal:** Assess total wealth health of a specific portfolio (e.g., "Family Trust") in < 2 minutes.
 
 ```mermaid
@@ -155,12 +158,12 @@ graph TD
     A[Launch App] --> B{Auth Status?}
     B -- No --> C[Login Page]
     B -- Yes --> D[Unified Dashboard]
-    
+
     D -- "Select Portfolio" --> D1[Portfolio: Family Trust]
     D1 --> E[Review Total Net Worth]
     D1 --> F[Check Allocation Donut]
     D1 --> G[Scan Top Movers Cards]
-    
+
     G -- "Investigate Mover" --> H[Asset Detail Page]
     H --> I[TradingView Chart]
     H --> K[Analysis/Transactions]
@@ -168,6 +171,7 @@ graph TD
 ```
 
 ### 2. Manual Asset Entry (Cross-Border)
+
 **Goal:** Add a US Stock purchase to the current portfolio.
 
 ```mermaid
@@ -176,7 +180,7 @@ sequenceDiagram
     participant Dashboard
     participant Search
     participant DB
-    
+
     User->>Dashboard: Click "Add Transaction"
     Dashboard->>Search: Type "AAPL" (US Equity)
     Search-->>User: Show "Apple Inc (US)"
@@ -188,6 +192,7 @@ sequenceDiagram
 ```
 
 ### 3. Syncing Crypto Exchange
+
 **Goal:** Zero-maintenance tracking for crypto assets.
 
 ```mermaid
@@ -204,56 +209,63 @@ graph LR
 ## Screen Specifications (Dev Ready)
 
 ### 1. Dashboard (`/dashboard`) - Portfolio List View
+
 The entry point after login. Displays **all user portfolios as cards**, not holdings directly.
 
 - **Layout:** `DashboardLayout` (Sidebar + Top Bar)
 - **Primary Components:**
-    - `PortfolioCardList`: Grid of portfolio summary cards
-        - Each card shows: Portfolio name, Net Worth, P/L (absolute + %), allocation mini-donut
-        - Click card → navigates to `/portfolio/:id`
-    - `CreatePortfolioCard`: CTA card to create new portfolio
-    - `TotalNetWorthSummary`: Aggregated net worth across ALL portfolios (optional header)
+  - `PortfolioCardList`: Grid of portfolio summary cards
+    - Each card shows: Portfolio name, Net Worth, P/L (absolute + %), allocation mini-donut
+    - Click card → navigates to `/portfolio/:id`
+  - `CreatePortfolioCard`: CTA card to create new portfolio
+  - `TotalNetWorthSummary`: Aggregated net worth across ALL portfolios (optional header)
 - **Empty State:** If no portfolios, show Empty component with "Create Your First Portfolio" CTA
 
 ### 2. Portfolio Detail (`/portfolio/:id`)
+
 Drill-down view for a **single portfolio**. This is where the UnifiedHoldingsTable lives.
 
 - **Layout:** `DashboardLayout` with portfolio context in header
 - **Primary Components:**
-    - `PortfolioHeader`: Portfolio name, Net Worth, P/L, base currency
-    - `PortfolioHistoryChart`: Time-series Net Worth data (1D/1W/1M/YTD/ALL)
-    - `AllocationDonut`: Asset class breakdown (VN / US / Crypto)
-    - `SummaryStats`: Net Worth, 24h P/L, Cash Balance
-    - `UnifiedHoldingsTable`: List of holdings for **THIS portfolio only**
-        - Cols: Expand icon, Name, Ticker, Type (Badge), Price, 24h %, Value (Base Currency), P/L
-        - Filter bar: [All] [VN] [US] [Crypto]
-        - Row expansion → MethodologyPanel (Story 2.5)
+  - `PortfolioHeader`: Portfolio name, Net Worth, P/L, base currency
+  - `PortfolioHistoryChart`: Time-series Net Worth data (1D/1W/1M/YTD/ALL)
+  - `AllocationDonut`: Asset class breakdown (VN / US / Crypto)
+  - `SummaryStats`: Net Worth, 24h P/L, Cash Balance
+  - `UnifiedHoldingsTable`: List of holdings for **THIS portfolio only**
+    - Cols: Expand icon, Name, Ticker, Type (Badge), Price, 24h %, Value (Base Currency), P/L
+    - Filter bar: [All] [VN] [US] [Crypto]
+    - Row expansion → MethodologyPanel (Story 2.5)
 - **API:** `GET /portfolios/:id/holdings`
 
 ### 3. Asset Detail (`/portfolio/:id/asset/:symbol`)
+
 Deep dive into a specific holding.
+
 - **Components:**
-    - `TradingViewWidget`: Advanced charting.
-    - `TransactionHistory`: List of buy/sells for this asset *within this portfolio*.
-    - `PerformanceCard`: Realized vs Unrealized P/L.
+  - `TradingViewWidget`: Advanced charting.
+  - `TransactionHistory`: List of buy/sells for this asset _within this portfolio_.
+  - `PerformanceCard`: Realized vs Unrealized P/L.
 - **Context:** Accessible via clicking a row in the Dashboard table.
 
 ### 4. Connections (`/settings/connections`)
+
 API Management.
+
 - **Components:**
-    - `IntegrationCard`: Logo, Status (Connected/Disconnected), "Sync Now" button.
-    - `APIKeyForm`: For exchanges not supporting OAuth.
+  - `IntegrationCard`: Logo, Status (Connected/Disconnected), "Sync Now" button.
+  - `APIKeyForm`: For exchanges not supporting OAuth.
 
 ## Deliverables Checklist
+
 - [ ] Refactor `DashboardLayout` to implement Unified View and Portfolio Selector.
 - [ ] Implement `UnifiedHoldingsTable` with multi-currency normalization.
 - [ ] Create `PortfolioHistory` chart component.
 - [ ] Build `AssetDetail` page.
 
 ## UI Design Reference
+
 **Visual Concept:**
 ![Unified Dashboard Concept](assets/dashboard-visual-concept.png)
-
 
 ---
 
@@ -368,6 +380,7 @@ API Management.
 ## UI Design & Visualization (V2: Unified)
 
 ### Dashboard Content Mockup (V2)
+
 Based on user feedback, the design has shifted from an "Asset Class Silo" approach to a **Unified Portfolio View**. This better supports asset managers holding mixed assets (VN/US/Crypto) in single portfolios.
 
 **Design Artifact:** [Dashboard V2 Mockup](dashboard-ui-mockup-v2.md)
@@ -378,16 +391,19 @@ Based on user feedback, the design has shifted from an "Asset Class Silo" approa
 ### Gap Analysis (v1.0 Implementation)
 
 **Current State (2025-12-28):**
+
 - `DashboardLayout` currently shows a single portfolio's holdings directly (via `UnifiedHoldingsTable`)
 - **Critical Mismatch:** Dashboard should show **portfolio LIST first**, then drill into portfolio detail
 - Current implementation treats `/dashboard` as if it were `/portfolio/:id` — missing the portfolio selection layer
 
 **Clarified Requirements (Party Mode Discussion 2025-12-28):**
+
 - `/dashboard` → Shows portfolio cards (list view)
 - `/portfolio/:id` → Shows portfolio detail with UnifiedHoldingsTable
 - Asset-class tabs (VN/US/Crypto) are **filters within** Portfolio Detail, not top-level navigation
 
 **Missing Components & Pages:**
+
 1.  **Dashboard Portfolio List:**
     - `PortfolioCard`: Card showing portfolio name, net worth, P/L, mini-donut
     - `PortfolioCardList`: Grid layout of portfolio cards
@@ -397,6 +413,7 @@ Based on user feedback, the design has shifted from an "Asset Class Silo" approa
 4.  **API Endpoint:** `GET /portfolios/:id/holdings` - Missing, currently uses aggregate endpoint
 
 **Implementation Priority:**
+
 1. Create `PortfolioCard` component
 2. Update `/dashboard` to show portfolio list
 3. Create `/portfolio/:id` route with current dashboard content

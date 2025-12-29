@@ -1,21 +1,24 @@
-import { useQuery, useQueryClient } from '@tanstack/react-query';
-import { getAssetDetails } from '../client';
-import { AssetDetailsResponseDto, HoldingDto } from '@repo/api-types';
+import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { getAssetDetails } from "../client";
+import { AssetDetailsResponseDto, HoldingDto } from "@repo/api-types";
 
 export const useAssetDetails = (portfolioId: string, symbol: string) => {
   const queryClient = useQueryClient();
 
   return useQuery({
-    queryKey: ['asset-details', portfolioId, symbol],
+    queryKey: ["asset-details", portfolioId, symbol],
     queryFn: () => getAssetDetails(portfolioId, symbol),
     enabled: !!portfolioId && !!symbol,
     staleTime: 30 * 1000,
     gcTime: 5 * 60 * 1000,
     initialData: () => {
       // Attempt to hydrate from the holdings cache
-      const holdings = queryClient.getQueryData<HoldingDto[]>(['holdings', portfolioId]);
+      const holdings = queryClient.getQueryData<HoldingDto[]>([
+        "holdings",
+        portfolioId,
+      ]);
       if (holdings) {
-        const holding = holdings.find(h => h.symbol === symbol);
+        const holding = holdings.find((h) => h.symbol === symbol);
         if (holding) {
           // Construct a partial AssetDetailsResponseDto to avoid loading state
           return {
@@ -38,14 +41,14 @@ export const useAssetDetails = (portfolioId: string, symbol: string) => {
               realized_pl: 0,
               asset_gain: 0,
               fx_gain: 0,
-              calculation_method: 'WEIGHTED_AVG',
-              last_updated: new Date().toISOString()
+              calculation_method: "WEIGHTED_AVG",
+              last_updated: new Date().toISOString(),
             },
-            transactions: [] // Transactions will be loaded by the query
+            transactions: [], // Transactions will be loaded by the query
           } as AssetDetailsResponseDto;
         }
       }
       return undefined;
-    }
+    },
   });
 };

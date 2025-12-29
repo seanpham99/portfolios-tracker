@@ -3,15 +3,18 @@
  * Story: 2.7 Connection Settings
  */
 
-import { useState } from 'react';
-import { Link } from 'react-router';
-import { ArrowLeft, Link as LinkIcon } from 'lucide-react';
-import { ExchangeId, type ConnectionDto } from '@repo/api-types';
-import { useConnections, useDeleteConnection } from '@/api/hooks/use-connections';
-import { IntegrationCard, ConnectionModal } from '@/components/connections';
-import { Button } from '@repo/ui/components/button';
-import { Card, CardContent } from '@repo/ui/components/card';
-import { Spinner } from '@repo/ui/components/spinner';
+import { useState } from "react";
+import { Link } from "react-router";
+import { ArrowLeft, Link as LinkIcon } from "lucide-react";
+import { ExchangeId, type ConnectionDto } from "@repo/api-types";
+import {
+  useConnections,
+  useDeleteConnection,
+} from "@/api/hooks/use-connections";
+import { IntegrationCard, ConnectionModal } from "@/components/connections";
+import { Button } from "@repo/ui/components/button";
+import { Card, CardContent } from "@repo/ui/components/card";
+import { Spinner } from "@repo/ui/components/spinner";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -21,11 +24,15 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-} from '@repo/ui/components/alert-dialog';
+} from "@repo/ui/components/alert-dialog";
 
 export default function ConnectionsSettingsPage() {
-  const [selectedExchange, setSelectedExchange] = useState<ExchangeId | null>(null);
-  const [deleteConnectionId, setDeleteConnectionId] = useState<string | null>(null);
+  const [selectedExchange, setSelectedExchange] = useState<ExchangeId | null>(
+    null,
+  );
+  const [deleteConnectionId, setDeleteConnectionId] = useState<string | null>(
+    null,
+  );
 
   const { data: connections, isLoading, error } = useConnections();
   const deleteMutation = useDeleteConnection();
@@ -34,10 +41,13 @@ export default function ConnectionsSettingsPage() {
   const exchanges: ExchangeId[] = [ExchangeId.BINANCE, ExchangeId.OKX];
 
   // Map connections by exchange for quick lookup
-  const connectionsByExchange = (connections?.reduce((acc, conn) => {
-    acc[conn.exchange] = conn;
-    return acc;
-  }, {} as Record<ExchangeId, ConnectionDto>) ?? {}) as Record<ExchangeId, ConnectionDto>;
+  const connectionsByExchange = (connections?.reduce(
+    (acc, conn) => {
+      acc[conn.exchange] = conn;
+      return acc;
+    },
+    {} as Record<ExchangeId, ConnectionDto>,
+  ) ?? {}) as Record<ExchangeId, ConnectionDto>;
 
   const handleConnect = (exchange: ExchangeId) => {
     setSelectedExchange(exchange);
@@ -61,15 +71,22 @@ export default function ConnectionsSettingsPage() {
     <div className="container max-w-4xl mx-auto py-8 px-4">
       {/* Header */}
       <div className="mb-8">
-        <Button variant="ghost" asChild className="mb-4 -ml-3 text-zinc-400 hover:text-white">
+        <Button
+          variant="ghost"
+          asChild
+          className="mb-4 -ml-3 text-zinc-400 hover:text-white"
+        >
           <Link to="/settings">
             <ArrowLeft className="mr-2 h-4 w-4" />
             Back to Settings
           </Link>
         </Button>
-        <h1 className="text-3xl font-bold tracking-tight text-white">Exchange Connections</h1>
+        <h1 className="text-3xl font-bold tracking-tight text-white">
+          Exchange Connections
+        </h1>
         <p className="text-zinc-400 mt-2">
-          Connect your crypto exchange accounts to automatically sync your portfolio balances.
+          Connect your crypto exchange accounts to automatically sync your
+          portfolio balances.
         </p>
       </div>
 
@@ -115,9 +132,12 @@ export default function ConnectionsSettingsPage() {
           <div className="inline-flex h-16 w-16 items-center justify-center rounded-full bg-indigo-500/10 mb-4">
             <LinkIcon className="h-8 w-8 text-indigo-400" />
           </div>
-          <h3 className="text-lg font-medium text-white mb-2">No connections yet</h3>
+          <h3 className="text-lg font-medium text-white mb-2">
+            No connections yet
+          </h3>
           <p className="text-zinc-400 mb-6 max-w-md mx-auto">
-            Connect your first exchange to automatically sync your crypto portfolio balances.
+            Connect your first exchange to automatically sync your crypto
+            portfolio balances.
           </p>
           <div className="grid gap-4 md:grid-cols-2 max-w-2xl mx-auto">
             {exchanges.map((exchange) => (
@@ -137,11 +157,14 @@ export default function ConnectionsSettingsPage() {
       {/* Security Notice */}
       <Card className="mt-8">
         <CardContent>
-          <h3 className="font-medium text-sm mb-2 text-white">🔒 Security Note</h3>
+          <h3 className="font-medium text-sm mb-2 text-white">
+            🔒 Security Note
+          </h3>
           <p className="text-sm text-zinc-400">
-            Your API credentials are encrypted at rest using industry-standard AES-256-GCM encryption.
-            We recommend using read-only API keys with IP restrictions for maximum security.
-            Your API secret is never displayed after saving.
+            Your API credentials are encrypted at rest using industry-standard
+            AES-256-GCM encryption. We recommend using read-only API keys with
+            IP restrictions for maximum security. Your API secret is never
+            displayed after saving.
           </p>
         </CardContent>
       </Card>
@@ -154,7 +177,10 @@ export default function ConnectionsSettingsPage() {
       />
 
       {/* Delete Confirmation Dialog */}
-      <AlertDialog open={!!deleteConnectionId} onOpenChange={() => setDeleteConnectionId(null)}>
+      <AlertDialog
+        open={!!deleteConnectionId}
+        onOpenChange={() => setDeleteConnectionId(null)}
+      >
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>Disconnect Exchange?</AlertDialogTitle>

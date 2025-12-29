@@ -13,11 +13,15 @@ import {
 } from '@nestjs/common';
 import { PortfoliosService } from './portfolios.service';
 import { CreatePortfolioDto, UpdatePortfolioDto } from './dto';
-import { CreateTransactionDto, HoldingDto, PortfolioSummaryDto, AssetDetailsResponseDto } from '@repo/api-types';
+import {
+  CreateTransactionDto,
+  HoldingDto,
+  PortfolioSummaryDto,
+  AssetDetailsResponseDto,
+} from '@repo/api-types';
 import { Portfolio } from './portfolio.entity';
 import { AuthGuard } from './guards/auth.guard';
 import { UserId } from './decorators/user-id.decorator';
-
 
 /**
  * Controller for portfolio management endpoints
@@ -56,7 +60,7 @@ export class PortfoliosController {
     return this.portfoliosService.getHoldings(userId);
   }
 
-   /**
+  /**
    * GET /portfolios/:id/holdings - Get holdings for specific portfolio
    */
   /**

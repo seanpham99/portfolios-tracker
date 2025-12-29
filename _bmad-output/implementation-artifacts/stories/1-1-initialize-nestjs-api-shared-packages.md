@@ -86,4 +86,3 @@ Gemini 2.5 Pro
 - `packages/api-types/src/index.ts` - Type exports
 - `pnpm-workspace.yaml` - Added `services/*` entry
 - `apps/web/package.json` - Added `@repo/api-types` devDependency
-

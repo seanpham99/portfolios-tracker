@@ -18,22 +18,22 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@repo/ui/components/dialog";
-import {
-  Field,
-  FieldLabel,
-  FieldError,
-} from "@repo/ui/components/field";
+import { Field, FieldLabel, FieldError } from "@repo/ui/components/field";
 import { Input } from "@repo/ui/components/input";
 
 const formSchema = z.object({
-  quantity: z.string().refine(
-    (val) => !isNaN(Number(val)) && Number(val) > 0,
-    "Quantity must be a positive number"
-  ),
-  price: z.string().refine(
-    (val) => !isNaN(Number(val)) && Number(val) > 0,
-    "Price must be a positive number"
-  ),
+  quantity: z
+    .string()
+    .refine(
+      (val) => !isNaN(Number(val)) && Number(val) > 0,
+      "Quantity must be a positive number",
+    ),
+  price: z
+    .string()
+    .refine(
+      (val) => !isNaN(Number(val)) && Number(val) > 0,
+      "Price must be a positive number",
+    ),
 });
 
 type FormValues = z.infer<typeof formSchema>;
@@ -110,7 +110,7 @@ export function TransactionModal({
         <DialogHeader
           className={cn(
             "px-6 py-4 border-b border-white/[0.08]",
-            isBuy ? "bg-emerald-500/5" : "bg-rose-500/5"
+            isBuy ? "bg-emerald-500/5" : "bg-rose-500/5",
           )}
         >
           <div className="flex items-center gap-3">
@@ -119,7 +119,7 @@ export function TransactionModal({
                 "flex h-10 w-10 items-center justify-center rounded-xl",
                 isBuy
                   ? "bg-emerald-500/10 text-emerald-400"
-                  : "bg-rose-500/10 text-rose-400"
+                  : "bg-rose-500/10 text-rose-400",
               )}
             >
               {isBuy ? (
@@ -157,18 +157,25 @@ export function TransactionModal({
             control={form.control}
             name="quantity"
             render={({ field, fieldState }) => (
-                <Field data-invalid={fieldState.invalid}>
-                    <FieldLabel htmlFor={field.name} className="text-zinc-400 font-normal">Quantity</FieldLabel>
-                    <Input
-                        id={field.name}
-                        type="number"
-                        placeholder="0.00"
-                        {...field}
-                        className="bg-white/[0.03] border-white/[0.08] focus-visible:ring-emerald-500/50"
-                        aria-invalid={fieldState.invalid}
-                    />
-                    {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
-                </Field>
+              <Field data-invalid={fieldState.invalid}>
+                <FieldLabel
+                  htmlFor={field.name}
+                  className="text-zinc-400 font-normal"
+                >
+                  Quantity
+                </FieldLabel>
+                <Input
+                  id={field.name}
+                  type="number"
+                  placeholder="0.00"
+                  {...field}
+                  className="bg-white/[0.03] border-white/[0.08] focus-visible:ring-emerald-500/50"
+                  aria-invalid={fieldState.invalid}
+                />
+                {fieldState.invalid && (
+                  <FieldError errors={[fieldState.error]} />
+                )}
+              </Field>
             )}
           />
 
@@ -176,18 +183,25 @@ export function TransactionModal({
             control={form.control}
             name="price"
             render={({ field, fieldState }) => (
-                <Field data-invalid={fieldState.invalid}>
-                    <FieldLabel htmlFor={field.name} className="text-zinc-400 font-normal">Price per unit ($)</FieldLabel>
-                    <Input
-                        id={field.name}
-                        type="number"
-                        placeholder="0.00"
-                        {...field}
-                        className="bg-white/[0.03] border-white/[0.08] focus-visible:ring-emerald-500/50"
-                        aria-invalid={fieldState.invalid}
-                    />
-                    {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
-                </Field>
+              <Field data-invalid={fieldState.invalid}>
+                <FieldLabel
+                  htmlFor={field.name}
+                  className="text-zinc-400 font-normal"
+                >
+                  Price per unit ($)
+                </FieldLabel>
+                <Input
+                  id={field.name}
+                  type="number"
+                  placeholder="0.00"
+                  {...field}
+                  className="bg-white/[0.03] border-white/[0.08] focus-visible:ring-emerald-500/50"
+                  aria-invalid={fieldState.invalid}
+                />
+                {fieldState.invalid && (
+                  <FieldError errors={[fieldState.error]} />
+                )}
+              </Field>
             )}
           />
 
@@ -195,7 +209,7 @@ export function TransactionModal({
             <div
               className={cn(
                 "rounded-xl p-4 flex items-center justify-between",
-                isBuy ? "bg-emerald-500/10" : "bg-rose-500/10"
+                isBuy ? "bg-emerald-500/10" : "bg-rose-500/10",
               )}
             >
               <span className="text-sm text-zinc-400">
@@ -204,7 +218,7 @@ export function TransactionModal({
               <span
                 className={cn(
                   "text-xl font-semibold",
-                  isBuy ? "text-emerald-400" : "text-rose-400"
+                  isBuy ? "text-emerald-400" : "text-rose-400",
                 )}
               >
                 ${total.toLocaleString("en-US", { minimumFractionDigits: 2 })}
@@ -228,7 +242,7 @@ export function TransactionModal({
                 "w-full sm:w-auto min-w-[120px]",
                 isBuy
                   ? "bg-emerald-600 hover:bg-emerald-500"
-                  : "bg-rose-600 hover:bg-rose-500"
+                  : "bg-rose-600 hover:bg-rose-500",
               )}
             >
               Confirm {isBuy ? "Purchase" : "Sale"}

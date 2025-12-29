@@ -13,6 +13,7 @@ So that I can select which portfolio to view in detail and understand my wealth 
 **Origin:** Party Mode discussion on 2025-12-28 identified a critical gap between PRD requirements and current implementation. The PRD requires ≤3 clicks from dashboard → portfolio → asset → transaction, but the current dashboard shows holdings directly without portfolio selection.
 
 **Impact:** This story restructures the frontend navigation to align with the documented architecture:
+
 - `/dashboard` → Portfolio list (cards)
 - `/portfolio/:id` → Portfolio detail (holdings table, charts)
 - `/portfolio/:id/asset/:symbol` → Asset detail (future story)
@@ -94,6 +95,7 @@ So that I can select which portfolio to view in detail and understand my wealth 
 ### Issues Found & Fixed:
 
 #### Medium Severity (3):
+
 1. **Invisible Allocation Indicator** - Portfolio card allocation bar was set to `opacity-0`, making it invisible despite task marked complete.
    - **Fix:** Removed opacity and added visible gradient placeholder (emerald → blue → amber).
    - **File:** `apps/web/src/components/dashboard/portfolio-card.tsx`
@@ -107,6 +109,7 @@ So that I can select which portfolio to view in detail and understand my wealth 
    - **Files:** `portfolio-history-chart.tsx`, `allocation-donut.tsx`, `portfolio.$id._index.tsx`
 
 #### Low Severity (2):
+
 4. **UI Inconsistency** - Portfolio detail page missing breadcrumb navigation present in asset detail page.
    - **Fix:** Added consistent breadcrumb component matching asset detail pattern.
    - **File:** `apps/web/src/routes/_protected._layout.portfolio.$id._index.tsx`
@@ -116,6 +119,7 @@ So that I can select which portfolio to view in detail and understand my wealth 
    - **File:** `portfolio-history-chart.tsx`
 
 ### Additional Improvements:
+
 - **Routing Fix:** Initially discovered asset detail page couldn't render because `portfolio.$id.tsx` didn't use `<Outlet />`. Created separation:
   - `portfolio.$id.tsx` → Layout wrapper with `<Outlet />`
   - `portfolio.$id._index.tsx` → Dashboard content
@@ -125,7 +129,7 @@ So that I can select which portfolio to view in detail and understand my wealth 
 
 ## Dev Notes
 
-- **Route Naming:** Use `_protected._layout.portfolio.$id.tsx` to ensure the page renders *inside* the main app layout (Header, Sidebar). Using `_protected.portfolio...` would break the layout.
+- **Route Naming:** Use `_protected._layout.portfolio.$id.tsx` to ensure the page renders _inside_ the main app layout (Header, Sidebar). Using `_protected.portfolio...` would break the layout.
 - **Breaking Change:** This moves the primary holdings view from `/dashboard` to `/portfolio/:id`.
 - **API Client:** Ensure `apps/web/src/api/client.ts` is the single source of truth for fetcher functions.
 - **Empty States:**
@@ -137,6 +141,7 @@ So that I can select which portfolio to view in detail and understand my wealth 
 ### API Changes
 
 **New/Updated Endpoints:**
+
 ```
 GET /portfolios (Update: Include Net Worth/PL summary props)
 GET /portfolios/:id/holdings (New: Get holdings for specific portfolio)
@@ -155,7 +160,9 @@ apps/web/src/routes/
 ## Dev Agent Record
 
 ### File List
+
 **Modified Files:**
+
 - `apps/web/src/api/client.ts` - Added `getPortfolios()`, `getPortfolio()`, `getPortfolioHoldings()`
 - `apps/web/src/api/hooks/use-portfolios.ts` - Created portfolio React Query hooks
 - `apps/web/src/api/hooks/use-holdings.ts` - Updated to accept optional portfolioId
@@ -168,9 +175,11 @@ apps/web/src/routes/
 - `services/api/src/portfolios/portfolios.controller.ts` - Already had required endpoints
 
 **Test Files:**
+
 - `apps/web/src/components/dashboard/portfolio-card.test.tsx` - Unit tests for PortfolioCard
 
 ### Change Log
+
 - 2025-12-28: Initial implementation of portfolio-first navigation
 - 2025-12-28: Fixed asset detail routing by splitting portfolio route into layout + index
 - 2025-12-28: Code review fixes - allocation indicator, chart labeling, breadcrumb consistency

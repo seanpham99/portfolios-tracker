@@ -5,6 +5,7 @@ Status: done
 ## Dev Agent Record
 
 ### Implementation Plan
+
 - [x] **Task 1: Backend Aggregation Endpoint**
   - [x] Explore existing Portfolios/Transactions modules
   - [x] Create/Update DTOs for Holdings response
@@ -20,9 +21,11 @@ Status: done
   - [x] **AC 5: Add filtering by Asset Class**
 
 ### Debug Log
-*(No entries)*
+
+_(No entries)_
 
 ### Completion Notes
+
 - Implemented `GET /portfolios/holdings` with in-memory aggregation of transactions (using Weighted Average Cost Basis).
 - **Core Improvements (Code Review):**
   - Refactored `HoldingDto` and `Holding` interface into shared `@repo/api-types`.
@@ -34,6 +37,7 @@ Status: done
 - Added unit tests for Backend Service/Controller and Frontend Component (Vitest).
 
 ## File List
+
 - packages/api-types/src/holding.dto.ts
 - packages/api-types/src/index.ts
 - services/api/src/portfolios/portfolios.service.ts
@@ -51,9 +55,9 @@ Status: done
 - apps/web/vite.config.ts
 
 ## Change Log
+
 - 2025-12-26: Initial implementation.
 - 2025-12-27: (Review Fix) Unified types across monorepo and implemented filtering logic.
-
 
 ## Tasks / Subtasks
 

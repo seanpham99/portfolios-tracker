@@ -69,7 +69,7 @@ export function TransactionHistory() {
                 >
                   <TableCell>
                     <div className="flex items-center gap-2">
-                       <div
+                      <div
                         className={cn(
                           "flex h-6 w-6 items-center justify-center rounded-md",
                           isBuy
@@ -83,25 +83,41 @@ export function TransactionHistory() {
                           <ArrowDownRight className="h-3 w-3" />
                         )}
                       </div>
-                      <span className={cn("text-xs font-medium uppercase", isBuy ? "text-emerald-400" : "text-rose-400")}>
+                      <span
+                        className={cn(
+                          "text-xs font-medium uppercase",
+                          isBuy ? "text-emerald-400" : "text-rose-400",
+                        )}
+                      >
                         {tx.type}
                       </span>
                     </div>
                   </TableCell>
                   <TableCell>
                     <div>
-                        <div className="font-medium text-white">{tx.symbol}</div>
-                        <div className="text-xs text-zinc-500">{formatDate(tx.timestamp)}</div>
+                      <div className="font-medium text-white">{tx.symbol}</div>
+                      <div className="text-xs text-zinc-500">
+                        {formatDate(tx.timestamp)}
+                      </div>
                     </div>
                   </TableCell>
                   <TableCell className="text-right">
                     <div className="text-sm text-white">
-                        {tx.quantity} <span className="text-zinc-500">@</span> ${tx.price.toLocaleString()}
+                      {tx.quantity} <span className="text-zinc-500">@</span> $
+                      {tx.price.toLocaleString()}
                     </div>
                   </TableCell>
                   <TableCell className="text-right">
-                    <div className={cn("font-medium", isBuy ? "text-emerald-400" : "text-rose-400")}>
-                        {isBuy ? "-" : "+"}${tx.total.toLocaleString("en-US", { minimumFractionDigits: 2 })}
+                    <div
+                      className={cn(
+                        "font-medium",
+                        isBuy ? "text-emerald-400" : "text-rose-400",
+                      )}
+                    >
+                      {isBuy ? "-" : "+"}$
+                      {tx.total.toLocaleString("en-US", {
+                        minimumFractionDigits: 2,
+                      })}
                     </div>
                   </TableCell>
                 </TableRow>

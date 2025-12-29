@@ -9,23 +9,12 @@
     }
   ],
   "compilerOptions": {
-    "rootDirs": [
-      ".",
-      "./.react-router/types"
-    ],
+    "rootDirs": [".", "./.react-router/types"],
     "paths": {
-      "@/*": [
-        "./src/*"
-      ],
-      "@repo/ui/*": [
-        "../../packages/ui/src/*"
-      ],
-      "@repo/database-types": [
-        "../../packages/database-types/src/index.ts"
-      ],
-      "@repo/api-types": [
-        "../../packages/api-types/src/index.ts"
-      ]
+      "@/*": ["./src/*"],
+      "@repo/ui/*": ["../../packages/ui/src/*"],
+      "@repo/database-types": ["../../packages/database-types/src/index.ts"],
+      "@repo/api-types": ["../../packages/api-types/src/index.ts"]
     }
   }
 }

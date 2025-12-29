@@ -37,7 +37,7 @@ import { UserId } from '../portfolios/decorators/user-id.decorator';
 @Controller('connections')
 @UseGuards(AuthGuard)
 export class ConnectionsController {
-  constructor(private readonly connectionsService: ConnectionsService) { }
+  constructor(private readonly connectionsService: ConnectionsService) {}
 
   @Get()
   @ApiOperation({ summary: 'List all user connections' })
@@ -46,9 +46,7 @@ export class ConnectionsController {
     description: 'List of connections (API secrets are never returned)',
     type: [ConnectionDto],
   })
-  async findAll(
-    @UserId() userId: string,
-  ): Promise<ConnectionDto[]> {
+  async findAll(@UserId() userId: string): Promise<ConnectionDto[]> {
     return this.connectionsService.findAll(userId);
   }
 

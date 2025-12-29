@@ -13,13 +13,9 @@ import {
 } from '@nestjs/common';
 import { SupabaseClient, PostgrestError } from '@supabase/supabase-js';
 import { Database } from '@repo/database-types';
-import {
-  ConnectionDto,
-  ConnectionStatus,
-  ExchangeId,
-} from '@repo/api-types';
+import { ConnectionDto, ConnectionStatus, ExchangeId } from '@repo/api-types';
 import { encryptSecret, decryptSecret, maskApiKey } from './crypto.utils';
-import ccxt, { Exchange } from "ccxt";
+import ccxt, { Exchange } from 'ccxt';
 
 type ExchangeClass = typeof ccxt.binance | typeof ccxt.okx;
 
@@ -28,7 +24,7 @@ export class ConnectionsService {
   constructor(
     @Inject('SUPABASE_CLIENT')
     private readonly supabase: SupabaseClient<Database>,
-  ) { }
+  ) {}
 
   /**
    * Get all connections for a user (secrets are never returned)
@@ -55,9 +51,15 @@ export class ConnectionsService {
     apiSecret: string,
   ): Promise<ConnectionDto> {
     // 1. Validate the connection first
-    const validation = await this.validateConnection(exchange, apiKey, apiSecret);
+    const validation = await this.validateConnection(
+      exchange,
+      apiKey,
+      apiSecret,
+    );
     if (!validation.valid) {
-      throw new BadRequestException(validation.error || 'Invalid API credentials');
+      throw new BadRequestException(
+        validation.error || 'Invalid API credentials',
+      );
     }
 
     // 2. Encrypt the secret
@@ -121,7 +123,11 @@ export class ConnectionsService {
     apiSecret: string,
   ): Promise<{ valid: boolean; error?: string }> {
     try {
-      const exchangeInstance = this.createExchangeInstance(exchange, apiKey, apiSecret);
+      const exchangeInstance = this.createExchangeInstance(
+        exchange,
+        apiKey,
+        apiSecret,
+      );
 
       // Attempt to fetch balance - this validates the API keys
       await exchangeInstance.fetchBalance();
@@ -137,7 +143,10 @@ export class ConnectionsService {
   /**
    * Get decrypted API secret for a connection (internal use only for syncing)
    */
-  async getDecryptedSecret(userId: string, connectionId: string): Promise<string> {
+  async getDecryptedSecret(
+    userId: string,
+    connectionId: string,
+  ): Promise<string> {
     const { data, error } = await this.supabase
       .from('user_connections')
       .select('api_secret_encrypted')
@@ -184,7 +193,10 @@ export class ConnectionsService {
     const message = err.message || 'Unknown error';
 
     // Common CCXT error patterns
-    if (message.includes('AuthenticationError') || message.includes('Invalid API-key')) {
+    if (
+      message.includes('AuthenticationError') ||
+      message.includes('Invalid API-key')
+    ) {
       return 'Invalid API Key or Secret. Please check your credentials.';
     }
     if (message.includes('PermissionDenied')) {

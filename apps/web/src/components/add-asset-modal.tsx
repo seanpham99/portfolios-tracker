@@ -1,15 +1,10 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { useForm, useWatch, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
-import {
-  Loader2,
-  Plus,
-  Search,
-  ChevronLeft,
-} from "lucide-react";
+import { Loader2, Plus, Search, ChevronLeft } from "lucide-react";
 import { Button } from "@repo/ui/components/button";
 import { useSearchAssets, useAddTransaction } from "@/api/hooks/use-portfolios";
 import { usePopularAssets } from "@/api/hooks/use-popular-assets";
@@ -20,11 +15,7 @@ import {
   DialogDescription,
   DialogTitle,
 } from "@repo/ui/components/dialog";
-import {
-  Field,
-  FieldLabel,
-  FieldError
-} from "@repo/ui/components/field";
+import { Field, FieldLabel, FieldError } from "@repo/ui/components/field";
 import { Input } from "@repo/ui/components/input";
 import { ScrollArea } from "@repo/ui/components/scroll-area";
 
@@ -38,13 +29,15 @@ interface AddAssetModalProps {
 }
 
 const addAssetSchema = z.object({
-  quantity: z.string().refine((val) => !isNaN(Number(val)) && Number(val) > 0, "Ctq > 0"),
-  pricePerUnit: z.string().refine((val) => !isNaN(Number(val)) && Number(val) > 0, "Price > 0"),
+  quantity: z
+    .string()
+    .refine((val) => !isNaN(Number(val)) && Number(val) > 0, "Ctq > 0"),
+  pricePerUnit: z
+    .string()
+    .refine((val) => !isNaN(Number(val)) && Number(val) > 0, "Price > 0"),
 });
 
-
 type AddAssetFormValues = z.infer<typeof addAssetSchema>;
-
 
 // --- Main Component ---
 
@@ -69,23 +62,14 @@ export function AddAssetModal({
   const totalValue = Number(qty || 0) * Number(price || 0);
 
   // Hooks
-  const { data: searchResults = [], isLoading: isSearching } = useSearchAssets(searchQuery);
-  const { data: popularAssets = [], isLoading: isLoadingPopular } = usePopularAssets();
+  const { data: searchResults = [], isLoading: isSearching } =
+    useSearchAssets(searchQuery);
+  const { data: popularAssets = [], isLoading: isLoadingPopular } =
+    usePopularAssets();
   const addTransaction = useAddTransaction(portfolioId);
 
   // Filter assets - show popular when not searching, search results when user types
-  const displayAssets = searchQuery.length >= 2
-    ? searchResults
-    : popularAssets;
-
-  // Reset state when opening/closing
-  useEffect(() => {
-    if (isOpen) {
-      setSearchQuery("");
-      setSelectedAsset(null);
-      addForm.reset();
-    }
-  }, [isOpen, addForm]);
+  const displayAssets = searchQuery.length >= 2 ? searchResults : popularAssets;
 
   // Handlers
   const handleAddAsset = async (values: AddAssetFormValues) => {
@@ -107,10 +91,13 @@ export function AddAssetModal({
     }
   };
 
-
-
   const handleOpenChange = (open: boolean) => {
-    if (!open) onClose();
+    if (!open) {
+      setSearchQuery("");
+      setSelectedAsset(null);
+      addForm.reset();
+      onClose();
+    }
   };
 
   const canGoBack = !!selectedAsset;
@@ -139,7 +126,9 @@ export function AddAssetModal({
                 {selectedAsset ? selectedAsset.symbol : "Add Asset"}
               </DialogTitle>
               <DialogDescription className="text-xs text-zinc-500 capitalize">
-                {selectedAsset ? (selectedAsset.name_en || selectedAsset.name) : stageId.replace("-", " ")}
+                {selectedAsset
+                  ? selectedAsset.name_en || selectedAsset.name
+                  : stageId.replace("-", " ")}
               </DialogDescription>
             </div>
           </div>
@@ -161,7 +150,8 @@ export function AddAssetModal({
               </div>
 
               <ScrollArea className="flex-1 w-full rounded-md border border-white/5 max-h-full min-h-0 flex flex-col *:data-[slot=scroll-area-viewport]:flex-1">
-                {(isSearching && searchQuery.length >= 2) || (isLoadingPopular && searchQuery.length < 2) ? (
+                {(isSearching && searchQuery.length >= 2) ||
+                (isLoadingPopular && searchQuery.length < 2) ? (
                   <div className="flex items-center justify-center py-8">
                     <Loader2 className="h-6 w-6 animate-spin text-zinc-500" />
                   </div>
@@ -175,14 +165,22 @@ export function AddAssetModal({
                       >
                         <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-white/5 text-sm font-medium text-zinc-300 overflow-hidden">
                           {asset.logo_url ? (
-                            <img src={asset.logo_url} alt={asset.symbol} className="h-full w-full object-cover" />
+                            <img
+                              src={asset.logo_url}
+                              alt={asset.symbol}
+                              className="h-full w-full object-cover"
+                            />
                           ) : (
                             asset.symbol.slice(0, 2)
                           )}
                         </div>
                         <div className="flex-1 text-left">
-                          <p className="font-medium text-white">{asset.symbol}</p>
-                          <p className="text-xs text-zinc-500">{asset.name_en || asset.name}</p>
+                          <p className="font-medium text-white">
+                            {asset.symbol}
+                          </p>
+                          <p className="text-xs text-zinc-500">
+                            {asset.name_en || asset.name}
+                          </p>
                         </div>
                         <Plus className="h-4 w-4 text-zinc-500" />
                       </button>
@@ -190,8 +188,13 @@ export function AddAssetModal({
                   </div>
                 ) : (
                   <div className="py-6 text-center">
-                    <p className="text-sm text-zinc-500">No assets found for "{searchQuery}"</p>
-                    <p className="mt-2 text-xs text-zinc-600">Try a different search term or contact support to request tracking for a new asset.</p>
+                    <p className="text-sm text-zinc-500">
+                      No assets found for &quot;{searchQuery}&quot;
+                    </p>
+                    <p className="mt-2 text-xs text-zinc-600">
+                      Try a different search term or contact support to request
+                      tracking for a new asset.
+                    </p>
                   </div>
                 )}
               </ScrollArea>
@@ -201,13 +204,21 @@ export function AddAssetModal({
             <div className="space-y-6">
               {/* Removed the asset info card that had the Change button as it's now in header */}
 
-              <form onSubmit={addForm.handleSubmit(handleAddAsset)} className="space-y-4">
+              <form
+                onSubmit={addForm.handleSubmit(handleAddAsset)}
+                className="space-y-4"
+              >
                 <Controller
                   control={addForm.control}
                   name="quantity"
                   render={({ field, fieldState }) => (
                     <Field data-invalid={fieldState.invalid}>
-                      <FieldLabel htmlFor={field.name} className="text-zinc-400 font-normal">Quantity</FieldLabel>
+                      <FieldLabel
+                        htmlFor={field.name}
+                        className="text-zinc-400 font-normal"
+                      >
+                        Quantity
+                      </FieldLabel>
                       <Input
                         id={field.name}
                         type="number"
@@ -216,7 +227,9 @@ export function AddAssetModal({
                         placeholder="0.00"
                         aria-invalid={fieldState.invalid}
                       />
-                      {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
+                      {fieldState.invalid && (
+                        <FieldError errors={[fieldState.error]} />
+                      )}
                     </Field>
                   )}
                 />
@@ -225,7 +238,12 @@ export function AddAssetModal({
                   name="pricePerUnit"
                   render={({ field, fieldState }) => (
                     <Field data-invalid={fieldState.invalid}>
-                      <FieldLabel htmlFor={field.name} className="text-zinc-400 font-normal">Price per unit ($)</FieldLabel>
+                      <FieldLabel
+                        htmlFor={field.name}
+                        className="text-zinc-400 font-normal"
+                      >
+                        Price per unit ($)
+                      </FieldLabel>
                       <Input
                         id={field.name}
                         type="number"
@@ -234,7 +252,9 @@ export function AddAssetModal({
                         placeholder="0.00"
                         aria-invalid={fieldState.invalid}
                       />
-                      {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
+                      {fieldState.invalid && (
+                        <FieldError errors={[fieldState.error]} />
+                      )}
                     </Field>
                   )}
                 />
@@ -243,14 +263,19 @@ export function AddAssetModal({
                   <div className="rounded-xl bg-white/3 p-4 flex justify-between items-center">
                     <span className="text-sm text-zinc-400">Total Value</span>
                     <span className="text-xl font-semibold text-white">
-                      ${totalValue.toLocaleString("en-US", { minimumFractionDigits: 2 })}
+                      $
+                      {totalValue.toLocaleString("en-US", {
+                        minimumFractionDigits: 2,
+                      })}
                     </span>
                   </div>
                 )}
 
                 <Button
                   type="submit"
-                  disabled={!addForm.formState.isValid || addTransaction.isPending}
+                  disabled={
+                    !addForm.formState.isValid || addTransaction.isPending
+                  }
                   className="w-full bg-emerald-600 hover:bg-emerald-500 text-white py-6 text-lg"
                 >
                   {addTransaction.isPending ? (
@@ -258,7 +283,9 @@ export function AddAssetModal({
                       <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                       Adding...
                     </>
-                  ) : "Add to Portfolio"}
+                  ) : (
+                    "Add to Portfolio"
+                  )}
                 </Button>
               </form>
             </div>

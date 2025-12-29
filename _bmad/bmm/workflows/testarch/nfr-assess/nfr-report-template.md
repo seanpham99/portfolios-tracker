@@ -369,15 +369,15 @@ Note: This assessment summarizes existing evidence; it does not run tests or CI 
 
 ```yaml
 nfr_assessment:
-  date: '{DATE}'
-  story_id: '{STORY_ID}'
-  feature_name: '{FEATURE_NAME}'
+  date: "{DATE}"
+  story_id: "{STORY_ID}"
+  feature_name: "{FEATURE_NAME}"
   categories:
-    performance: '{PERFORMANCE_STATUS}'
-    security: '{SECURITY_STATUS}'
-    reliability: '{RELIABILITY_STATUS}'
-    maintainability: '{MAINTAINABILITY_STATUS}'
-  overall_status: '{OVERALL_STATUS}'
+    performance: "{PERFORMANCE_STATUS}"
+    security: "{SECURITY_STATUS}"
+    reliability: "{RELIABILITY_STATUS}"
+    maintainability: "{MAINTAINABILITY_STATUS}"
+  overall_status: "{OVERALL_STATUS}"
   critical_issues: { CRITICAL_COUNT }
   high_priority_issues: { HIGH_COUNT }
   medium_priority_issues: { MEDIUM_COUNT }
@@ -386,9 +386,9 @@ nfr_assessment:
   quick_wins: { QUICK_WIN_COUNT }
   evidence_gaps: { EVIDENCE_GAP_COUNT }
   recommendations:
-    - '{RECOMMENDATION_1}'
-    - '{RECOMMENDATION_2}'
-    - '{RECOMMENDATION_3}'
+    - "{RECOMMENDATION_1}"
+    - "{RECOMMENDATION_2}"
+    - "{RECOMMENDATION_3}"
 ```
 
 ---

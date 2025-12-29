@@ -1,4 +1,8 @@
-import { Inject, Injectable, InternalServerErrorException } from '@nestjs/common';
+import {
+  Inject,
+  Injectable,
+  InternalServerErrorException,
+} from '@nestjs/common';
 import { SupabaseClient } from '@supabase/supabase-js';
 import { Database } from '@repo/database-types';
 import { PopularAssetDto } from '@repo/api-types';
@@ -33,8 +37,12 @@ export class AssetsService {
     // For true fuzzy search, we would use similarity() function, but ilike works well with trigram indexes
     const { data, error } = await this.supabase
       .from('assets')
-      .select('id, symbol, name_en, name_local, asset_class, market, logo_url, currency')
-      .or(`symbol.ilike.%${sanitizedQuery}%,name_en.ilike.%${sanitizedQuery}%,name_local.ilike.%${sanitizedQuery}%`)
+      .select(
+        'id, symbol, name_en, name_local, asset_class, market, logo_url, currency',
+      )
+      .or(
+        `symbol.ilike.%${sanitizedQuery}%,name_en.ilike.%${sanitizedQuery}%,name_local.ilike.%${sanitizedQuery}%`,
+      )
       .order('symbol', { ascending: true })
       .limit(20);
 
@@ -53,16 +61,16 @@ export class AssetsService {
     // For MVP, we'll return a curated list of the most common assets
     // In future, this could be dynamic based on user activity or trading volume
     const symbols = [
-      'AAPL',  // US Tech
-      'MSFT',  // US Tech
+      'AAPL', // US Tech
+      'MSFT', // US Tech
       'GOOGL', // US Tech
-      'AMZN',  // US Tech
-      'NVDA',  // US Tech
-      'BTC',   // Crypto
-      'ETH',   // Crypto
-      'VNM',   // VN Index ETF
-      'VIC',   // VN Stock
-      'VHM',   // VN Stock
+      'AMZN', // US Tech
+      'NVDA', // US Tech
+      'BTC', // Crypto
+      'ETH', // Crypto
+      'VNM', // VN Index ETF
+      'VIC', // VN Stock
+      'VHM', // VN Stock
     ];
 
     const { data, error } = await this.supabase

@@ -71,12 +71,14 @@ So that I can keep my crypto portfolio synced automatically without manual entry
 **Date:** 2025-12-28
 
 **Architect Decision:**
+
 - pgsodium is deprecated by Supabase (pending removal)
 - Implemented application-level encryption using Node.js `crypto` module
 - Format: `iv:authTag:ciphertext` (base64 encoded)
 - Requires `ENCRYPTION_KEY` environment variable (32-byte base64)
 
 **Files Created:**
+
 - `supabase/migrations/20251229000000_create_user_connections.sql`
 - `services/api/src/connections/crypto.utils.ts`
 - `services/api/src/connections/crypto.utils.spec.ts` (11 tests)
@@ -91,6 +93,7 @@ So that I can keep my crypto portfolio synced automatically without manual entry
 - `apps/web/src/routes/_protected.settings.connections.tsx`
 
 **Files Modified:**
+
 - `services/api/src/app.module.ts` (added ConnectionsModule)
 - `packages/api-types/src/index.ts` (export connection DTOs)
 - `apps/web/src/api/client.ts` (added connection API functions)
@@ -99,4 +102,3 @@ So that I can keep my crypto portfolio synced automatically without manual entry
 
 - [CCXT Manual](https://docs.ccxt.com/)
 - [Node.js Crypto](https://nodejs.org/api/crypto.html)
-

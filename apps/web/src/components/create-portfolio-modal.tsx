@@ -18,11 +18,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@repo/ui/components/dialog";
-import {
-  Field,
-  FieldLabel,
-  FieldError,
-} from "@repo/ui/components/field";
+import { Field, FieldLabel, FieldError } from "@repo/ui/components/field";
 import { Input } from "@repo/ui/components/input";
 import { Textarea } from "@repo/ui/components/textarea";
 import {
@@ -144,7 +140,10 @@ export function CreatePortfolioModal({
             name="name"
             render={({ field, fieldState }) => (
               <Field data-invalid={fieldState.invalid}>
-                <FieldLabel htmlFor={field.name} className="text-zinc-400 font-normal">
+                <FieldLabel
+                  htmlFor={field.name}
+                  className="text-zinc-400 font-normal"
+                >
                   Portfolio Name
                 </FieldLabel>
                 <Input
@@ -166,7 +165,10 @@ export function CreatePortfolioModal({
             name="description"
             render={({ field, fieldState }) => (
               <Field data-invalid={fieldState.invalid}>
-                <FieldLabel htmlFor={field.name} className="text-zinc-400 font-normal">
+                <FieldLabel
+                  htmlFor={field.name}
+                  className="text-zinc-400 font-normal"
+                >
                   Description (Optional)
                 </FieldLabel>
                 <Textarea
@@ -190,7 +192,10 @@ export function CreatePortfolioModal({
             name="baseCurrency"
             render={({ field, fieldState }) => (
               <Field data-invalid={fieldState.invalid}>
-                <FieldLabel htmlFor={field.name} className="text-zinc-400 font-normal">
+                <FieldLabel
+                  htmlFor={field.name}
+                  className="text-zinc-400 font-normal"
+                >
                   Base Currency
                 </FieldLabel>
                 <Select

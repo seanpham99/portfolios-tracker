@@ -171,7 +171,7 @@ export default function SignUp() {
                 Check your email
               </CardTitle>
               <CardDescription className="text-zinc-400">
-                We've sent a confirmation link to your email address.
+                We&apos;ve sent a confirmation link to your email address.
               </CardDescription>
             </CardHeader>
             <CardContent className="p-0">

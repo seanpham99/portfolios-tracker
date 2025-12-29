@@ -1,5 +1,10 @@
 import { Controller, Get, Patch, Body, UseGuards } from '@nestjs/common';
-import { ApiTags, ApiBearerAuth, ApiOperation, ApiResponse } from '@nestjs/swagger';
+import {
+  ApiTags,
+  ApiBearerAuth,
+  ApiOperation,
+  ApiResponse,
+} from '@nestjs/swagger';
 import { UsersService } from './users.service';
 import { UserSettingsDto, UpdateUserSettingsDto } from '@repo/api-types';
 import { AuthGuard } from '../portfolios/guards/auth.guard';
@@ -10,7 +15,7 @@ import { UserId } from '../portfolios/decorators/user-id.decorator';
 @Controller('me')
 @UseGuards(AuthGuard)
 export class UsersController {
-  constructor(private readonly usersService: UsersService) { }
+  constructor(private readonly usersService: UsersService) {}
 
   @Get('settings')
   @ApiOperation({ summary: 'Get current user settings' })

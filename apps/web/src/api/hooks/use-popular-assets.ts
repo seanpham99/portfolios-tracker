@@ -1,14 +1,14 @@
-import { useQuery } from '@tanstack/react-query';
-import { apiFetch } from '../client';
-import { PopularAssetDto } from '@repo/api-types';
+import { useQuery } from "@tanstack/react-query";
+import { apiFetch } from "../client";
+import { PopularAssetDto } from "@repo/api-types";
 
 export function usePopularAssets() {
   return useQuery({
-    queryKey: ['assets', 'popular'],
+    queryKey: ["assets", "popular"],
     queryFn: async (): Promise<PopularAssetDto[]> => {
-      const res = await apiFetch('/assets/popular');
+      const res = await apiFetch("/assets/popular");
       if (!res.ok) {
-        throw new Error('Failed to fetch popular assets');
+        throw new Error("Failed to fetch popular assets");
       }
       return res.json();
     },

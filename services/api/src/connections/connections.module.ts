@@ -15,4 +15,4 @@ import { PortfoliosModule } from '../portfolios/portfolios.module';
   providers: [ConnectionsService],
   exports: [ConnectionsService],
 })
-export class ConnectionsModule { }
+export class ConnectionsModule {}

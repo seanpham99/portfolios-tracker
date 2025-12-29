@@ -76,8 +76,12 @@ describe('crypto.utils', () => {
     });
 
     it('should throw on invalid format', () => {
-      expect(() => decryptSecret('invalid')).toThrow('Invalid encrypted format');
-      expect(() => decryptSecret('only:two')).toThrow('Invalid encrypted format');
+      expect(() => decryptSecret('invalid')).toThrow(
+        'Invalid encrypted format',
+      );
+      expect(() => decryptSecret('only:two')).toThrow(
+        'Invalid encrypted format',
+      );
     });
 
     it('should throw on tampered ciphertext', () => {

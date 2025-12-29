@@ -9,6 +9,12 @@ export default defineConfig({
     globals: true,
     environment: "jsdom",
     setupFiles: "./test/setup.ts",
-    include: ["src/__tests__/**/*.test.{ts,tsx}", "src/components/**/*.test.{ts,tsx}", "src/api/**/*.test.{ts,tsx}", "src/hooks/**/*.test.{ts,tsx}", "src/routes/**/*.test.{ts,tsx}"],
+    include: [
+      "src/__tests__/**/*.test.{ts,tsx}",
+      "src/components/**/*.test.{ts,tsx}",
+      "src/api/**/*.test.{ts,tsx}",
+      "src/hooks/**/*.test.{ts,tsx}",
+      "src/routes/**/*.test.{ts,tsx}",
+    ],
   },
 });

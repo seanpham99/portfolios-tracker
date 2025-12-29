@@ -3,16 +3,20 @@
  * Story: 2.7 Connection Settings
  */
 
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { 
-  getConnections, 
-  createConnection, 
-  deleteConnection, 
-  validateConnection 
-} from '@/api/client';
-import type { ConnectionDto, CreateConnectionDto, ValidationResultDto } from '@repo/api-types';
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import {
+  getConnections,
+  createConnection,
+  deleteConnection,
+  validateConnection,
+} from "@/api/client";
+import type {
+  ConnectionDto,
+  CreateConnectionDto,
+  ValidationResultDto,
+} from "@repo/api-types";
 
-const CONNECTIONS_KEY = ['connections'];
+const CONNECTIONS_KEY = ["connections"];
 
 /**
  * Hook to fetch all user connections

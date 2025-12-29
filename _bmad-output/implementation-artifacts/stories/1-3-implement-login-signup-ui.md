@@ -44,6 +44,7 @@ so that I can enter the app with a sense of security and trust.
 ## Dev Notes
 
 ### Architecture & Specs
+
 - **Framework:** React 19 (use `useActionState` if appropriate for loading/error management).
 - **Styling:** Tailwind CSS 4.1.18. Use `zinc` for neutrals and `emerald` (measured) for success/primary actions.
 - **Motion:** Framer Motion 12.23.26. Default transition: `200ms fade + 30px slide`.
@@ -51,11 +52,13 @@ so that I can enter the app with a sense of security and trust.
 - **Icons:** Lucide React.
 
 ### Project Structure Notes
+
 - Auth routes exist at `apps/web/src/routes/_auth.*.tsx`.
 - Layout wrapper is `apps/web/src/routes/_auth.tsx`.
 - Shared components should be placed in `apps/web/src/components/auth` or `@repo/ui` if reusable across the monorepo.
 
 ### References
+
 - [Source: _bmad-output/architecture.md#Frontend Architecture]
 - [Source: _bmad-output/project-planning-artifacts/ux/ux-design-specification.md#Strategic Decisions]
 - [Source: _bmad-output/project-planning-artifacts/ux/ux-design-specification.md#Responsive Behavior]
@@ -101,13 +104,12 @@ Claude 3.5 Sonnet (Antigravity) → Claude 4 Sonnet (Code Review)
 
 ### File List
 
-- apps/web/src/routes/_auth.tsx
-- apps/web/src/routes/_auth.login.tsx
-- apps/web/src/routes/_auth.sign-up.tsx
-- apps/web/src/routes/_auth.login.test.tsx
-- apps/web/src/routes/_auth.sign-up.test.tsx
+- apps/web/src/routes/\_auth.tsx
+- apps/web/src/routes/\_auth.login.tsx
+- apps/web/src/routes/\_auth.sign-up.tsx
+- apps/web/src/routes/\_auth.login.test.tsx
+- apps/web/src/routes/\_auth.sign-up.test.tsx
 - packages/ui/src/styles/globals.css
 - apps/web/vitest.config.ts
 - apps/web/test/setup.ts
 - apps/web/package.json
-

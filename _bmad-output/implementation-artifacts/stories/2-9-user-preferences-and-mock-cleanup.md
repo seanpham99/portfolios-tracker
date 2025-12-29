@@ -61,12 +61,14 @@ So that I have a consistent, trusted experience without "fake" mock data.
 ### Implementation Notes - 2025-12-28
 
 **Backend:**
+
 - Created migration `20251228140000_add_user_settings_columns.sql` to add `currency` and `refresh_interval` columns to `user_preferences` table
 - Created `UsersModule` with `UsersService` and `UsersController`
 - Implemented `GET /me/settings` and `PATCH /me/settings` endpoints with proper authentication
 - Added `GET /assets/popular` endpoint in `AssetsController` returning curated list of top 10 assets
 
 **Frontend:**
+
 - Created `useSettings()` and `useUpdateSettings()` React Query hooks in `apps/web/src/api/hooks/use-settings.ts`
 - Created `usePopularAssets()` React Query hook in `apps/web/src/api/hooks/use-popular-assets.ts`
 - Refactored `SettingsPage` to use real API data with loading states
@@ -74,6 +76,7 @@ So that I have a consistent, trusted experience without "fake" mock data.
 - Removed entire "Asset Request" feature from UI (form, state, handlers)
 
 **Cleanup:**
+
 - Removed all `portfolio-store` imports and dependencies from `AddAssetModal`
 - Removed mock data constants (`popularAssets`, `exchanges`, `assetTypes`, `generateSparkline`)
 - Removed unused components (`PendingRequestsBadge`, `RequestStatusBadge`)
@@ -87,6 +90,7 @@ So that I have a consistent, trusted experience without "fake" mock data.
 - These components should be migrated to API-based state in future stories
 
 **Files Modified:**
+
 - `supabase/migrations/20251228140000_add_user_settings_columns.sql` (new)
 - `packages/api-types/src/settings.dto.ts` (new)
 - `packages/api-types/src/index.ts`

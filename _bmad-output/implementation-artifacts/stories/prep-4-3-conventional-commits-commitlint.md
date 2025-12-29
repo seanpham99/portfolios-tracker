@@ -1,6 +1,6 @@
 # Story Prep-4.3: Conventional Commits & Commit Linting
 
-Status: backlog
+Status: review
 
 ## Story
 
@@ -30,11 +30,11 @@ So that changelogs are auto-generated correctly and commit history is readable.
 
 ## Tasks / Subtasks
 
-- [ ] **Task 1: Install Commitlint**
+- [x] **Task 1: Install Commitlint**
   - [ ] Run `pnpm add -Dw @commitlint/cli @commitlint/config-conventional`
   - [ ] Verify installations in root `package.json`
 
-- [ ] **Task 2: Configure Commitlint**
+- [x] **Task 2: Configure Commitlint**
   - [ ] Create `commitlint.config.js` in project root:
     ```javascript
     module.exports = {
@@ -63,24 +63,24 @@ So that changelogs are auto-generated correctly and commit history is readable.
     ```
   - [ ] Verify configuration is valid
 
-- [ ] **Task 3: Create Commit-Msg Hook**
+- [x] **Task 3: Create Commit-Msg Hook**
   - [ ] Run `echo "pnpm commitlint --edit \$1" > .husky/commit-msg`
   - [ ] Make hook executable: `chmod +x .husky/commit-msg`
   - [ ] Test hook triggers on commit
 
-- [ ] **Task 4: Test Valid Commits**
+- [x] **Task 4: Test Valid Commits**
   - [ ] Test `feat: add new feature`
   - [ ] Test `fix(api): resolve null pointer`
   - [ ] Test `docs: update README`
   - [ ] Verify all pass validation
 
-- [ ] **Task 5: Test Invalid Commits**
+- [x] **Task 5: Test Invalid Commits**
   - [ ] Test `updated files` (no type)
   - [ ] Test `Feature: new feature` (wrong case)
   - [ ] Test `feat:missing space`
   - [ ] Verify all are rejected with clear errors
 
-- [ ] **Task 6: (Optional) Install Commitizen**
+- [x] **Task 6: (Optional) Install Commitizen**
   - [ ] Run `pnpm add -Dw commitizen cz-conventional-changelog`
   - [ ] Add to root `package.json`:
     ```json
@@ -93,7 +93,7 @@ So that changelogs are auto-generated correctly and commit history is readable.
   - [ ] Add script: `"commit": "cz"`
   - [ ] Test interactive commit: `pnpm commit`
 
-- [ ] **Task 7: Document Commit Conventions**
+- [x] **Task 7: Document Commit Conventions**
   - [ ] Update `CONTRIBUTING.md` with:
     - Commit message format: `<type>(<scope>): <subject>`
     - List of allowed types and when to use them
@@ -101,7 +101,7 @@ So that changelogs are auto-generated correctly and commit history is readable.
     - How to use `pnpm commit` for guided commits
   - [ ] Add commit message template (`.gitmessage`)
 
-- [ ] **Task 8: Validate with Changesets**
+- [x] **Task 8: Validate with Changesets**
   - [ ] Verify commit types map to changeset bump types:
     - `feat:` → `minor` bump
     - `fix:` → `patch` bump
@@ -128,6 +128,30 @@ So that changelogs are auto-generated correctly and commit history is readable.
 
 - `CONTRIBUTING.md` - document conventions
 - (Optional) `package.json` - add commitizen config
+
+### Implementation Notes
+
+- Installed Commitlint: `@commitlint/cli`, `@commitlint/config-conventional` [Task 1]
+- Configured commitlint with allowed types; disabled `subject-case` to permit acronyms (e.g., README) consistent with ACs [Task 2]
+- Added Husky `commit-msg` hook invoking `pnpm commitlint --edit "$1"`; removed deprecated wrapper lines per Husky v10 guidance [Task 3]
+- Validated commits:
+  - Passed: `feat: add new feature` (warned scope-empty), `fix(api): resolve null pointer`, `docs: update README` [Task 4]
+- Rejected invalid commits: `updated files`, `Feature: new feature`, `feat:missing space` [Task 5]
+- Installed Commitizen + adapter; added `commit` script and config in root `package.json` [Task 6]
+- Updated `CONTRIBUTING.md` with commit rules, interactive commit usage, template, and mapping to Changesets [Task 7, Task 8]
+
+### File List (updated)
+
+- `commitlint.config.js` (new)
+- `.husky/commit-msg` (new)
+- `.gitmessage` (new)
+- `CONTRIBUTING.md` (modified)
+- `package.json` (modified)
+- `pnpm-lock.yaml` (modified)
+
+### Status
+
+All tasks completed. Commitlint enforced; Commitizen configured; Documentation updated.
 
 ## References
 

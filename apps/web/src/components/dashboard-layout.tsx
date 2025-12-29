@@ -1,9 +1,9 @@
-import { useEffect } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
-import { useSearchParams } from 'react-router';
-import { cn } from '@repo/ui/lib/utils';
+import { useEffect } from "react";
+import { motion, AnimatePresence } from "framer-motion";
+import { useSearchParams } from "react-router";
+import { cn } from "@repo/ui/lib/utils";
 
-export type TabId = 'vn' | 'us' | 'crypto';
+export type TabId = "vn" | "us" | "crypto";
 
 export interface TabStats {
   assetCount: number;
@@ -20,30 +20,30 @@ interface TabDef {
 }
 
 const TABS: TabDef[] = [
-  { id: 'vn', label: 'VN Stocks' },
-  { id: 'us', label: 'US Equities' },
-  { id: 'crypto', label: 'Crypto' },
+  { id: "vn", label: "VN Stocks" },
+  { id: "us", label: "US Equities" },
+  { id: "crypto", label: "Crypto" },
 ];
 
 const TAB_SHORTCUTS: Record<string, TabId> = {
-  '1': 'vn',
-  '2': 'us',
-  '3': 'crypto',
+  "1": "vn",
+  "2": "us",
+  "3": "crypto",
 };
 
-export function DashboardLayout({ 
+export function DashboardLayout({
   stats = {
     vn: { assetCount: 0, totalValue: 0 },
     us: { assetCount: 0, totalValue: 0 },
-    crypto: { assetCount: 0, totalValue: 0 }
-  } 
+    crypto: { assetCount: 0, totalValue: 0 },
+  },
 }: DashboardLayoutProps) {
   const [searchParams, setSearchParams] = useSearchParams();
-  const activeTab = (searchParams.get('view') as TabId) || 'vn';
+  const activeTab = (searchParams.get("view") as TabId) || "vn";
 
   const handleTabChange = (tabId: TabId) => {
-    setSearchParams(prev => {
-      prev.set('view', tabId);
+    setSearchParams((prev) => {
+      prev.set("view", tabId);
       return prev;
     });
   };
@@ -57,8 +57,8 @@ export function DashboardLayout({
       }
     };
 
-    document.addEventListener('keydown', handleKeyDown);
-    return () => document.removeEventListener('keydown', handleKeyDown);
+    document.addEventListener("keydown", handleKeyDown);
+    return () => document.removeEventListener("keydown", handleKeyDown);
   }, []);
 
   return (
@@ -83,27 +83,29 @@ export function DashboardLayout({
                 aria-controls={isActive ? `panel-${tab.id}` : undefined}
                 onClick={() => handleTabChange(tab.id)}
                 className={cn(
-                  'relative px-6 py-4 text-sm font-medium transition-colors',
-                  'hover:text-white',
-                  isActive ? 'text-white' : 'text-zinc-500'
+                  "relative px-6 py-4 text-sm font-medium transition-colors",
+                  "hover:text-white",
+                  isActive ? "text-white" : "text-zinc-500",
                 )}
               >
                 <div className="flex items-center gap-3">
                   <span>{tab.label}</span>
-                  
+
                   {/* Badge: Asset Count & Total Value */}
-                  <div className={cn(
-                    'flex items-center gap-2 rounded-full px-3 py-1 text-xs',
-                    isActive
-                      ? 'bg-emerald-500/10 text-emerald-400'
-                      : 'bg-white/5 text-zinc-600'
-                  )}>
+                  <div
+                    className={cn(
+                      "flex items-center gap-2 rounded-full px-3 py-1 text-xs",
+                      isActive
+                        ? "bg-emerald-500/10 text-emerald-400"
+                        : "bg-white/5 text-zinc-600",
+                    )}
+                  >
                     <span>{tabStats?.assetCount ?? 0} assets</span>
                     <span className="text-zinc-700">•</span>
                     <span>
-                      {new Intl.NumberFormat('en-US', {
-                        style: 'currency',
-                        currency: 'USD',
+                      {new Intl.NumberFormat("en-US", {
+                        style: "currency",
+                        currency: "USD",
                         minimumFractionDigits: 0,
                         maximumFractionDigits: 2,
                       }).format(tabStats?.totalValue ?? 0)}
@@ -116,7 +118,7 @@ export function DashboardLayout({
                   <motion.div
                     layoutId="active-tab-indicator"
                     className="absolute bottom-0 left-0 right-0 h-0.5 bg-emerald-500"
-                    transition={{ duration: 0.2, ease: 'easeInOut' }}
+                    transition={{ duration: 0.2, ease: "easeInOut" }}
                   />
                 )}
               </button>
@@ -136,7 +138,7 @@ export function DashboardLayout({
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -30 }}
-            transition={{ duration: 0.2, ease: 'easeInOut' }}
+            transition={{ duration: 0.2, ease: "easeInOut" }}
             className="h-full p-8"
             data-framer-component="tab-content"
           >

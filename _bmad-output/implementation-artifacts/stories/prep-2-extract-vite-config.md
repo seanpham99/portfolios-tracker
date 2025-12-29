@@ -20,20 +20,22 @@ so that I can reuse standard build settings across web and future mobile/other a
 ## Tasks
 
 - [x] **Task 1: Create Config Package**
-    - [x] Initialize `packages/vite-config`.
-    - [x] Create `index.ts` exporting a `baseViteConfig` or function.
-    - [x] Add necessary dependencies (`vite`, `vite-tsconfig-paths`, etc.) to this package.
+  - [x] Initialize `packages/vite-config`.
+  - [x] Create `index.ts` exporting a `baseViteConfig` or function.
+  - [x] Add necessary dependencies (`vite`, `vite-tsconfig-paths`, etc.) to this package.
 - [x] **Task 2: Update Apps/Web**
-    - [x] Add `@repo/vite-config` dependency to `apps/web`.
-    - [x] Update `apps/web/vite.config.ts` to extend the shared config.
-    - [x] Verify dev server and build still work.
+  - [x] Add `@repo/vite-config` dependency to `apps/web`.
+  - [x] Update `apps/web/vite.config.ts` to extend the shared config.
+  - [x] Verify dev server and build still work.
 
 ## Dev Agent Record
 
 ### Agent Model Used
+
 Claude 3.5 Sonnet (Thinking)
 
 ### Completion Notes
+
 - Created `@repo/vite-config` package with TypeScript build setup
 - Configured package to build from `src/` to `dist/` with proper type declarations
 - Overcame `noEmit: true` issue in base tsconfig by explicitly setting `noEmit: false`
@@ -43,6 +45,7 @@ Claude 3.5 Sonnet (Thinking)
 - All tests passing (13 tests in web, Jest tests in API)
 
 ### File List
+
 - packages/vite-config/package.json
 - packages/vite-config/tsconfig.json
 - packages/vite-config/src/index.ts

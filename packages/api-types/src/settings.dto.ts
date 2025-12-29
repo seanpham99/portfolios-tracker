@@ -1,10 +1,10 @@
-import { IsEnum, IsInt, Min, Max, IsOptional } from 'class-validator';
+import { IsEnum, IsInt, Min, Max, IsOptional } from "class-validator";
 
 export enum Currency {
-  USD = 'USD',
-  VND = 'VND',
-  EUR = 'EUR',
-  GBP = 'GBP',
+  USD = "USD",
+  VND = "VND",
+  EUR = "EUR",
+  GBP = "GBP",
 }
 
 export class UserSettingsDto {

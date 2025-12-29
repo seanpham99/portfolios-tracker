@@ -60,9 +60,11 @@ So that I can analyze why I'm making or losing money on this specific holding wi
 ## Dev Agent Record
 
 ### Implementation Summary
+
 Implemented the comprehensive Asset Detail Page including backend API, metrics logic, and high-fidelity frontend with TradingView.
 
 ### File List
+
 - `services/api/src/portfolios/portfolios.controller.ts`: Added `getAssetDetails` endpoint.
 - `services/api/src/portfolios/portfolios.service.ts`: Implemented weighted average cost basis.
 - `packages/api-types/src/asset-details.dto.ts`: New shared DTOs.
@@ -72,6 +74,7 @@ Implemented the comprehensive Asset Detail Page including backend API, metrics l
 - `apps/web/src/components/asset/trading-view-widget.tsx`: TradingView widget.
 
 ### Code Review Fixes
+
 - **Ambiguity Fix**: Refactored backend to use `assets!inner` join.
 - **TradingView Logic**: Smart symbol mapping for the widget.
 - **UX Improvements**: Better error handling and dynamic methodology.

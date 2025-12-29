@@ -1,2 +1,2 @@
-export { IntegrationCard } from './integration-card';
-export { ConnectionModal } from './connection-modal';
+export { IntegrationCard } from "./integration-card";
+export { ConnectionModal } from "./connection-modal";

@@ -57,6 +57,7 @@ So that compromised keys can be replaced without downtime.
 
 - [ ] **Task 3: Implement Dual-Key Decryption**
   - [ ] Update `services/api/src/connections/crypto.utils.ts`:
+
     ```typescript
     export function decrypt(ciphertext: string): string {
       const currentKey = process.env.ENCRYPTION_KEY;
@@ -73,6 +74,7 @@ So that compromised keys can be replaced without downtime.
       }
     }
     ```
+
   - [ ] Test with rotated keys
 
 - [ ] **Task 4: Migrate Exchange Keys to Supabase Vault**
@@ -94,6 +96,7 @@ So that compromised keys can be replaced without downtime.
 
 - [ ] **Task 5: Hot-Reload API Keys**
   - [ ] Implement key refresh mechanism:
+
     ```typescript
     @Injectable()
     export class ExchangeService {
@@ -106,6 +109,7 @@ So that compromised keys can be replaced without downtime.
       }
     }
     ```
+
   - [ ] Test key rotation without service restart
 
 - [ ] **Task 6: Create Rotation Runbook**

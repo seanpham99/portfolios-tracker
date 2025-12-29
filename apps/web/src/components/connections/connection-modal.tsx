@@ -4,10 +4,10 @@
  * Story: 2.7 Connection Settings
  */
 
-import { useState } from 'react';
-import { useForm } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
-import { z } from 'zod';
+import { useState } from "react";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { z } from "zod";
 import {
   Dialog,
   DialogContent,
@@ -15,23 +15,26 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-} from '@repo/ui/components/dialog';
-import { Button } from '@repo/ui/components/button';
-import { Input } from '@repo/ui/components/input';
-import { Label } from '@repo/ui/components/label';
-import { Alert, AlertDescription } from '@repo/ui/components/alert';
-import { Loader2, ShieldCheck, AlertCircle, CheckCircle2 } from 'lucide-react';
-import { ExchangeId } from '@repo/api-types';
-import { useValidateConnection, useCreateConnection } from '@/api/hooks/use-connections';
+} from "@repo/ui/components/dialog";
+import { Button } from "@repo/ui/components/button";
+import { Input } from "@repo/ui/components/input";
+import { Label } from "@repo/ui/components/label";
+import { Alert, AlertDescription } from "@repo/ui/components/alert";
+import { Loader2, ShieldCheck, AlertCircle, CheckCircle2 } from "lucide-react";
+import { ExchangeId } from "@repo/api-types";
+import {
+  useValidateConnection,
+  useCreateConnection,
+} from "@/api/hooks/use-connections";
 
 const EXCHANGE_NAMES: Record<ExchangeId, string> = {
-  [ExchangeId.BINANCE]: 'Binance',
-  [ExchangeId.OKX]: 'OKX',
+  [ExchangeId.BINANCE]: "Binance",
+  [ExchangeId.OKX]: "OKX",
 };
 
 const connectionSchema = z.object({
-  apiKey: z.string().min(1, 'API Key is required'),
-  apiSecret: z.string().min(1, 'API Secret is required'),
+  apiKey: z.string().min(1, "API Key is required"),
+  apiSecret: z.string().min(1, "API Secret is required"),
 });
 
 type ConnectionFormData = z.infer<typeof connectionSchema>;
@@ -49,7 +52,9 @@ export function ConnectionModal({
   onOpenChange,
   onSuccess,
 }: ConnectionModalProps) {
-  const [validationState, setValidationState] = useState<'idle' | 'validating' | 'valid' | 'invalid'>('idle');
+  const [validationState, setValidationState] = useState<
+    "idle" | "validating" | "valid" | "invalid"
+  >("idle");
   const [validationError, setValidationError] = useState<string | null>(null);
 
   const validateMutation = useValidateConnection();
@@ -67,7 +72,7 @@ export function ConnectionModal({
 
   const handleClose = () => {
     reset();
-    setValidationState('idle');
+    setValidationState("idle");
     setValidationError(null);
     onOpenChange(false);
   };
@@ -77,11 +82,11 @@ export function ConnectionModal({
 
     const values = getValues();
     if (!values.apiKey || !values.apiSecret) {
-      setValidationError('Please fill in both API Key and Secret');
+      setValidationError("Please fill in both API Key and Secret");
       return;
     }
 
-    setValidationState('validating');
+    setValidationState("validating");
     setValidationError(null);
 
     try {
@@ -92,14 +97,14 @@ export function ConnectionModal({
       });
 
       if (result.valid) {
-        setValidationState('valid');
+        setValidationState("valid");
       } else {
-        setValidationState('invalid');
-        setValidationError(result.error || 'Validation failed');
+        setValidationState("invalid");
+        setValidationError(result.error || "Validation failed");
       }
     } catch (err: any) {
-      setValidationState('invalid');
-      setValidationError(err.message || 'Connection test failed');
+      setValidationState("invalid");
+      setValidationError(err.message || "Connection test failed");
     }
   };
 
@@ -130,7 +135,8 @@ export function ConnectionModal({
             Connect {EXCHANGE_NAMES[exchange]}
           </DialogTitle>
           <DialogDescription>
-            Enter your read-only API credentials. We only need access to view your balances.
+            Enter your read-only API credentials. We only need access to view
+            your balances.
           </DialogDescription>
         </DialogHeader>
 
@@ -141,10 +147,12 @@ export function ConnectionModal({
               id="apiKey"
               placeholder="Enter your API Key"
               autoComplete="off"
-              {...register('apiKey')}
+              {...register("apiKey")}
             />
             {errors.apiKey && (
-              <p className="text-sm text-destructive">{errors.apiKey.message}</p>
+              <p className="text-sm text-destructive">
+                {errors.apiKey.message}
+              </p>
             )}
           </div>
 
@@ -155,15 +163,17 @@ export function ConnectionModal({
               type="password"
               placeholder="Enter your API Secret"
               autoComplete="off"
-              {...register('apiSecret')}
+              {...register("apiSecret")}
             />
             {errors.apiSecret && (
-              <p className="text-sm text-destructive">{errors.apiSecret.message}</p>
+              <p className="text-sm text-destructive">
+                {errors.apiSecret.message}
+              </p>
             )}
           </div>
 
           {/* Validation feedback */}
-          {validationState === 'valid' && (
+          {validationState === "valid" && (
             <Alert className="border-green-500/50 bg-green-500/10">
               <CheckCircle2 className="h-4 w-4 text-green-500" />
               <AlertDescription className="text-green-500">
@@ -172,11 +182,13 @@ export function ConnectionModal({
             </Alert>
           )}
 
-          {(validationState === 'invalid' || createMutation.isError) && (
+          {(validationState === "invalid" || createMutation.isError) && (
             <Alert variant="destructive">
               <AlertCircle className="h-4 w-4" />
               <AlertDescription>
-                {validationError || createMutation.error?.message || 'Failed to connect'}
+                {validationError ||
+                  createMutation.error?.message ||
+                  "Failed to connect"}
               </AlertDescription>
             </Alert>
           )}
@@ -194,20 +206,17 @@ export function ConnectionModal({
                   Testing...
                 </>
               ) : (
-                'Test Connection'
+                "Test Connection"
               )}
             </Button>
-            <Button
-              type="submit"
-              disabled={createMutation.isPending}
-            >
+            <Button type="submit" disabled={createMutation.isPending}>
               {createMutation.isPending ? (
                 <>
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                   Saving...
                 </>
               ) : (
-                'Save Connection'
+                "Save Connection"
               )}
             </Button>
           </DialogFooter>

@@ -3,6 +3,7 @@
 **Date**: 2025-12-27
 **Epic**: 1 - Secure Account Foundation
 **Participants**:
+
 - **Bob** (Scrum Master)
 - **Alice** (Product Owner)
 - **Charlie** (Senior Dev)
@@ -15,6 +16,7 @@
 ## 🏁 Epic Summary
 
 **Delivery Metrics:**
+
 - **Completed:** 4/4 stories (100%) - All stories marked `done` (1.1, 1.2, 1.3, 1.4).
 - **Key Deliverables:**
   - NestJS Monorepo Structure (`apps/web`, `services/api`, `packages/database-types`, `packages/api-types`).
@@ -23,6 +25,7 @@
   - PDPA-Compliant Privacy Consent with Audit Hashing.
 
 **Quality & Compliance:**
+
 - 0 blockers carried forward.
 - **Security:** Strict audit trail implemented for privacy consent (using salted hash).
 - **Compliance:** PDPA & GDPR requirements met.
@@ -93,6 +96,7 @@
 **Goal:** Users can build a unified view of their wealth by manually logging transactions on a premium tabbed dashboard.
 
 **Key Dependencies:**
+
 - Requires RLS policies from Epic 1 (Done).
 - Requires `Dim_Asset` seed data (Pending - Critical Action Item).
 - Requires stable CI for complex logic merging (Pending - Critical Action Item).

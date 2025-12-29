@@ -106,6 +106,39 @@ pnpm changeset add --empty
 
 Empty changesets document intent and keep the release pipeline honest without bumping versions unnecessarily.
 
+## Pre-Commit Hooks (Husky + lint-staged)
+
+We use Husky and lint-staged to enforce code quality before commits. Hooks run at the root and process only staged files for speed.
+
+### Setup
+
+After a fresh clone or when dependencies change, ensure hooks are initialized:
+
+```bash
+pnpm install
+pnpm prepare
+```
+
+### Behavior
+
+- Runs ESLint with `--fix` and blocks commits on any warnings/errors for staged `*.{ts,tsx}` files
+- Formats staged `*.{ts,tsx,json,md,yaml,yml}` files using Prettier
+- Monorepo-aware: scans files across all workspaces
+
+### Bypass (Escape Hatch)
+
+Use sparingly and only for emergencies:
+
+```bash
+git commit --no-verify -m "chore: emergency commit"
+```
+
+### Troubleshooting
+
+- If hooks don't run, check `.husky` exists and `pre-commit` is executable
+- Ensure ESLint config is accessible in the affected workspace
+- For large changes, stage selectively to keep hook runtime low
+
 ### Changeset Description Guidelines
 
 Write clear, user-facing descriptions in **present tense**:

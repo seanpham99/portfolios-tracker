@@ -633,6 +633,92 @@ So that compromised keys can be replaced without downtime.
    **When** rotating
    **Then** services should detect rotation and reload without restart
 
+## Prep Sprint 6: Monorepo Quality & Architecture Enforcement
+
+Developers can maintain architectural integrity and prevent technical debt through automated workspace-wide quality checks.
+
+**Goal:** Establish Syncpack (version consistency), Knip (dead code detection), Sheriff (import boundaries), and Turbo Gen (scaffolding templates) to enforce monorepo discipline.
+
+### Story Prep-6.1: Syncpack for Version Consistency
+
+As a Developer,
+I want all packages to use identical versions of shared dependencies,
+So that I avoid "works on my machine" issues caused by version drift.
+
+**Acceptance Criteria:**
+
+1. **Given** multiple packages importing `react`
+   **When** I run `syncpack list-mismatches`
+   **Then** any version discrepancies should be detected and reported
+
+2. **Given** CI pipeline
+   **When** a PR introduces version mismatches
+   **Then** the build should fail with clear error messages
+
+3. **Given** detected mismatches
+   **When** I run `syncpack fix-mismatches`
+   **Then** all package.json files should be updated to use the highest semver-compatible version
+
+### Story Prep-6.2: Knip for Dead Code Detection
+
+As a Developer,
+I want to detect unused files, exports, and dependencies across the entire workspace,
+So that the codebase stays lean and maintainable.
+
+**Acceptance Criteria:**
+
+1. **Given** the monorepo workspace
+   **When** I run `knip`
+   **Then** it should report unused files, exports, types, and dependencies
+
+2. **Given** CI pipeline
+   **When** dead code is detected
+   **Then** the build should warn (not fail) with actionable cleanup suggestions
+
+3. **Given** `knip.json` configuration
+   **When** configured with entry points for each workspace package
+   **Then** it should correctly analyze TypeScript project references and Turborepo dependencies
+
+### Story Prep-6.3: Sheriff for Import Boundary Enforcement
+
+As a Developer,
+I want to prevent UI packages from importing server code,
+So that architectural layers remain clean and deployable independently.
+
+**Acceptance Criteria:**
+
+1. **Given** `sheriff.config.ts` with defined modules and tags
+   **When** `@repo/ui` attempts to import from `@repo/api`
+   **Then** the build should fail with a clear boundary violation error
+
+2. **Given** workspace structure
+   **When** configuring Sheriff
+   **Then** tags should be defined: `ui`, `server`, `shared`, `types-only`
+
+3. **Given** CI pipeline
+   **When** import boundaries are violated
+   **Then** the build should fail before merge
+
+### Story Prep-6.4: Turbo Gen for Package Scaffolding
+
+As a Developer,
+I want standardized templates for creating new packages,
+So that every package starts with correct tsconfig, eslint, and package.json configs.
+
+**Acceptance Criteria:**
+
+1. **Given** Turbo Gen installed
+   **When** I run `turbo gen package`
+   **Then** it should prompt for package name and type (app/library/service)
+
+2. **Given** a package template
+   **When** generation completes
+   **Then** the new package should include: package.json with workspace:\* deps, tsconfig.json extending @repo/typescript-config, README.md
+
+3. **Given** template configuration
+   **When** creating a new package
+   **Then** it should be automatically added to pnpm-workspace.yaml and turbo.json
+
 **Acceptance Criteria:**
 
 **Given** the Asset Detail page

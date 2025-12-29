@@ -55,7 +55,7 @@ export default function AuthLayout() {
             }
             className="mt-4 font-serif text-3xl font-medium tracking-tight text-transparent bg-clip-text bg-gradient-to-b from-white to-white/70"
           >
-            Finsight
+            Portfolios Tracker
           </motion.h1>
           <motion.p
             {...fadeVariants}
@@ -92,7 +92,7 @@ export default function AuthLayout() {
           }
           className="mt-8 text-center text-xs text-zinc-600"
         >
-          © {new Date().getFullYear()} Finsight. All rights reserved.
+          © {new Date().getFullYear()} Portfolios Tracker. All rights reserved.
         </motion.footer>
       </main>
     </div>

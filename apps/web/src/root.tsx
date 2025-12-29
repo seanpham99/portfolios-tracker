@@ -18,23 +18,23 @@ export function Layout({ children }: { children: React.ReactNode }) {
       <head>
         <meta charSet="UTF-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-        <title>Finsight</title>
+        <title>Portfolios Tracker</title>
         <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
         <Meta />
         <Links />
       </head>
       <body>
         <QueryClientProvider client={queryClient}>
-        <ThemeProvider
-          attribute="class"
-          defaultTheme="dark"
-          storageKey="vite-ui-theme"
-          enableSystem
-          disableTransitionOnChange
-        >
-          {children}
-          <AppToaster />
-        </ThemeProvider>
+          <ThemeProvider
+            attribute="class"
+            defaultTheme="dark"
+            storageKey="vite-ui-theme"
+            enableSystem
+            disableTransitionOnChange
+          >
+            {children}
+            <AppToaster />
+          </ThemeProvider>
         </QueryClientProvider>
         <ScrollRestoration />
         <Scripts />

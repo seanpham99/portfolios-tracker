@@ -65,6 +65,13 @@ development_status:
   prep-5-3-input-validation-sanitization-audit: backlog
   prep-5-4-secrets-management-rotation-policy: backlog
 
+  # Monorepo Quality & Architecture Enforcement
+  prep-6-monorepo-quality-architecture: backlog
+  prep-6-1-syncpack-version-consistency: backlog
+  prep-6-2-knip-dead-code-detection: backlog
+  prep-6-3-sheriff-import-boundaries: backlog
+  prep-6-4-turbo-gen-package-scaffolding: backlog
+
   epic-2: in-progress
   2-1-portfolio-management-logic-api-database: done
   2-2-unified-portfolio-dashboard-shell: done

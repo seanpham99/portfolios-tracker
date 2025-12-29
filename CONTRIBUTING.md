@@ -1,6 +1,6 @@
-# Contributing to FinSight
+# Contributing to Portfolios Tracker
 
-Thank you for your interest in contributing to FinSight! This guide will help you understand our development workflow and contribution guidelines.
+Thank you for your interest in contributing to Portfolios Tracker! This guide will help you understand our development workflow and contribution guidelines.
 
 ## Table of Contents
 
@@ -36,7 +36,7 @@ pnpm dev
 
 ### Monorepo Structure
 
-FinSight uses Turborepo for monorepo management with the following structure:
+Portfolios Tracker uses Turborepo for monorepo management with the following structure:
 
 - `apps/web` - React 19 + Vite frontend application
 - `services/api` - NestJS backend API
@@ -97,6 +97,7 @@ The changeset CLI will create a markdown file in `.changeset/` directory.
 Write clear, user-facing descriptions in **present tense**:
 
 ✅ **Good Examples:**
+
 ```markdown
 Add crypto exchange connection API for Binance and OKX
 Fix authentication token refresh logic
@@ -104,28 +105,29 @@ Add dark mode support to settings page
 ```
 
 ❌ **Bad Examples:**
+
 ```markdown
-added feature  # Past tense
-Fixed bug  # Too vague
-Refactored code  # Internal detail, not user-facing
+added feature # Past tense
+Fixed bug # Too vague
+Refactored code # Internal detail, not user-facing
 ```
 
 ### Bump Type Guidelines
 
-| Type | When to Use | Examples |
-|------|-------------|----------|
-| **Patch** | Bug fixes, minor improvements | Fix input validation error, Update error message |
-| **Minor** | New features (backward compatible) | Add portfolio analytics API, Add export to CSV |
-| **Major** | Breaking changes | Change API response structure, Remove deprecated endpoint |
+| Type      | When to Use                        | Examples                                                  |
+| --------- | ---------------------------------- | --------------------------------------------------------- |
+| **Patch** | Bug fixes, minor improvements      | Fix input validation error, Update error message          |
+| **Minor** | New features (backward compatible) | Add portfolio analytics API, Add export to CSV            |
+| **Major** | Breaking changes                   | Change API response structure, Remove deprecated endpoint |
 
 ### Mapping Conventional Commits to Changesets
 
-| Commit Type | Changeset Type | Description |
-|-------------|----------------|-------------|
-| `feat:` | `minor` | New feature added |
-| `fix:` | `patch` | Bug fix |
-| `feat!:` or `BREAKING CHANGE:` | `major` | Breaking change |
-| `chore:`, `docs:`, `test:` | No changeset | Internal changes |
+| Commit Type                    | Changeset Type | Description       |
+| ------------------------------ | -------------- | ----------------- |
+| `feat:`                        | `minor`        | New feature added |
+| `fix:`                         | `patch`        | Bug fix           |
+| `feat!:` or `BREAKING CHANGE:` | `major`        | Breaking change   |
+| `chore:`, `docs:`, `test:`     | No changeset   | Internal changes  |
 
 ### Example Workflow
 
@@ -263,4 +265,4 @@ pnpm changeset status
 
 ---
 
-Thank you for contributing to FinSight! 🚀
+Thank you for contributing to Portfolios Tracker! 🚀

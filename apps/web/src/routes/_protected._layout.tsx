@@ -21,7 +21,7 @@ export default function Layout() {
               <span className="text-lg font-semibold text-emerald-400">F</span>
             </div>
             <span className="font-serif text-xl font-light tracking-tight text-white">
-              Finsight
+              Portfolios Tracker
             </span>
           </div>
 
@@ -40,7 +40,7 @@ export default function Layout() {
                 Settings
               </Link>
             </nav>
-            
+
             <div className="h-5 w-px bg-white/10" />
 
             <div className="flex items-center gap-4">
@@ -62,7 +62,7 @@ export default function Layout() {
 
       <footer className="border-t border-white/6 px-8 py-4">
         <p className="text-xs text-zinc-600">
-          Finsight – Portfolio Management Platform
+          Portfolios Tracker – All your assets in one place. © {new Date().getFullYear()} All rights reserved.
         </p>
       </footer>
     </div>

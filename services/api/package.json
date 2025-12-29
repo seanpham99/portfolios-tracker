@@ -1,7 +1,7 @@
 {
   "name": "@repo/api",
   "version": "0.0.1",
-  "description": "FinSight NestJS API service",
+  "description": "Portfolios Tracker NestJS API service",
   "author": "",
   "private": true,
   "license": "UNLICENSED",

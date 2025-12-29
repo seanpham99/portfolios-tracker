@@ -40,7 +40,8 @@ jobs:
           echo "EOF" >> $GITHUB_OUTPUT
           
           # Check if any commits require a changeset
-          if echo "$COMMITS" | grep -qE "^(feat|fix|perf)(\(.+\))?:"; then
+          # Include refactor and style to catch API surface changes without feature/fix labels
+          if echo "$COMMITS" | grep -qE "^(feat|fix|perf|refactor|style)(\(.+\))?:"; then
             echo "requires_changeset=true" >> $GITHUB_OUTPUT
           else
             echo "requires_changeset=false" >> $GITHUB_OUTPUT

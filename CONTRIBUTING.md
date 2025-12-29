@@ -92,6 +92,20 @@ pnpm changeset
 
 The changeset CLI will create a markdown file in `.changeset/` directory.
 
+### Non-Release Changes and Empty Changesets
+
+Our CI checks commit types to decide if a changeset is required. Commits with `feat:`, `fix:`, `perf:`, `refactor:`, or `style:` will trigger a changeset check. If your change does NOT require a release (e.g., internal refactor or styling-only change that doesn't alter a published API), create an empty changeset to satisfy CI:
+
+```bash
+# Create an empty changeset when there is no release impact
+pnpm changeset add --empty
+
+# Provide a brief explanation, e.g.,
+# "Internal refactor; no public API change"
+```
+
+Empty changesets document intent and keep the release pipeline honest without bumping versions unnecessarily.
+
 ### Changeset Description Guidelines
 
 Write clear, user-facing descriptions in **present tense**:

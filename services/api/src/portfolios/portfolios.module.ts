@@ -9,6 +9,6 @@ import { AuthGuard } from './guards';
 @Module({
   controllers: [PortfoliosController],
   providers: [PortfoliosService, AuthGuard],
-  exports: [PortfoliosService],
+  exports: [PortfoliosService, AuthGuard],
 })
-export class PortfoliosModule {}
+export class PortfoliosModule { }

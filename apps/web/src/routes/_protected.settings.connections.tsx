@@ -5,12 +5,13 @@
 
 import { useState } from 'react';
 import { Link } from 'react-router';
-import { ArrowLeft } from 'lucide-react';
+import { ArrowLeft, Link as LinkIcon } from 'lucide-react';
 import { ExchangeId, type ConnectionDto } from '@repo/api-types';
 import { useConnections, useDeleteConnection } from '@/api/hooks/use-connections';
 import { IntegrationCard, ConnectionModal } from '@/components/connections';
 import { Button } from '@repo/ui/components/button';
-import { Skeleton } from '@repo/ui/components/skeleton';
+import { Card, CardContent } from '@repo/ui/components/card';
+import { Spinner } from '@repo/ui/components/spinner';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -25,7 +26,7 @@ import {
 export default function ConnectionsSettingsPage() {
   const [selectedExchange, setSelectedExchange] = useState<ExchangeId | null>(null);
   const [deleteConnectionId, setDeleteConnectionId] = useState<string | null>(null);
-  
+
   const { data: connections, isLoading, error } = useConnections();
   const deleteMutation = useDeleteConnection();
 
@@ -48,7 +49,7 @@ export default function ConnectionsSettingsPage() {
 
   const confirmDelete = async () => {
     if (!deleteConnectionId) return;
-    
+
     try {
       await deleteMutation.mutateAsync(deleteConnectionId);
     } finally {
@@ -60,21 +61,21 @@ export default function ConnectionsSettingsPage() {
     <div className="container max-w-4xl mx-auto py-8 px-4">
       {/* Header */}
       <div className="mb-8">
-        <Button variant="ghost" asChild className="mb-4 -ml-3">
+        <Button variant="ghost" asChild className="mb-4 -ml-3 text-zinc-400 hover:text-white">
           <Link to="/settings">
             <ArrowLeft className="mr-2 h-4 w-4" />
             Back to Settings
           </Link>
         </Button>
-        <h1 className="text-3xl font-bold tracking-tight">Exchange Connections</h1>
-        <p className="text-muted-foreground mt-2">
+        <h1 className="text-3xl font-bold tracking-tight text-white">Exchange Connections</h1>
+        <p className="text-zinc-400 mt-2">
           Connect your crypto exchange accounts to automatically sync your portfolio balances.
         </p>
       </div>
 
       {/* Error State */}
       {error && (
-        <div className="rounded-lg border border-destructive/50 bg-destructive/10 p-4 text-destructive mb-6">
+        <div className="rounded-lg border border-red-500/50 bg-red-500/10 p-4 text-red-400 mb-6">
           Failed to load connections: {error.message}
         </div>
       )}
@@ -83,22 +84,17 @@ export default function ConnectionsSettingsPage() {
       {isLoading && (
         <div className="grid gap-4 md:grid-cols-2">
           {[1, 2].map((i) => (
-            <div key={i} className="rounded-lg border p-6">
-              <div className="flex items-center gap-4">
-                <Skeleton className="h-12 w-12 rounded-lg" />
-                <div className="flex-1">
-                  <Skeleton className="h-5 w-24 mb-2" />
-                  <Skeleton className="h-4 w-48" />
-                </div>
-                <Skeleton className="h-6 w-20" />
-              </div>
-            </div>
+            <Card key={i}>
+              <CardContent className="flex items-center justify-center py-8">
+                <Spinner className="size-8" />
+              </CardContent>
+            </Card>
           ))}
         </div>
       )}
 
       {/* Connections Grid */}
-      {!isLoading && (
+      {!isLoading && connections && connections.length > 0 && (
         <div className="grid gap-4 md:grid-cols-2">
           {exchanges.map((exchange) => (
             <IntegrationCard
@@ -113,15 +109,42 @@ export default function ConnectionsSettingsPage() {
         </div>
       )}
 
+      {/* Empty State */}
+      {!isLoading && connections && connections.length === 0 && (
+        <div className="text-center py-16">
+          <div className="inline-flex h-16 w-16 items-center justify-center rounded-full bg-indigo-500/10 mb-4">
+            <LinkIcon className="h-8 w-8 text-indigo-400" />
+          </div>
+          <h3 className="text-lg font-medium text-white mb-2">No connections yet</h3>
+          <p className="text-zinc-400 mb-6 max-w-md mx-auto">
+            Connect your first exchange to automatically sync your crypto portfolio balances.
+          </p>
+          <div className="grid gap-4 md:grid-cols-2 max-w-2xl mx-auto">
+            {exchanges.map((exchange) => (
+              <IntegrationCard
+                key={exchange}
+                exchange={exchange}
+                connection={connectionsByExchange[exchange]}
+                onConnect={handleConnect}
+                onDisconnect={handleDisconnect}
+                isLoading={deleteMutation.isPending}
+              />
+            ))}
+          </div>
+        </div>
+      )}
+
       {/* Security Notice */}
-      <div className="mt-8 rounded-lg border border-muted bg-muted/30 p-4">
-        <h3 className="font-medium text-sm mb-2">🔒 Security Note</h3>
-        <p className="text-sm text-muted-foreground">
-          Your API credentials are encrypted at rest using industry-standard AES-256-GCM encryption.
-          We recommend using read-only API keys with IP restrictions for maximum security.
-          Your API secret is never displayed after saving.
-        </p>
-      </div>
+      <Card className="mt-8">
+        <CardContent>
+          <h3 className="font-medium text-sm mb-2 text-white">🔒 Security Note</h3>
+          <p className="text-sm text-zinc-400">
+            Your API credentials are encrypted at rest using industry-standard AES-256-GCM encryption.
+            We recommend using read-only API keys with IP restrictions for maximum security.
+            Your API secret is never displayed after saving.
+          </p>
+        </CardContent>
+      </Card>
 
       {/* Connection Modal */}
       <ConnectionModal

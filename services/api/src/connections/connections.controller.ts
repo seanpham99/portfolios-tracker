@@ -11,9 +11,9 @@ import {
   Delete,
   Body,
   Param,
-  Headers,
   HttpCode,
   HttpStatus,
+  UseGuards,
 } from '@nestjs/common';
 import {
   ApiTags,
@@ -29,12 +29,15 @@ import {
   ValidateConnectionDto,
   ValidationResultDto,
 } from '@repo/api-types';
+import { AuthGuard } from '../portfolios/guards/auth.guard';
+import { UserId } from '../portfolios/decorators/user-id.decorator';
 
 @ApiTags('connections')
 @ApiBearerAuth()
 @Controller('connections')
+@UseGuards(AuthGuard)
 export class ConnectionsController {
-  constructor(private readonly connectionsService: ConnectionsService) {}
+  constructor(private readonly connectionsService: ConnectionsService) { }
 
   @Get()
   @ApiOperation({ summary: 'List all user connections' })
@@ -44,7 +47,7 @@ export class ConnectionsController {
     type: [ConnectionDto],
   })
   async findAll(
-    @Headers('x-user-id') userId: string,
+    @UserId() userId: string,
   ): Promise<ConnectionDto[]> {
     return this.connectionsService.findAll(userId);
   }
@@ -65,7 +68,7 @@ export class ConnectionsController {
     description: 'Connection to this exchange already exists',
   })
   async create(
-    @Headers('x-user-id') userId: string,
+    @UserId() userId: string,
     @Body() createDto: CreateConnectionDto,
   ): Promise<ConnectionDto> {
     return this.connectionsService.create(
@@ -107,7 +110,7 @@ export class ConnectionsController {
     description: 'Connection not found',
   })
   async remove(
-    @Headers('x-user-id') userId: string,
+    @UserId() userId: string,
     @Param('id') id: string,
   ): Promise<void> {
     return this.connectionsService.remove(userId, id);

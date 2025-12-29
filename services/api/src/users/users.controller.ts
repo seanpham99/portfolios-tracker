@@ -1,22 +1,21 @@
-import { Controller, Get, Patch, Body, Req } from '@nestjs/common';
+import { Controller, Get, Patch, Body, UseGuards } from '@nestjs/common';
 import { ApiTags, ApiBearerAuth, ApiOperation, ApiResponse } from '@nestjs/swagger';
 import { UsersService } from './users.service';
 import { UserSettingsDto, UpdateUserSettingsDto } from '@repo/api-types';
+import { AuthGuard } from '../portfolios/guards/auth.guard';
+import { UserId } from '../portfolios/decorators/user-id.decorator';
 
 @ApiTags('users')
 @ApiBearerAuth()
 @Controller('me')
+@UseGuards(AuthGuard)
 export class UsersController {
-  constructor(private readonly usersService: UsersService) {}
+  constructor(private readonly usersService: UsersService) { }
 
   @Get('settings')
   @ApiOperation({ summary: 'Get current user settings' })
   @ApiResponse({ status: 200, type: UserSettingsDto })
-  async getSettings(@Req() req: any): Promise<UserSettingsDto> {
-    const userId = req.user?.id;
-    if (!userId) {
-      throw new Error('User not authenticated');
-    }
+  async getSettings(@UserId() userId: string): Promise<UserSettingsDto> {
     return this.usersService.getSettings(userId);
   }
 
@@ -24,13 +23,9 @@ export class UsersController {
   @ApiOperation({ summary: 'Update current user settings' })
   @ApiResponse({ status: 200, type: UserSettingsDto })
   async updateSettings(
-    @Req() req: any,
+    @UserId() userId: string,
     @Body() updateDto: UpdateUserSettingsDto,
   ): Promise<UserSettingsDto> {
-    const userId = req.user?.id;
-    if (!userId) {
-      throw new Error('User not authenticated');
-    }
     return this.usersService.updateSettings(userId, updateDto);
   }
 }

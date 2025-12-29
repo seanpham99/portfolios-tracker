@@ -1,6 +1,6 @@
 # Story Prep-4.2: Lint-Staged & Husky for Pre-Commit Quality
 
-Status: review
+Status: done
 
 ## Story
 
@@ -86,10 +86,6 @@ So that code quality issues are caught before reaching CI.
 
 - `package.json` (root) - add "prepare" script
 - `CONTRIBUTING.md` - document pre-commit workflow
-
-**Implementation Notes:**
-
-- Husky v9 warns about legacy shell loader lines. Hook still runs; will update to v10 syntax when upgrading.
 
 ## References
 

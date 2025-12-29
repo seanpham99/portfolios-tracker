@@ -121,9 +121,11 @@ pnpm prepare
 
 ### Behavior
 
-- Runs ESLint with `--fix` and blocks commits on any warnings/errors for staged `*.{ts,tsx}` files
-- Formats staged `*.{ts,tsx,json,md,yaml,yml}` files using Prettier
-- Monorepo-aware: scans files across all workspaces
+- Runs ESLint with `--fix` on staged `*.{ts,tsx}` files. Warnings do not block commits; errors will.
+- Formats staged `*.{ts,tsx,json,md,yaml,yml}` files using Prettier.
+- Monorepo-aware: scans files across all workspaces.
+
+Note: We intentionally allow ESLint warnings to pass in pre-commit to keep developer flow fast, especially in tests. Address warnings during regular lint runs (`pnpm lint`) or in PR review.
 
 ### Bypass (Escape Hatch)
 
@@ -136,7 +138,7 @@ git commit --no-verify -m "chore: emergency commit"
 ### Troubleshooting
 
 - If hooks don't run, check `.husky` exists and `pre-commit` is executable
-- Ensure ESLint config is accessible in the affected workspace
+- Ensure ESLint config is accessible in the affected workspace (e.g., `apps/web/eslint.config.js`, `services/api/eslint.config.mjs`).
 - For large changes, stage selectively to keep hook runtime low
 
 ### Changeset Description Guidelines

@@ -1,4 +1,11 @@
 {
-  "*.{ts,tsx}": ["eslint --fix --max-warnings 0", "prettier --write"],
-  "*.{json,md,yaml,yml}": ["prettier --write"]
+  "apps/web/**/*.{ts,tsx}": [
+    "pnpm -C apps/web exec eslint --config eslint.config.js --fix",
+    "prettier --write"
+  ],
+  "services/api/**/*.{ts,tsx,js}": [
+    "pnpm -C services/api exec eslint --config eslint.config.mjs --fix",
+    "prettier --write"
+  ],
+  "**/*.{json,md,yaml,yml}": ["prettier --write"]
 }

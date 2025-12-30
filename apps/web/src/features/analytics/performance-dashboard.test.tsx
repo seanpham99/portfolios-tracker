@@ -183,24 +183,24 @@ describe("PerformanceDashboard", () => {
       wrapper: AllTheProviders,
     });
 
-    // Should have time range selector buttons
-    expect(screen.getByRole("button", { name: "1M" })).toBeInTheDocument();
-    expect(screen.getByRole("button", { name: "3M" })).toBeInTheDocument();
-    expect(screen.getByRole("button", { name: "6M" })).toBeInTheDocument();
-    expect(screen.getByRole("button", { name: "1Y" })).toBeInTheDocument();
-    expect(screen.getByRole("button", { name: "ALL" })).toBeInTheDocument();
+    // Should have time range selector tabs
+    expect(screen.getByRole("tab", { name: "1M" })).toBeInTheDocument();
+    expect(screen.getByRole("tab", { name: "3M" })).toBeInTheDocument();
+    expect(screen.getByRole("tab", { name: "6M" })).toBeInTheDocument();
+    expect(screen.getByRole("tab", { name: "1Y" })).toBeInTheDocument();
+    expect(screen.getByRole("tab", { name: "ALL" })).toBeInTheDocument();
 
-    // Default should be 3M
-    const threeMonthButton = screen.getByRole("button", { name: "3M" });
-    expect(threeMonthButton).toHaveAttribute("aria-pressed", "true");
+    // Default should be 3M (selected)
+    const threeMonthTab = screen.getByRole("tab", { name: "3M" });
+    expect(threeMonthTab).toHaveAttribute("aria-selected", "true");
 
-    // Click 1M button
-    const oneMonthButton = screen.getByRole("button", { name: "1M" });
-    await user.click(oneMonthButton);
+    // Click 1M tab
+    const oneMonthTab = screen.getByRole("tab", { name: "1M" });
+    await user.click(oneMonthTab);
 
-    // Button should be pressed
+    // Tab should be selected
     await waitFor(() => {
-      expect(oneMonthButton).toHaveAttribute("aria-pressed", "true");
+      expect(oneMonthTab).toHaveAttribute("aria-selected", "true");
     });
   });
 

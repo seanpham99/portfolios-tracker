@@ -6,8 +6,8 @@ import React from "react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter } from "react-router";
 
-// Mock hook
-vi.mock("./use-holdings", () => ({
+// Mock the useHoldings hook
+vi.mock("./hooks/use-holdings", () => ({
   useHoldings: vi.fn(),
 }));
 
@@ -28,13 +28,16 @@ describe("UnifiedHoldingsTable", () => {
   );
 
   it("renders loading state", () => {
-    (useHoldings as any).mockReturnValue({ data: [], isLoading: true });
+    vi.mocked(useHoldings).mockReturnValue({
+      data: [],
+      isLoading: true,
+    } as any);
     render(<UnifiedHoldingsTable />, { wrapper });
     expect(screen.getByText("Loading holdings...")).toBeInTheDocument();
   });
 
   it("renders holdings data", () => {
-    (useHoldings as any).mockReturnValue({
+    vi.mocked(useHoldings).mockReturnValue({
       data: [
         {
           asset_id: "1",
@@ -47,7 +50,7 @@ describe("UnifiedHoldingsTable", () => {
         },
       ],
       isLoading: false,
-    });
+    } as any);
     render(<UnifiedHoldingsTable />, { wrapper });
     expect(screen.getByText("AAPL")).toBeInTheDocument();
     expect(screen.getByText("Apple")).toBeInTheDocument();
@@ -55,7 +58,7 @@ describe("UnifiedHoldingsTable", () => {
   });
 
   it("should NOT render expansion chevron column", () => {
-    (useHoldings as any).mockReturnValue({
+    vi.mocked(useHoldings).mockReturnValue({
       data: [
         {
           asset_id: "1",
@@ -70,7 +73,7 @@ describe("UnifiedHoldingsTable", () => {
         },
       ],
       isLoading: false,
-    });
+    } as any);
     render(<UnifiedHoldingsTable />, { wrapper });
 
     // Should NOT have chevron button for row expansion
@@ -83,7 +86,7 @@ describe("UnifiedHoldingsTable", () => {
   });
 
   it("should render info icon for methodology tooltip", () => {
-    (useHoldings as any).mockReturnValue({
+    vi.mocked(useHoldings).mockReturnValue({
       data: [
         {
           asset_id: "1",

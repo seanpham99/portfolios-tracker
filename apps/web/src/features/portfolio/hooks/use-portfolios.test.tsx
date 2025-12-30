@@ -1,11 +1,11 @@
-import { describe, it, expect, vi } from "vitest";
+import { describe, it, expect, vi, beforeEach } from "vitest";
 import { renderHook, waitFor } from "@testing-library/react";
 import { usePortfolios } from "./use-portfolios";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import * as client from "@/api/client";
 
-// Mock client
-vi.mock("../client", () => ({
+// Mock the API client module
+vi.mock("@/api/client", () => ({
   getPortfolios: vi.fn(),
 }));
 
@@ -25,11 +25,15 @@ const createWrapper = () => {
 };
 
 describe("usePortfolios", () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
   it("should fetch portfolios using getPortfolios client method", async () => {
     const mockPortfolios = [
       { id: "1", name: "Test", netWorth: 100, change24h: 5 },
     ];
-    (client.getPortfolios as any).mockResolvedValue(mockPortfolios);
+    vi.mocked(client.getPortfolios).mockResolvedValue(mockPortfolios);
 
     const { result } = renderHook(() => usePortfolios(), {
       wrapper: createWrapper(),

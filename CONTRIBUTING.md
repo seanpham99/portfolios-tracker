@@ -358,6 +358,86 @@ We use a **semantic CSS variable system** with Tailwind v4 for consistent, maint
 
 **📖 Full Style Guide**: See [`packages/ui/STYLE_GUIDE.md`](../packages/ui/STYLE_GUIDE.md) for complete documentation, token reference, and examples.
 
+### Component Development Guidelines
+
+We use [shadcn/ui](https://ui.shadcn.com/) as our primary component library. Before creating custom components, check if shadcn/ui provides a suitable solution.
+
+#### Using shadcn/ui Components
+
+Before creating a custom component:
+
+1. **Browse available components**: https://ui.shadcn.com/docs/components
+2. **Install with CLI**: `pnpx shadcn@latest add <component>`
+3. **Compose, don't duplicate**: Extend shadcn components rather than recreating them
+
+#### When to Create Custom Components
+
+Create custom components only when:
+
+- No suitable shadcn component exists
+- Domain-specific business logic required (e.g., `PortfolioCard`, `HoldingsTable`)
+- Complex composition of multiple shadcn components (extract to reusable component)
+
+#### Decision Guide
+
+| Need                     | Solution                                        |
+| ------------------------ | ----------------------------------------------- |
+| Tabs / Segmented Control | `pnpx shadcn@latest add tabs`                   |
+| Navigation / Sidebar     | `pnpx shadcn@latest add sidebar`                |
+| Buttons                  | `pnpx shadcn@latest add button`                 |
+| Forms                    | `pnpx shadcn@latest add form`                   |
+| Dialogs / Modals         | `pnpx shadcn@latest add dialog`                 |
+| Dropdowns                | `pnpx shadcn@latest add dropdown-menu`          |
+| Data Tables              | `pnpx shadcn@latest add table` + TanStack Table |
+
+#### Accessibility Requirements
+
+All components must meet WCAG 2.1 AA standards:
+
+- ✅ Keyboard navigation (Tab, Enter, Escape, Arrow keys)
+- ✅ Screen reader support (ARIA attributes, semantic HTML)
+- ✅ Focus indicators
+- ✅ Color contrast ratios
+- ✅ Touch-friendly sizing (44x44px minimum)
+
+shadcn/ui components provide these features out of the box.
+
+#### Component Guidelines
+
+```tsx
+// ❌ Bad - Custom button group instead of shadcn Tabs
+<div className="flex gap-2">
+  {options.map((opt) => (
+    <Button
+      key={opt.value}
+      variant={selected === opt.value ? "default" : "ghost"}
+      onClick={() => setSelected(opt.value)}
+    >
+      {opt.label}
+    </Button>
+  ))}
+</div>
+
+// ✅ Good - shadcn Tabs with built-in keyboard navigation
+<Tabs value={selected} onValueChange={setSelected}>
+  <TabsList>
+    {options.map((opt) => (
+      <TabsTrigger key={opt.value} value={opt.value}>
+        {opt.label}
+      </TabsTrigger>
+    ))}
+  </TabsList>
+</Tabs>
+```
+
+**Benefits of shadcn/ui:**
+
+- Built-in accessibility (keyboard nav, ARIA attributes)
+- Theme-aware styling
+- Mobile-responsive out of the box
+- Less code to maintain
+- Consistent patterns across the app
+
 ### TypeScript
 
 - Use strict mode (enabled in tsconfig)

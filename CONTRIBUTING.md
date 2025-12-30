@@ -492,6 +492,154 @@ Our Syncpack configuration (`.syncpackrc.json`) enforces:
 - Fix the mismatches first - don't bypass the hook
 - Version mismatches can cause production issues
 
+## Dead Code Detection
+
+We use [Knip](https://knip.dev/) to detect unused files, exports, dependencies, and more across the entire workspace. This helps keep the codebase lean and maintainable.
+
+### Why Dead Code Detection Matters
+
+Traditional linters like ESLint can't detect project-wide dead code. For example:
+
+- An unused export in `@repo/ui` that no other package imports
+- Dependencies installed but never used
+- Files that are no longer referenced anywhere
+- Types and exports that are defined but never consumed
+
+Knip analyzes the entire workspace dependency graph to identify truly unused code.
+
+### Running Knip
+
+Check for dead code periodically (not on every commit, as it's computationally expensive):
+
+```bash
+# Run full dead code analysis
+pnpm knip
+
+# Get machine-readable JSON output for CI
+pnpm knip:ci
+
+# Automatically remove unused code (use cautiously!)
+pnpm knip:fix
+```
+
+### Understanding Knip Reports
+
+Knip reports several categories of issues:
+
+**Unused files:**
+
+- Files that are never imported anywhere
+- Safe to delete if confirmed unused
+
+**Unused dependencies:**
+
+- Packages in package.json that are never imported
+- Remove with `pnpm remove <package>`
+
+**Unused exports:**
+
+- Functions/classes exported but never imported elsewhere
+- Consider removing or marking with `@internal` comment
+
+**Unresolved imports:**
+
+- Import paths that can't be resolved
+- Usually indicates broken code or misconfigured aliases
+
+**Duplicate exports:**
+
+- Same export name exported multiple times
+- Can cause confusion and import errors
+
+### Handling False Positives
+
+Knip may report false positives for:
+
+- **Type-only imports** - May show as unused if only used in type annotations
+- **Dynamic imports** - `import('./file')` might not be detected
+- **Development dependencies** - Testing tools, build tools
+- **Ambient declarations** - `.d.ts` files
+
+To suppress false positives:
+
+1. **Add to knip.json configuration:**
+
+   ```json
+   {
+     "ignoreDependencies": ["package-name"],
+     "ignore": ["path/to/file.ts"]
+   }
+   ```
+
+2. **Use comments for specific exports:**
+   ```typescript
+   // @knipignore - Public API surface, don't remove
+   export function intentionallyUnusedApi() {}
+   ```
+
+### Cleanup Workflow
+
+When Knip reports issues:
+
+1. **Review the report** - Categorize findings into:
+   - Safe to delete immediately
+   - Needs investigation
+   - False positives to ignore
+
+2. **Remove unused dependencies:**
+
+   ```bash
+   # Example: Remove unused dependencies
+   pnpm remove @radix-ui/react-accordion --filter @repo/web
+   ```
+
+3. **Delete unused files:**
+   - Verify the file is truly unused
+   - Check git history for context
+   - Remove and test
+
+4. **Clean up exports:**
+   - Remove unused exports from files
+   - Or add `@internal` JSDoc comment if needed for future
+
+5. **Verify changes:**
+   ```bash
+   pnpm build && pnpm test
+   ```
+
+### CI Integration
+
+Knip runs in CI as a **warning-only** check (doesn't fail builds). Review warnings in CI output and address them in cleanup sessions.
+
+### Best Practices
+
+- ✅ Run Knip weekly or before major releases
+- ✅ Address findings in batches during cleanup sessions
+- ✅ Use `--include` flag to focus on specific issue types:
+  ```bash
+  pnpm knip --include dependencies
+  pnpm knip --include files
+  pnpm knip --include exports
+  ```
+- ❌ Don't run on every commit (too slow)
+- ❌ Don't auto-fix without review
+- ❌ Don't ignore all warnings - they indicate tech debt
+
+### Configuration
+
+Our Knip configuration (knip.json) defines:
+
+- Entry points for each workspace (main files, routes, controllers)
+- Project patterns (which files to analyze)
+- Ignored patterns (tests, build artifacts)
+- Ignored dependencies (build tools, type definitions)
+
+The configuration excludes:
+
+- Test files (`**/*.test.ts`, `**/*.spec.ts`)
+- Build output (`dist/`, `build/`, `.turbo/`)
+- Development config files (`*.config.js`)
+
 ## Need Help?
 
 - Check existing issues and PRs

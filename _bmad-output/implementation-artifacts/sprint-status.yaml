@@ -67,8 +67,8 @@ development_status:
 
   # Monorepo Quality & Architecture Enforcement
   prep-6-monorepo-quality-architecture: backlog
-  prep-6-1-syncpack-version-consistency: review
-  prep-6-2-knip-dead-code-detection: backlog
+  prep-6-1-syncpack-version-consistency: done
+  prep-6-2-knip-dead-code-detection: done
   prep-6-3-sheriff-import-boundaries: backlog
   prep-6-4-turbo-gen-package-scaffolding: backlog
 

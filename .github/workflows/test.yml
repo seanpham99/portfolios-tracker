@@ -136,6 +136,9 @@ jobs:
         run: pnpm install
       - name: Check version consistency
         run: pnpm syncpack:check
+      - name: Check for dead code
+        run: pnpm knip:ci
+        continue-on-error: true
       - name: Build and Test
         run: pnpm turbo build test
         env:

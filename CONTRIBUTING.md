@@ -359,6 +359,139 @@ pnpm test
 pnpm changeset status
 ```
 
+## Dependency Management
+
+We use [Syncpack](https://github.com/JamieMason/syncpack) to ensure version consistency across all packages in our monorepo. This prevents "works on my machine" issues caused by version drift.
+
+### Why Version Consistency Matters
+
+In monorepos, different packages can easily drift into using different versions of the same dependency (e.g., `react@19.2.3` in one package and `react@19.0.0` in another). This causes:
+
+- 🐛 Subtle runtime bugs due to API differences
+- 📦 Bundle bloat from duplicate dependencies
+- ⚠️ Type errors from mismatched @types packages
+- 🔄 Inconsistent build behavior across packages
+
+### Checking Version Consistency
+
+Before committing, verify all dependencies use consistent versions:
+
+```bash
+# Check for version mismatches
+pnpm syncpack:check
+```
+
+This command will report any mismatches in:
+
+- React and React DOM versions
+- TypeScript versions
+- Vite and plugin versions
+- React Router versions
+- All @types packages
+
+### Fixing Version Mismatches
+
+If `syncpack:check` reports mismatches:
+
+```bash
+# Automatically fix mismatches (recommended)
+pnpm syncpack:fix
+
+# Verify the fix worked
+pnpm syncpack:check
+
+# Test to ensure no breaking changes
+pnpm build && pnpm test
+```
+
+**Manual Resolution (when auto-fix isn't suitable):**
+
+If you need to choose a specific version:
+
+```bash
+# Use interactive prompt to select version
+pnpm syncpack prompt
+```
+
+### When Adding Dependencies
+
+When adding a new dependency that's already used in other packages:
+
+1. **Check existing versions first:**
+
+   ```bash
+   pnpm syncpack:check
+   ```
+
+2. **Use the same version range** as other packages (check existing package.json files)
+
+3. **For internal packages**, always use workspace protocol:
+
+   ```json
+   {
+     "dependencies": {
+       "@repo/ui": "workspace:*"
+     }
+   }
+   ```
+
+4. **Run syncpack check** after installation:
+   ```bash
+   pnpm add <package> --filter <workspace>
+   pnpm syncpack:check
+   ```
+
+### Critical Dependencies
+
+These dependencies **must** stay synchronized across all packages:
+
+- **React & React DOM** - Different versions cause runtime errors
+- **TypeScript** - Version drift causes compiler errors
+- **Vite** - Different versions have incompatible plugin APIs
+- **React Router** - Must match across all routing packages
+- **@types packages** - Must match their runtime library versions
+
+### Automated Checks
+
+Version consistency is automatically checked:
+
+- ✅ **Pre-commit hook** - Runs before every commit
+- ✅ **CI pipeline** - Runs on every PR
+- ✅ **Pull request checks** - Must pass before merge
+
+If the pre-commit hook fails:
+
+1. Review the reported mismatches
+2. Run `pnpm syncpack:fix` to auto-fix
+3. Or manually align versions if needed
+4. Stage the changes and commit again
+
+### Syncpack Configuration
+
+Our Syncpack configuration (`.syncpackrc.json`) enforces:
+
+- Workspace protocol (`workspace:*`) for internal packages
+- Same version ranges for critical dependencies
+- Exact minor versions (`~5.9.3`) for TypeScript
+- Caret ranges (`^19.2.3`) for React ecosystem
+
+### Troubleshooting
+
+**"SameRangeMismatch" error:**
+
+- Different packages use incompatible version ranges (e.g., `~5.0.0` vs `~5.9.3`)
+- Fix: Run `pnpm syncpack:fix` or manually update to the same range
+
+**"HighestSemverMismatch" error:**
+
+- Different packages use different versions within compatible ranges
+- Fix: Run `pnpm syncpack:fix` to align to the highest version
+
+**Pre-commit hook fails but you need to commit:**
+
+- Fix the mismatches first - don't bypass the hook
+- Version mismatches can cause production issues
+
 ## Need Help?
 
 - Check existing issues and PRs

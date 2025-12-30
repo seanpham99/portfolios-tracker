@@ -22,7 +22,10 @@
     "changeset:publish": "changeset publish",
     "changelog": "conventional-changelog -p conventionalcommits -i CHANGELOG.md -s",
     "prepare": "husky",
-    "commit": "cz"
+    "commit": "cz",
+    "syncpack:check": "syncpack list-mismatches",
+    "syncpack:fix": "syncpack fix-mismatches",
+    "syncpack:format": "syncpack format"
   },
   "devDependencies": {
     "@changesets/cli": "^2.29.8",
@@ -38,7 +41,8 @@
     "husky": "^9.1.7",
     "lint-staged": "^16.2.7",
     "prettier": "^3.7.4",
-    "supabase": "2.70.4",
+    "supabase": "2.70.5",
+    "syncpack": "^13.0.4",
     "turbo": "^2.7.2"
   },
   "packageManager": "pnpm@10.26.2",

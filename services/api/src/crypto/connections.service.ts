@@ -12,8 +12,8 @@ import {
   ConflictException,
 } from '@nestjs/common';
 import { SupabaseClient, PostgrestError } from '@supabase/supabase-js';
-import { Database } from '@workspace/database-types';
-import { ConnectionDto, ConnectionStatus, ExchangeId } from '@workspace/api-types';
+import { Database } from '@workspace/shared-types/database';
+import { ConnectionDto, ConnectionStatus, ExchangeId } from '@workspace/shared-types/api';
 import { encryptSecret, decryptSecret, maskApiKey } from './crypto.utils';
 import ccxt, { Exchange } from 'ccxt';
 

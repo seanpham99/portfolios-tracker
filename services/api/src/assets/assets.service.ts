@@ -4,8 +4,8 @@ import {
   InternalServerErrorException,
 } from '@nestjs/common';
 import { SupabaseClient } from '@supabase/supabase-js';
-import { Database } from '@workspace/database-types';
-import { PopularAssetDto } from '@workspace/api-types';
+import { Database } from '@workspace/shared-types/database';
+import { PopularAssetDto } from '@workspace/shared-types/api';
 
 /**
  * Escape special characters in LIKE patterns to prevent injection

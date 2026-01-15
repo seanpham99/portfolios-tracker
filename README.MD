@@ -32,86 +32,34 @@
 ```bash
 fin-sight/
 ├── apps/
-│   └── web/                    # React + TypeScript + Vite app (portfolio tracking UI)
+│   └── web/                    # Next.js 16 (App Router) portfolio tracking UI
 │       ├── package.json
 │       ├── src/
-│       └── vite.config.ts
+│       └── next.config.ts
 ├── services/
-│   └── data-pipelines/         # Airflow + ClickHouse data platform
-│       ├── docker-compose.yaml # Orchestration for Airflow, ClickHouse, Postgres, Redis
-│       ├── Dockerfile          # Custom Airflow image with deps
-│       ├── dags/
-│       ├── scripts/
-│       └── sql/
-├── docs/
-│   └── TECHNICAL.md            # Deep-dive architecture & operations
-└── supabase/
-  └── config.toml
-```
-
----
-
-## ⚡ Quick Start
-
-### Prerequisites
-- [Docker](https://www.docker.com/) and [Docker Compose](https://docs.docker.com/compose/) installed on your machine.
-
-### Installation
-
-1. **Clone the Repository**
-   ```bash
-   git clone https://github.com/LGTM-but-NY/fin-sight.git
-   cd fin-sight
-   ```
-
-2. **Configure Environment (services/data-pipelines)**
-  Create a `.env` file in the data pipeline folder and add your credentials.
-  ```bash
-  cd services/data-pipelines
-  # If you have a template, copy it; otherwise create a new .env
-  [ -f template.env ] && cp template.env .env || printf "TELEGRAM_BOT_TOKEN=\nTELEGRAM_CHAT_ID=\nGEMINI_API_KEY=\nCLICKHOUSE_HOST=clickhouse-server\nCLICKHOUSE_PORT=8123\nCLICKHOUSE_USER=default\nCLICKHOUSE_PASSWORD=\nAIRFLOW_UID=$(id -u)\n" > .env
-  ```
-  *Update the following variables in `.env`:*
-   - `TELEGRAM_BOT_TOKEN`: Your Telegram Bot Token.
-   - `TELEGRAM_CHAT_ID`: Your Telegram Chat ID.
-   - `GEMINI_API_KEY`: (Optional) For AI-powered analysis.
-
-3. **Start Services (data pipelines)**
-  Launch the data platform stack from the `services/data-pipelines` folder.
-  ```bash
-  cd services/data-pipelines
-  docker compose up -d --build
-  ```
-  *This will start Airflow services, ClickHouse, PostgreSQL, and Redis.*
-
-4. **Access Interfaces**
-  - **Airflow API**: http://localhost:8080 (API server)
-    - Check version: http://localhost:8080/api/v2/version
-    - Note: If you want the Web UI, add/expose an Airflow webserver service.
-   - **ClickHouse HTTP**: [http://localhost:8123](http://localhost:8123)
-
----
-
+...
 ## 🖥️ Web App (apps/web)
 
-The React app is the intended UI for tracking portfolios and visualizing insights.
+The React app is the intended UI for tracking portfolios and visualizing insights, built with **Next.js 16**.
 
 ### Run locally
 
 ```bash
 cd apps/web
-npm install
-npm run dev
+pnpm install
+pnpm run dev
 ```
 
-The dev server will print the local URL (typically http://localhost:5173).
+The dev server will print the local URL (typically <http://localhost:3001>).
 
 ---
 
 ## 📊 Data Pipelines
 
 ### 1. Market Data Evening Batch (`market_data_evening_batch`)
+
 Runs every weekday at **6:00 PM (UTC+7)**.
+
 - **Tasks**:
   - `extract_prices`: Fetches OHLCV data for tracked stocks.
   - `extract_ratios`: Retrieves quarterly financial ratios (P/E, ROE, etc.).
@@ -119,7 +67,9 @@ Runs every weekday at **6:00 PM (UTC+7)**.
   - `load_*`: Inserts processed data into ClickHouse tables (`fact_stock_daily`, `fact_financial_ratios`, etc.).
 
 ### 2. Market News Morning (`market_news_morning`)
+
 Runs every weekday at **7:00 AM (UTC+7)**.
+
 - **Tasks**:
   - `extract_news`: Scrapes latest news related to tracked tickers.
   - `load_news`: Stores news metadata in ClickHouse.

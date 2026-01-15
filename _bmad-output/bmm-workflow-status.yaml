@@ -80,11 +80,13 @@ workflow_status:
 
   # PHASE 2: Solutioning
   create-architecture:
-    status: recommended
+    status: completed
     agent: architect
     command: create-architecture
     phase: 2
-    note: "Next recommended step"
+    completed: "2026-01-15"
+    artifacts:
+      - "_bmad-output/architecture.md"
 
   create-epics-and-stories:
     status: required

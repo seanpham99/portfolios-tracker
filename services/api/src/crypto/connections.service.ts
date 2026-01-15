@@ -170,8 +170,8 @@ export class ConnectionsService {
     apiSecret: string,
   ): Exchange {
     const exchangeClasses: Record<ExchangeId, ExchangeClass> = {
-      [ExchangeId.BINANCE]: ccxt.binance,
-      [ExchangeId.OKX]: ccxt.okx,
+      [ExchangeId.binance]: ccxt.binance,
+      [ExchangeId.okx]: ccxt.okx,
     };
 
     const ExchangeClass = exchangeClasses[exchange];

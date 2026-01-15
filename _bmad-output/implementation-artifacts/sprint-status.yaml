@@ -1,0 +1,77 @@
+# generated: 2026-01-15
+# project: portfolios-tracker
+# project_key: portfolios-tracker
+# tracking_system: file-system
+# story_location: {project-root}/_bmad-output/implementation-artifacts
+
+# STATUS DEFINITIONS:
+# ==================
+# Epic Status:
+#   - backlog: Epic not yet started
+#   - in-progress: Epic actively being worked on
+#   - done: All stories in epic completed
+#
+# Epic Status Transitions:
+#   - backlog → in-progress: Automatically when first story is created (via create-story)
+#   - in-progress → done: Manually when all stories reach 'done' status
+#
+# Story Status:
+#   - backlog: Story only exists in epic file
+#   - ready-for-dev: Story file created in stories folder
+#   - in-progress: Developer actively working on implementation
+#   - review: Ready for code review (via Dev's code-review workflow)
+#   - done: Story completed
+#
+# Retrospective Status:
+#   - optional: Can be completed but not required
+#   - done: Retrospective has been completed
+#
+# WORKFLOW NOTES:
+# ===============
+# - Epic transitions to 'in-progress' automatically when first story is created
+# - Stories can be worked in parallel if team capacity allows
+# - SM typically creates next story after previous one is 'done' to incorporate learnings
+# - Dev moves story to 'review', then runs code-review (fresh context, different LLM recommended)
+
+generated: 2026-01-15
+project: portfolios-tracker
+project_key: portfolios-tracker
+tracking_system: file-system
+story_location: ./_bmad-output/implementation-artifacts
+
+development_status:
+  epic-1: backlog
+  1-1-project-initialization: backlog
+  1-2-core-domain-models-shared-types: backlog
+  1-3-manual-transaction-entry-form-fast-entry: backlog
+  1-4-multi-portfolio-dashboard-card-view: backlog
+  1-5-unified-portfolio-detail-view: backlog
+  1-6-asset-class-filtering: backlog
+  epic-1-retrospective: optional
+
+  epic-2: backlog
+  2-1-transaction-history-lot-management: backlog
+  2-2-high-precision-cost-basis-fifo: backlog
+  2-3-multi-currency-accounting-fx-separation: backlog
+  epic-2-retrospective: optional
+
+  epic-3: backlog
+  3-1-tradingview-chart-integration: backlog
+  3-2-professional-technical-indicators: backlog
+  3-3-calculation-methodology-data-transparency: backlog
+  3-4-asset-performance-dashboard: backlog
+  epic-3-retrospective: optional
+
+  epic-4: backlog
+  4-1-binance-api-sync-read-only: backlog
+  4-2-okx-api-sync-read-only: backlog
+  4-3-connections-management-hub: backlog
+  4-4-background-sync-polling-60s: backlog
+  epic-4-retrospective: optional
+
+  epic-5: backlog
+  5-1-freemium-tiers-asset-limits: backlog
+  5-2-sepay-payment-integration-domestic-international: backlog
+  5-3-ai-powered-portfolio-insights-gemini: backlog
+  5-4-admin-reconciliation-dashboard: backlog
+  epic-5-retrospective: optional

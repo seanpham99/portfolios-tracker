@@ -16,19 +16,19 @@ documentCounts:
   projectDocs: 2
 workflowType: "prd"
 lastStep: 11
-project_name: "fin-sight"
+project_name: "portfolios-tracker"
 user_name: "Son"
 date: "2025-12-26"
 ---
 
-# Product Requirements Document - fin-sight
+# Product Requirements Document - portfolios-tracker
 
 **Author:** Son
 **Date:** 2025-12-26
 
 ## Executive Summary
 
-Fin-Sight is a multi-asset portfolio intelligence platform that unifies Vietnamese stocks, US equities, and cryptocurrency tracking with institutional-grade technical analysis and transparent analytics. Built for investors managing wealth across borders, Fin-Sight delivers professional-quality insights through an elegant, minimalist interface designed to reduce cognitive load during market volatility.
+Portfolios Tracker is a multi-asset portfolio intelligence platform that unifies Vietnamese stocks, US equities, and cryptocurrency tracking with institutional-grade technical analysis and transparent analytics. Built for investors managing wealth across borders, Portfolios Tracker delivers professional-quality insights through an elegant, minimalist interface designed to reduce cognitive load during market volatility.
 
 This PRD defines the first production version (v1.0) — a public launch ready for hundreds of users — extending the existing Airflow + ClickHouse data pipeline with a complete user-facing application and freemium monetization.
 
@@ -46,7 +46,7 @@ Investors managing multi-asset portfolios across Vietnamese and global markets f
 
 **Solution**
 
-Fin-Sight transforms an existing institutional-grade data pipeline (Apache Airflow + ClickHouse) into an interactive web application that:
+Portfolios Tracker transforms an existing institutional-grade data pipeline (Apache Airflow + ClickHouse) into an interactive web application that:
 
 1. Unifies Multi-Asset Tracking — Vietnamese stocks (HSX/HNX via vnstock), US equities (yfinance/Polygon.io), and cryptocurrency (CoinGecko/Binance) in a single portfolio view.
 2. Delivers Professional Analytics — Technical indicators (RSI, MACD, MA) from TradingView and 3rd-party providers, with advanced charting via TradingView widgets; fallback to internal calculation when external data is absent.
@@ -193,7 +193,7 @@ Consolidated in Project Scoping & Phased Development. See that section for MVP (
 
 - User navigates to Settings → Connected Accounts; clicks "Connect Binance".
 - OAuth flow opens Binance login; user authorizes read-only access (view balances, no trading).
-- Fin-sight receives API credentials; fetches all spot balances via CCXT library within 5 seconds.
+- Portfolios Tracker receives API credentials; fetches all spot balances via CCXT library within 5 seconds.
 - Balances appear in Crypto tab with real-time sync badge; background refresh every 60s.
 - Outcome: Zero manual entry for crypto holdings; automatic updates; disconnect anytime in settings.
 

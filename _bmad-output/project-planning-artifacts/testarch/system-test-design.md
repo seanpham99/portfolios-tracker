@@ -1,4 +1,4 @@
-# Test Design: fin-sight - System-Level Strategy
+# Test Design: portfolios-tracker - System-Level Strategy
 
 **Date:** 2025-12-26
 **Author:** Son
@@ -8,7 +8,7 @@
 
 ## Executive Summary
 
-**Scope:** System-level test design and testability review for the fin-sight v1.0 platform. This document outlines the high-level testing strategy, architectural risks, and coverage priorities before proceeding to implementation.
+**Scope:** System-level test design and testability review for the portfolios-tracker v1.0 platform. This document outlines the high-level testing strategy, architectural risks, and coverage priorities before proceeding to implementation.
 
 **Risk Summary:**
 

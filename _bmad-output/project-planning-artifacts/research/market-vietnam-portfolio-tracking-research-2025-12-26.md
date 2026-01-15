@@ -5,7 +5,7 @@ workflowType: "research"
 lastStep: 5
 research_type: "market"
 research_topic: "Vietnam portfolio tracking market for stocks and emerging multi-asset investments"
-research_goals: "Understand Vietnam market dynamics, local investor behavior, regulatory environment, competitive landscape, and expansion strategy for Fin-Sight into Vietnamese market"
+research_goals: "Understand Vietnam market dynamics, local investor behavior, regulatory environment, competitive landscape, and expansion strategy for Portfolios Tracker into Vietnamese market"
 user_name: "Son"
 date: "2025-12-26"
 web_research_enabled: true
@@ -23,7 +23,7 @@ source_verification: true
 
 ## Research Overview
 
-This market research examines the Vietnamese portfolio tracking and investment management landscape, focusing on local retail investors and the emerging multi-asset investment ecosystem. The analysis covers customer segments, competitive positioning, regulatory environment, market sizing, and strategic recommendations for Fin-Sight's Vietnam market expansion.
+This market research examines the Vietnamese portfolio tracking and investment management landscape, focusing on local retail investors and the emerging multi-asset investment ecosystem. The analysis covers customer segments, competitive positioning, regulatory environment, market sizing, and strategic recommendations for Portfolios Tracker's Vietnam market expansion.
 
 **Methodology:**
 
@@ -174,7 +174,7 @@ Vietnam has rapidly growing retail investor base (5M+ accounts as of 2024), emer
 - **Vietnam penetration**: Minimal (<1% Vietnamese users)
 - **Barriers**: No VN brokerage integration, no VND currency support, no Vietnamese localization
 
-### Coverage Gaps (Fin-Sight Opportunity)
+### Coverage Gaps (Portfolios Tracker Opportunity)
 
 1. **Multi-brokerage aggregation**: No Vietnamese platform consolidates SSI + VPS + VCBS + HSC accounts
 2. **Multi-asset coverage**: No platform combines Vietnamese stocks + international stocks + crypto + commodities in Vietnam market
@@ -249,7 +249,7 @@ Vietnam has rapidly growing retail investor base (5M+ accounts as of 2024), emer
 
 **Value Proposition for Vietnamese Investors**:
 
-> "Fin-Sight: The only portfolio tracker that brings together your Vietnamese stocks, international investments, and crypto into one transparent, collaborative dashboard—built specifically for the Vietnamese investor managing wealth across borders."
+> "Portfolios Tracker: The only portfolio tracker that brings together your Vietnamese stocks, international investments, and crypto into one transparent, collaborative dashboard—built specifically for the Vietnamese investor managing wealth across borders."
 
 **Differentiation Strategy**:
 

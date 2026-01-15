@@ -22,14 +22,14 @@ source_verification: true
 
 ## Research Overview
 
-This market research examines the US portfolio tracking landscape for multi-asset portfolios (stocks, crypto, commodities), focusing on individual investors and small investment teams. The analysis covers customer segments, competitive positioning, market sizing, and strategic recommendations for Fin-Sight's market entry.
+This market research examines the US portfolio tracking landscape for multi-asset portfolios (stocks, crypto, commodities), focusing on individual investors and small investment teams. The analysis covers customer segments, competitive positioning, market sizing, and strategic recommendations for Portfolios Tracker's market entry.
 
 **Methodology:**
 
 - Competitive analysis via direct product review (Empower, Delta, TradingView, Yahoo Finance, Kubera)
 - Market sizing using proxy indicators (brokerage accounts, crypto adoption rates, RIA counts)
 - Customer insights synthesized from segment archetypes and observed pain points
-- Strategic synthesis aligned with existing Fin-Sight architecture (React web app + Airflow data pipeline)
+- Strategic synthesis aligned with existing Portfolios Tracker architecture (React web app + Airflow data pipeline)
 
 **Key Finding:**  
 The market is fragmented by asset class; no incumbent delivers seamless multi-asset tracking with team collaboration at a competitive price point. Opportunity exists for a unified platform targeting self-directed investors with 2+ accounts.
@@ -284,7 +284,7 @@ Enter with _US-first, multi-asset coverage_ targeting **self-directed investors 
 
 **For** self-directed investors and small investment teams  
 **Who** manage portfolios across multiple brokerages, crypto exchanges, and asset classes  
-**Fin-Sight** is a unified portfolio intelligence platform  
+**Portfolios Tracker** is a unified portfolio intelligence platform  
 **That** delivers real-time, consolidated tracking with institutional-grade accuracy and transparent analytics  
 **Unlike** fragmented single-asset tools (Yahoo Finance, Delta) or advisory-heavy platforms (Empower)  
 **We** provide seamless multi-asset coverage, team collaboration, and open data access without custody or advisory lock-in.

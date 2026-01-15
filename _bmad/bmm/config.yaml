@@ -3,7 +3,7 @@
 # Version: 6.0.0-alpha.20
 # Date: 2025-12-26T00:23:00.057Z
 
-project_name: fin-sight
+project_name: portfolios-tracker
 user_skill_level: intermediate
 planning_artifacts: "{project-root}/_bmad-output/project-planning-artifacts"
 implementation_artifacts: "{project-root}/_bmad-output/implementation-artifacts"

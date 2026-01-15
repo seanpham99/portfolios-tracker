@@ -1,6 +1,6 @@
-# Fin-Sight 📈
+# Portfolios Tracker 📈
 
-**Fin-Sight** is a comprehensive data engineering platform designed to automate the ingestion, processing, and analysis of Vietnamese stock market data. Built with a modern tech stack featuring **Apache Airflow** and **ClickHouse**, it provides a robust foundation for financial data analysis, technical indicator calculation, and automated market intelligence.
+**Portfolios Tracker** is a comprehensive data engineering platform designed to automate the ingestion, processing, and analysis of Vietnamese stock market data. Built with a modern tech stack featuring **Apache Airflow** and **ClickHouse**, it provides a robust foundation for financial data analysis, technical indicator calculation, and automated market intelligence.
 
 ---
 
@@ -30,7 +30,7 @@
 ## 📂 Project Structure
 
 ```bash
-fin-sight/
+portfolios-tracker/
 ├── apps/
 │   └── web/                    # Next.js 16 (App Router) portfolio tracking UI
 │       ├── package.json

@@ -16,7 +16,7 @@
 #   - skipped: Optional/conditional workflow that was skipped
 
 generated: "2025-12-26"
-project: "fin-sight"
+project: "portfolios-tracker"
 project_type: "Portfolio (asset) tracker for personal and small-medium investment teams - stocks, crypto, commodities across multiple exchanges"
 selected_track: "bmad-method"
 field_type: "brownfield"

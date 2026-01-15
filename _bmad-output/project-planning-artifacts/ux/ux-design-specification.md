@@ -6,12 +6,12 @@ inputDocuments:
   - "_bmad-output/project-planning-artifacts/research/market-vietnam-portfolio-tracking-research-2025-12-26.md"
 workflowType: "ux-design"
 lastStep: 14
-project_name: "fin-sight"
+project_name: "portfolios-tracker"
 user_name: "Son"
 date: "2025-12-26"
 ---
 
-# UX Design Specification: fin-sight
+# UX Design Specification: portfolios-tracker
 
 **Author:** Son  
 **Date:** 2025-12-26  
@@ -23,9 +23,9 @@ date: "2025-12-26"
 
 ### Product Vision
 
-Fin-sight transforms cross-border portfolio tracking from fragmented anxiety into **consolidated calm**. Built for investors managing Vietnamese stocks, US equities, and cryptocurrency across multiple accounts, fin-sight delivers institutional-grade analytics through an Enhanced Tabbed Navigation interface with premium micro-interactions that encourages exploration during market volatility instead of panic-driven exits.
+Portfolios Tracker transforms cross-border portfolio tracking from fragmented anxiety into **consolidated calm**. Built for investors managing Vietnamese stocks, US equities, and cryptocurrency across multiple accounts, portfolios-tracker delivers institutional-grade analytics through an Enhanced Tabbed Navigation interface with premium micro-interactions that encourages exploration during market volatility instead of panic-driven exits.
 
-The product bridges a critical gap: no existing platform offers unified VN + US + crypto tracking with transparent methodology and multi-currency fluency (VND/USD/USDT). By treating each asset class as a first-class citizen and exposing calculation lineage, fin-sight positions as the "adult in the room" for tech-savvy investors who distrust black-box analytics.
+The product bridges a critical gap: no existing platform offers unified VN + US + crypto tracking with transparent methodology and multi-currency fluency (VND/USD/USDT). By treating each asset class as a first-class citizen and exposing calculation lineage, portfolios-tracker positions as the "adult in the room" for tech-savvy investors who distrust black-box analytics.
 
 **Core Differentiator:** The only tracker that makes cross-border Vietnamese wealth feel simple — pairing institutional data quality with a calming, polished interface designed to reduce volatility-driven overwhelm.
 
@@ -95,7 +95,7 @@ The product bridges a critical gap: no existing platform offers unified VN + US 
 
 **1. Enhanced Tabs as Premium Differentiator**
 
-- Opportunity to elevate standard tabs with fin-sight's "design moment"
+- Opportunity to elevate standard tabs with portfolios-tracker's "design moment"
 - Smooth transitions (fade + 30px slide), animated underline, keyboard shortcuts (Cmd+1/2/3/4)
 - Mobile: Swipe gestures feel native; Desktop: Arrow key navigation
 - **Differentiation through polish, not novelty**

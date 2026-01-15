@@ -1,4 +1,4 @@
-# Style Guide - Fin-Sight UI System
+# Style Guide - Portfolios Tracker UI System
 
 > **Design System**: Tailwind v4 + CSS Variables + shadcn/ui components  
 > **Last Updated**: 2025-12-30

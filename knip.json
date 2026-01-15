@@ -62,11 +62,6 @@
       "entry": ["src/index.ts"],
       "project": ["src/**/*.ts"]
     },
-    "packages/vite-config": {
-      "entry": ["index.ts", "src/index.ts"],
-      "project": ["src/**/*.ts", "*.ts"],
-      "ignore": ["eslint.config.js"]
-    },
     "packages/eslint-config": {
       "entry": ["index.js", "react.js"],
       "project": ["*.js"]

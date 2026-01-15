@@ -1,5 +1,3 @@
-import { createClient } from "./supabase/client";
-
 /**
  * Get the API base URL from environment
  */
@@ -12,17 +10,26 @@ export function getApiUrl(): string {
  * Fetches the current session token from Supabase
  */
 export async function getAuthHeaders(): Promise<HeadersInit> {
+  let token: string | undefined;
+
+  // Standard client-side implementation using dynamic import for cleaner code splitting
+  // or just use standard import if we are sure it's client-only.
+  // Given previous issues, dynamic import is safer if we want to avoid any server-side leakage
+  // but standard import is fine if 'supabase/client' is pure.
+  
+  const { createClient } = await import("@/lib/supabase/client");
   const supabase = createClient();
   const {
     data: { session },
   } = await supabase.auth.getSession();
+  token = session?.access_token;
 
   const headers: HeadersInit = {
     "Content-Type": "application/json",
   };
 
-  if (session?.access_token) {
-    headers["Authorization"] = `Bearer ${session.access_token}`;
+  if (token) {
+    headers["Authorization"] = `Bearer ${token}`;
   }
 
   return headers;

@@ -17,6 +17,8 @@ export async function GET(request: Request) {
     if (!error) {
       return NextResponse.redirect(`${origin}${next}`);
     }
+    
+    console.error("Email confirm error:", error.message);
   }
 
   // Confirmation error - redirect to login with error

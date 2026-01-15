@@ -7,7 +7,7 @@ import {
   CardDescription,
 } from "@workspace/ui/components/card";
 import { Skeleton } from "@workspace/ui/components/skeleton";
-import { PortfolioSummaryDto } from "@workspace/api-types";
+import { PortfolioSummaryDto } from "@workspace/shared-types/api";
 import { ArrowUpRight, ArrowDownRight, Briefcase } from "lucide-react";
 import { cn } from "@workspace/ui/lib/utils";
 

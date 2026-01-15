@@ -5,7 +5,7 @@ import {
   type ConnectionDto,
   type CreateConnectionDto,
   type ValidationResultDto,
-} from "@workspace/api-types";
+} from "@workspace/shared-types/api";
 import { apiFetch } from "@/lib/api";
 
 export * from "@/lib/api";

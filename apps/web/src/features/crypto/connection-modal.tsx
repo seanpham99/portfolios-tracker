@@ -21,7 +21,7 @@ import { Input } from "@workspace/ui/components/input";
 import { Label } from "@workspace/ui/components/label";
 import { Alert, AlertDescription } from "@workspace/ui/components/alert";
 import { Loader2, ShieldCheck, AlertCircle, CheckCircle2 } from "lucide-react";
-import { ExchangeId } from "@workspace/api-types";
+import { ExchangeId } from "@workspace/shared-types/api";
 import { useValidateConnection, useCreateConnection } from "./use-connections";
 
 const EXCHANGE_NAMES: Record<ExchangeId, string> = {

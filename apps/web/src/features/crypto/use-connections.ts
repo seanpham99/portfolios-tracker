@@ -14,7 +14,7 @@ import type {
   ConnectionDto,
   CreateConnectionDto,
   ValidationResultDto,
-} from "@workspace/api-types";
+} from "@workspace/shared-types/api";
 
 const CONNECTIONS_KEY = ["connections"];
 

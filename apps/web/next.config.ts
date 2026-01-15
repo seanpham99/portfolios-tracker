@@ -8,8 +8,7 @@ const nextConfig: NextConfig = {
   // Transpile workspace packages
   transpilePackages: [
     "@workspace/ui",
-    "@workspace/api-types",
-    "@workspace/database-types",
+    "@workspace/shared-types",
   ],
 
   // Strict mode for catching bugs early

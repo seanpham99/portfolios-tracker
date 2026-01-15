@@ -1,6 +1,6 @@
 import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
-import type { Database } from "@workspace/database-types";
+import type { Database } from "@workspace/shared-types/database";
 
 /**
  * Middleware to refresh user sessions and protect routes.

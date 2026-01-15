@@ -9,7 +9,7 @@
 
 import { IsEnum, IsNotEmpty, IsString } from "class-validator";
 // Import enums from database types (single source of truth)
-import { ConnectionStatus, ExchangeId } from "../database/index.js";
+import { ConnectionStatus, ExchangeId } from "../database";
 
 /**
  * Response DTO for a single connection

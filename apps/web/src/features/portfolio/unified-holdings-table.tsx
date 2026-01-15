@@ -18,7 +18,7 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import { useHoldings } from "@/features/portfolio/hooks/use-holdings";
-import { HoldingDto as Holding, CalculationMethod } from "@workspace/api-types";
+import { HoldingDto as Holding, CalculationMethod } from "@workspace/shared-types/api";
 import {
   HoverCard,
   HoverCardTrigger,

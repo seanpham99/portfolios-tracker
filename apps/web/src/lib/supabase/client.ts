@@ -1,5 +1,5 @@
 import { createBrowserClient } from "@supabase/ssr";
-import type { Database } from "@workspace/database-types";
+import type { Database } from "@workspace/shared-types/database";
 
 /**
  * Creates a Supabase client for use in Client Components.

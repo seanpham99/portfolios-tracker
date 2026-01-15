@@ -5,7 +5,7 @@ import {
   addTransaction,
   searchAssets,
 } from "@/api/client";
-import { TransactionType } from "@workspace/api-types";
+import { TransactionType } from "@workspace/shared-types/api";
 
 export const usePortfolios = () => {
   return useQuery({

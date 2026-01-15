@@ -3,7 +3,7 @@ import { Check, ChevronsUpDown, Search } from "lucide-react";
 import { Command } from "cmdk";
 import * as PopoverPrimitive from "@radix-ui/react-popover";
 import { useDebounce } from "@/hooks/use-debounce";
-import { Assets } from "@workspace/database-types";
+import { Assets } from "@workspace/shared-types/database";
 import { cn } from "@workspace/ui/lib/utils";
 import { Button } from "@workspace/ui/components/button";
 import { apiFetch } from "@/lib/api";

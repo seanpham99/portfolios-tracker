@@ -1,6 +1,6 @@
 "use client";
 
-import { ConnectionDto } from "@workspace/api-types";
+import { ConnectionDto } from "@workspace/shared-types/api";
 import { Button } from "@workspace/ui/components/button";
 import {
   Card,

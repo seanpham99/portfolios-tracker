@@ -1,6 +1,6 @@
 import { createClient } from "@/lib/supabase/server";
 import { getApiUrl } from "@/lib/api";
-import { PortfolioSummaryDto } from "@workspace/api-types";
+import { PortfolioSummaryDto } from "@workspace/shared-types/api";
 
 // Server-side apiFetch wrapper
 async function serverApiFetch(

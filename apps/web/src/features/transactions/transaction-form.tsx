@@ -6,7 +6,7 @@ import {
   useId,
 } from "react";
 import { AssetAutocomplete } from "./asset-autocomplete";
-import { Assets } from "@workspace/database-types";
+import { Assets } from "@workspace/shared-types/database";
 import { Button } from "@workspace/ui/components/button";
 import { Input } from "@workspace/ui/components/input";
 import { Label } from "@workspace/ui/components/label";

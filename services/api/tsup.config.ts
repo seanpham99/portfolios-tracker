@@ -7,8 +7,5 @@ export default defineConfig({
   sourcemap: true,
   clean: true,
   splitting: false,
-  noExternal: [
-    '@workspace/api-types',
-    '@workspace/database-types'
-  ],
+  // Remove workspace packages from noExternal - let them be external
 });

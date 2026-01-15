@@ -5,7 +5,7 @@ import {
   validateConnection,
   deleteConnection,
 } from "@/api/client";
-import { CreateConnectionDto } from "@workspace/api-types";
+import { CreateConnectionDto } from "@workspace/shared-types/api";
 import { toast } from "sonner";
 
 export const useConnections = () => {

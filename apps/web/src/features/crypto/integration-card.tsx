@@ -17,7 +17,7 @@ import {
   ExchangeId,
   ConnectionStatus,
   type ConnectionDto,
-} from "@workspace/api-types";
+} from "@workspace/shared-types/api";
 import { cn } from "@workspace/ui/lib/utils";
 
 // Exchange logos as simple SVG icons

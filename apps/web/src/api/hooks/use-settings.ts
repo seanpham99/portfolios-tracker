@@ -1,6 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { apiFetch } from "@/api/client";
-import { UserSettingsDto, UpdateUserSettingsDto } from "@workspace/api-types";
+import { UserSettingsDto, UpdateUserSettingsDto } from "@workspace/shared-types/api";
 
 export function useSettings() {
   return useQuery({

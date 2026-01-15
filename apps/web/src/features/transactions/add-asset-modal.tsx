@@ -11,7 +11,7 @@ import {
   useAddTransaction,
 } from "@/features/portfolio/hooks/use-portfolios";
 import { usePopularAssets } from "@/api/hooks/use-popular-assets";
-import { TransactionType } from "@workspace/api-types";
+import { TransactionType } from "@workspace/shared-types/api";
 import {
   Dialog,
   DialogContent,

@@ -20,7 +20,7 @@ export default async function ProtectedLayout({ children }: { children: React.Re
         {/* Header with trigger */}
         <div className="sticky top-0 z-10 flex items-center gap-4 border-b bg-background/95 px-4 py-3 backdrop-blur supports-backdrop-filter:bg-background/60">
           <SidebarTrigger className="-ml-1" />
-          <span className="font-serif text-lg font-light lg:hidden">FinSight</span>
+          <span className="font-serif text-lg font-light lg:hidden">Portfolio Tracker</span>
         </div>
 
         {/* Page content */}

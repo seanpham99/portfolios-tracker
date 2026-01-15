@@ -54,7 +54,7 @@ export function AppSidebar({ user }: AppSidebarProps) {
           <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-primary/10">
             <Briefcase className="h-5 w-5 text-primary" />
           </div>
-          <span className="font-serif text-xl font-light tracking-tight">FinSight</span>
+          <span className="font-serif text-xl font-light tracking-tight">Portfolio Tracker</span>
         </div>
       </SidebarHeader>
 

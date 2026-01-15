@@ -117,7 +117,7 @@ The product bridges a critical gap: no existing platform offers unified VN + US 
 
 - Upgrade prompts at "20 asset limit" feel earned, not intrusive
 - Modal messaging around outcomes: "Track your full wealth without limits; see precise insights"
-- A/B test opportunity: Features vs outcomes, VND (SePay) vs USD (Polar) payment UX
+- Opportunity: Optimize VND/USD payment UX via SePay.
 
 **5. Mobile-First for Vietnamese Market (70% Mobile Trading)**
 
@@ -142,9 +142,9 @@ The product bridges a critical gap: no existing platform offers unified VN + US 
 
 **Key Features:**
 
-1.  **Multi-Portfolio Architecture:** Users can switch between different portfolios. Each portfolio has its own unified dashboard.
-2.  **Unified Holdings Table:** Mixing VN Stocks, US Equities, and Crypto in one sortable, filterable list.
-3.  **Performance-First:** Large time-series chart showing aggregated Net Worth history.
+1. **Multi-Portfolio Architecture:** Users can switch between different portfolios. Each portfolio has its own unified dashboard.
+2. **Unified Holdings Table:** Mixing VN Stocks, US Equities, and Crypto in one sortable, filterable list.
+3. **Performance-First:** Large time-series chart showing aggregated Net Worth history.
 
 ---
 
@@ -406,13 +406,13 @@ Based on user feedback, the design has shifted from an "Asset Class Silo" approa
 
 **Missing Components & Pages:**
 
-1.  **Dashboard Portfolio List:**
+1. **Dashboard Portfolio List:**
     - `PortfolioCard`: Card showing portfolio name, net worth, P/L, mini-donut
     - `PortfolioCardList`: Grid layout of portfolio cards
     - `CreatePortfolioCard`: CTA to create new portfolio
-2.  **Portfolio Detail Route:** (`/portfolio/:id`) - Currently dashboard IS this, needs to be separate route
-3.  **Asset Detail Page:** (`/portfolio/:id/asset/:symbol`) - No route or component exists
-4.  **API Endpoint:** `GET /portfolios/:id/holdings` - Missing, currently uses aggregate endpoint
+2. **Portfolio Detail Route:** (`/portfolio/:id`) - Currently dashboard IS this, needs to be separate route
+3. **Asset Detail Page:** (`/portfolio/:id/asset/:symbol`) - No route or component exists
+4. **API Endpoint:** `GET /portfolios/:id/holdings` - Missing, currently uses aggregate endpoint
 
 **Implementation Priority:**
 

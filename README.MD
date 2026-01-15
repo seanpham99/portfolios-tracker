@@ -1,105 +1,89 @@
 # Portfolios Tracker 📈
 
-**Portfolios Tracker** is a comprehensive data engineering platform designed to automate the ingestion, processing, and analysis of Vietnamese stock market data. Built with a modern tech stack featuring **Apache Airflow** and **ClickHouse**, it provides a robust foundation for financial data analysis, technical indicator calculation, and automated market intelligence.
+A professional, multi-asset portfolio intelligence platform that unifies Vietnamese stocks, US equities, Global stocks, and cryptocurrency tracking with institutional-grade technical analysis and transparent analytics.
 
----
+## 🚀 Vision
 
-## 🚀 Key Features
+Built for investors managing wealth across borders, **Portfolios Tracker** delivers professional-quality insights through an elegant, minimalist interface designed to reduce cognitive load during market volatility.
 
-- **Automated ETL Pipelines**:
-  - **Evening Batch**: Automatically fetches EOD (End-of-Day) stock prices, financial ratios, dividends, and income statements.
-  - **Morning Brief**: Aggregates the latest market news and delivers summaries to your device.
-- **Technical Analysis Engine**: Built-in calculation of key indicators including **MA50, MA200, RSI, MACD**, and more using `pandas_ta`.
-- **High-Performance Data Warehouse**: Utilizes **ClickHouse** for lightning-fast storage and querying of high-volume financial data.
-- **Real-time Notifications**: Integrated **Telegram** alerts for pipeline status updates and daily market news summaries.
-- **Data Enrichment**: Enriches raw market data with derived metrics and financial health indicators.
+## ✨ Key Features
 
----
+- **Unified Multi-Asset Tracking**: Single view for VN Stocks (HSX/HNX), US Equities, Global Stocks, and Crypto.
+- **Professional Analytics**: Institutional-grade technical indicators (RSI, MACD, MA) via TradingView widgets and custom calculation Fallbacks.
+- **Transparent Methodology**: Drill-down from net worth to transaction level with clear cost-basis and performance formulas.
+- **Cross-Border Fluent**: Seamless USD/VND/USDT reconciliation with accurate FX rates, separating asset gains from currency gains.
+- **Calm UX Architecture**: Designed for resilience with graceful degradation, staleness indicators, and non-blocking background sync.
 
-## 🛠 Tech Stack
+## 🛠️ Technology Stack
 
-- **Orchestration**: [Apache Airflow](https://airflow.apache.org/) (LocalExecutor)
-- **Data Warehouse**: [ClickHouse](https://clickhouse.com/)
-- **Metadata Database**: [PostgreSQL](https://www.postgresql.org/)
-- **Data Source**: `vnstock` (Vietnamese Stock Market API)
-- **Containerization**: Docker & Docker Compose
-- **Language**: Python 3.12
+### Core Frameworks
 
----
+- **Monorepo**: [Turborepo 2.7.4](https://turbo.build/) with `pnpm`
+- **Frontend**: [Next.js 16.1.2](https://nextjs.org/) (App Router, React 19.2.3)
+- **Backend**: [NestJS 11.1.10](https://nestjs.com/) (Node.js runtime)
+- **Database**: [Supabase JS 2.89](https://supabase.com/) (Postgres + RLS)
+- **Analytics**: [ClickHouse 25.x](https://clickhouse.com/) (Historical price snapshots & deep analytics)
+- **Caching**: [Upstash Redis 1.36](https://upstash.com/) (Hot market data & session state)
 
-## 📂 Project Structure
+### Styling & UI
 
-```bash
+- **CSS**: Tailwind CSS 4
+- **Components**: Radix UI / Shadcn UI
+- **Typography**: Outfit / Inter
+
+### External APIs
+
+- **Finance**: vnstock, yfinance, Polygon.io, CoinGecko, CCXT (Binance/OKX)
+- **Payments**: SePay (VND/USD subscription handling)
+
+## 📁 Project Structure
+
+```text
 portfolios-tracker/
 ├── apps/
-│   └── web/                    # Next.js 16 (App Router) portfolio tracking UI
-│       ├── package.json
-│       ├── src/
-│       └── next.config.ts
+│   ├── web/                     # Next.js 16 Frontend
+│   └── docs/                    # Documentation
 ├── services/
-...
-## 🖥️ Web App (apps/web)
-
-The React app is the intended UI for tracking portfolios and visualizing insights, built with **Next.js 16**.
-
-### Run locally
-
-```bash
-cd apps/web
-pnpm install
-pnpm run dev
+│   └── api/                     # NestJS Backend API
+├── packages/
+│   ├── finance/                 # @workspace/finance: Core financial logic (FIFO, FX)
+│   ├── shared-types/            # @workspace/shared-types: Shared DTOs & Schemas
+│   ├── ui/                      # @workspace/ui: Radix/Shadcn primitives
+│   ├── typescript-config/       # Shared TS configurations
+│   └── eslint-config/           # Shared lint configurations
+└── tests/
+    └── e2e/                     # Playwright cross-browser scenarios
 ```
 
-The dev server will print the local URL (typically <http://localhost:3001>).
+## 🛠️ Getting Started
 
----
+### Prerequisites
 
-## 📊 Data Pipelines
+- [pnpm](https://pnpm.io/) 10.26.2+
+- [Node.js](https://nodejs.org/) 22+
 
-### 1. Market Data Evening Batch (`market_data_evening_batch`)
+### Installation
 
-Runs every weekday at **6:00 PM (UTC+7)**.
+1. Clone the repository
+2. Install dependencies:
 
-- **Tasks**:
-  - `extract_prices`: Fetches OHLCV data for tracked stocks.
-  - `extract_ratios`: Retrieves quarterly financial ratios (P/E, ROE, etc.).
-  - `extract_fundamentals`: Gathers dividend history and income statements.
-  - `load_*`: Inserts processed data into ClickHouse tables (`fact_stock_daily`, `fact_financial_ratios`, etc.).
+   ```bash
+   pnpm install
+   ```
 
-### 2. Market News Morning (`market_news_morning`)
+3. Copy `.env.example` to `.env` in `apps/web` and `services/api` and fill in your keys.
+4. Run development server:
 
-Runs every weekday at **7:00 AM (UTC+7)**.
+   ```bash
+   pnpm dev
+   ```
 
-- **Tasks**:
-  - `extract_news`: Scrapes latest news related to tracked tickers.
-  - `load_news`: Stores news metadata in ClickHouse.
-  - `send_news_digest`: Sends a consolidated news summary via Telegram.
+## 🏗️ Architectural Principles
 
----
-
-## 🗄️ Data Model (ClickHouse)
-
-The Data Warehouse is initialized with the following core tables in the `market_dwh` database:
-
-- **`fact_stock_daily`**: Daily stock prices and technical indicators.
-- **`fact_financial_ratios`**: Quarterly financial health metrics.
-- **`fact_dividends`**: Historical dividend payouts.
-- **`fact_income_statement`**: Quarterly/Yearly income statements.
-- **`fact_news`**: Market news and events.
-
----
-
-## 🤝 Contributing
-
-Contributions are welcome! Please feel free to submit a Pull Request.
-
-1. Fork the project.
-2. Create your feature branch (`git checkout -b feature/AmazingFeature`).
-3. Commit your changes (`git commit -m 'Add some AmazingFeature'`).
-4. Push to the branch (`git push origin feature/AmazingFeature`).
-5. Open a Pull Request.
-
----
+- **ESM-First**: All internal imports must include the `.js` extension.
+- **Financial Accuracy**: No floating point math for money; all calculations use string-based decimal logic in `@workspace/finance`.
+- **API Response Envelope**: Consistent response format `{ success, data, error, meta: { staleness } }`.
+- **Security First**: Supabase RLS enforced at the database level; Least Privilege Principle for all service roles.
 
 ## 📄 License
 

@@ -527,7 +527,9 @@ export class PortfoliosService {
     }
 
     const avgCost = totalQty > 0 ? totalCost / totalQty : 0;
-    const currentPrice = transactions[transactions.length - 1].price;
+    const lastTx = transactions[transactions.length - 1];
+    if (!lastTx) throw new Error('Unexpected error: No transactions found');
+    const currentPrice = lastTx.price;
     const currentValue = totalQty * currentPrice;
     const unrealizedPL = currentValue - totalQty * avgCost;
 

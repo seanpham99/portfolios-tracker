@@ -138,6 +138,7 @@ describe("usePerformanceData", () => {
     });
 
     const firstPoint = result.current.data!.dataPoints[0];
+    if (!firstPoint) throw new Error("No data points generated");
 
     // Verify data point structure
     expect(firstPoint).toHaveProperty("date");

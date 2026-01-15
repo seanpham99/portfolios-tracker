@@ -52,7 +52,10 @@ export function generateMockPerformanceData(currentValue: number, days: number):
 
   // Force last point to match current value for consistency
   if (data.length > 0) {
-    data[data.length - 1].value = currentValue;
+    const lastPoint = data[data.length - 1];
+    if (lastPoint) {
+      lastPoint.value = currentValue;
+    }
   }
 
   return data;

@@ -84,10 +84,10 @@ export function AppSidebar({ user }: AppSidebarProps) {
                 <SidebarMenuButton>
                   <Avatar className="h-6 w-6">
                     <AvatarFallback className="text-xs">
-                      {user.email?.[0].toUpperCase()}
+                      {(user.email?.[0] ?? "U").toUpperCase()}
                     </AvatarFallback>
                   </Avatar>
-                  <span className="truncate">{user.email}</span>
+                  <span className="truncate">{user?.email || "User"}</span>
                 </SidebarMenuButton>
               </DropdownMenuTrigger>
               <DropdownMenuContent side="top" align="end">

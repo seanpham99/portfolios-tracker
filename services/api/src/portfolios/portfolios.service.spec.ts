@@ -390,6 +390,7 @@ describe('PortfoliosService', () => {
 
       expect(result).toHaveLength(1);
       const holding = result[0];
+      if (!holding) throw new Error('Holding not found');
 
       // Verify methodology fields are populated
       expect(holding.calculationMethod).toBe('WEIGHTED_AVG');
@@ -456,7 +457,9 @@ describe('PortfoliosService', () => {
 
       // Verify Transactions
       expect(result.transactions).toHaveLength(2);
-      expect(result.transactions[0].id).toBe('tx-1');
+      const tx1 = result.transactions[0];
+      if (!tx1) throw new Error('Transaction 1 not found');
+      expect(tx1.id).toBe('tx-1');
 
       // Verify Details
       // Buy 10 @ 150 + 5 fee = 1505. Avg: 150.5

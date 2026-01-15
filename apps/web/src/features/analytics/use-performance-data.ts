@@ -40,11 +40,14 @@ export function usePerformanceData(portfolioId: string, timeRange: TimeRange) {
       const currentValue = portfolio?.netWorth || 0;
       const days = getTimeRangeDays(timeRange);
       const dataPoints = generateMockPerformanceData(currentValue, days).map(
-        (point, index, array) => ({
-          date: new Date(point.date),
-          value: point.value,
-          changeFromPrevious: index > 0 ? point.value - array[index - 1].value : 0,
-        })
+        (point, index, array) => {
+          const prev = array[index - 1];
+          return {
+            date: new Date(point.date),
+            value: point.value,
+            changeFromPrevious: index > 0 && prev ? point.value - prev.value : 0,
+          };
+        }
       );
 
       // Calculate metrics

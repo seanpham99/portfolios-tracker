@@ -1,6 +1,5 @@
 import { describe, it, expect, vi } from "vitest";
 import { render, screen } from "@testing-library/react";
-import { MemoryRouter } from "react-router";
 import { PortfolioCard } from "./portfolio-card";
 import { PortfolioSummaryDto } from "@workspace/shared-types/api";
 
@@ -20,11 +19,7 @@ describe("PortfolioCard", () => {
   };
 
   it("renders portfolio details correctly", () => {
-    render(
-      <MemoryRouter>
-        <PortfolioCard portfolio={mockPortfolio} />
-      </MemoryRouter>
-    );
+    render(<PortfolioCard portfolio={mockPortfolio} />);
 
     expect(screen.getByText("Growth Fund")).toBeInTheDocument();
     // Check formatting - USD 15,000.00 might adapt based on locale/impl
@@ -33,11 +28,7 @@ describe("PortfolioCard", () => {
   });
 
   it("navigates to detail page on click", () => {
-    render(
-      <MemoryRouter>
-        <PortfolioCard portfolio={mockPortfolio} />
-      </MemoryRouter>
-    );
+    render(<PortfolioCard portfolio={mockPortfolio} />);
 
     const link = screen.getByRole("link");
     expect(link).toHaveAttribute("href", "/portfolio/123");

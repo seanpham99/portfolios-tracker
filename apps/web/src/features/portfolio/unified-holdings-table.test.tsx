@@ -4,7 +4,6 @@ import { useHoldings } from "./hooks/use-holdings";
 import { vi, describe, it, expect, beforeEach } from "vitest";
 import React from "react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter } from "react-router";
 
 // Mock the useHoldings hook
 vi.mock("./hooks/use-holdings", () => ({
@@ -22,9 +21,7 @@ describe("UnifiedHoldingsTable", () => {
   });
 
   const wrapper = ({ children }: { children: React.ReactNode }) => (
-    <QueryClientProvider client={queryClient}>
-      <BrowserRouter>{children}</BrowserRouter>
-    </QueryClientProvider>
+    <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
   );
 
   it("renders loading state", () => {
@@ -80,9 +77,9 @@ describe("UnifiedHoldingsTable", () => {
     const chevronButtons = screen.queryAllByRole("button", {
       name: /methodology/i,
     });
-    expect(chevronButtons.filter((btn) => btn.querySelector('svg[class*="rotate"]'))).toHaveLength(
-      0
-    );
+    expect(
+      chevronButtons.filter((btn: HTMLElement) => btn.querySelector('svg[class*="rotate"]'))
+    ).toHaveLength(0);
   });
 
   it("should render info icon for methodology tooltip", () => {
@@ -97,12 +94,12 @@ describe("UnifiedHoldingsTable", () => {
           avg_cost: 100,
           market: "US",
           pl: 50,
-          calculationMethod: "WEIGHTED_AVG",
+          calculationMethod: "WEIGHTED_AVG" as any,
           dataSource: "Manual Entry",
         },
       ],
       isLoading: false,
-    });
+    } as any);
     render(<UnifiedHoldingsTable />, { wrapper });
 
     // Should have info icons with aria-label for accessibility

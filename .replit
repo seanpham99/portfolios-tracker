@@ -59,8 +59,8 @@ externalPort = 3001
 
 [deployment]
 deploymentTarget = "autoscale"
-run = ["bash", "-c", "cd services/api && node dist/main.js & cd apps/web && pnpm run start"]
-build = ["bash", "-c", "cd packages/shared-types && pnpm run build && cd ../../services/api && pnpm run build && cd ../../apps/web && pnpm run build"]
+run = ["bash", "-c", "PORT=3001 node services/api/dist/main.js & cd apps/web && PORT=3000 pnpm run start"]
+build = ["bash", "-c", "echo '{\"packageManager\":\"pnpm@9.15.0\"}' > /tmp/pm.json && jq -s '.[0] * .[1]' package.json /tmp/pm.json > package.tmp.json && mv package.tmp.json package.json && cd packages/shared-types && pnpm run build && cd ../../services/api && pnpm run build && cd ../../apps/web && pnpm run build"]
 
 [userenv]
 

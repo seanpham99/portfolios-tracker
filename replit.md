@@ -66,7 +66,7 @@ The project uses Turborepo with pnpm workspaces organized as:
 2. **ESM-First Imports**: Internal imports must include `.js` extension
 3. **Financial Precision**: Never use float math for currency - use string-based decimals
 4. **Dual Validation**: Zod on frontend, class-validator on backend
-5. **Tailwind CSS Variable Syntax**: The `w-(--var)` syntax doesn't compile reliably in this monorepo - use inline styles `style={{ width: 'var(--var)' }}` or bracket syntax `w-[var(--var)]` for critical layout dimensions
+5. **Tailwind CSS v4 Monorepo Setup**: Uses `@source` directives in globals.css to scan workspace packages, and PostCSS `base` option pointing to monorepo root. CSS variables for layout (e.g., `--sidebar-width`) are defined in `@theme inline` and used with `w-[var(--var)]` syntax
 
 ## External Dependencies
 

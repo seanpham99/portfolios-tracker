@@ -1,13 +1,11 @@
 #!/bin/bash
 set -e
 
-# Add packageManager field for Turborepo
-node -e "
-const fs = require('fs');
-const pkg = JSON.parse(fs.readFileSync('package.json', 'utf8'));
-pkg.packageManager = 'pnpm@9.15.0';
-fs.writeFileSync('package.json', JSON.stringify(pkg, null, 2));
-"
+# Disable corepack auto-pinning to prevent pnpm self-installation loop
+export COREPACK_ENABLE_AUTO_PIN=0
+
+# Install dependencies first
+pnpm install --frozen-lockfile
 
 # Build shared-types first
 cd packages/shared-types

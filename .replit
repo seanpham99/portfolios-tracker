@@ -19,43 +19,43 @@ args = "cd packages/shared-types && pnpm run build"
 
 [[workflows.workflow.tasks]]
 task = "workflow.run"
-args = "NestJS API"
+args = "NestJS API Server"
 
 [[workflows.workflow.tasks]]
 task = "workflow.run"
 args = "Next.js Frontend"
 
 [[workflows.workflow]]
-name = "NestJS API"
+name = "NestJS API Server"
 author = "agent"
 
 [[workflows.workflow.tasks]]
 task = "shell.exec"
-args = "cd packages/shared-types && pnpm run build && cd ../../services/api && pnpm run build && node dist/main.js"
-waitForPort = 3001
+args = "cd services/api && pnpm run dev"
+waitForPort = 5000
 
 [workflows.workflow.metadata]
-outputType = "console"
+outputType = "webview"
 
 [[workflows.workflow]]
 name = "Next.js Frontend"
 author = "agent"
 
-[workflows.workflow.metadata]
-outputType = "webview"
-
 [[workflows.workflow.tasks]]
 task = "shell.exec"
 args = "cd apps/web && pnpm run dev"
-waitForPort = 5000
+waitForPort = 3000
+
+[workflows.workflow.metadata]
+outputType = "console"
+
+[[ports]]
+localPort = 3000
+externalPort = 3000
 
 [[ports]]
 localPort = 3001
 externalPort = 3001
-
-[[ports]]
-localPort = 5000
-externalPort = 80
 
 [deployment]
 deploymentTarget = "autoscale"

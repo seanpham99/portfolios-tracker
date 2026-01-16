@@ -60,7 +60,7 @@ externalPort = 3001
 [deployment]
 deploymentTarget = "autoscale"
 run = ["bash", "-c", "PORT=3001 node services/api/dist/main.js & cd apps/web && PORT=3000 pnpm run start"]
-build = ["bash", "-c", "node -e \"const p=require('./package.json'); p.packageManager='pnpm@9.15.0'; require('fs').writeFileSync('package.json', JSON.stringify(p, null, 2));\" && cd packages/shared-types && pnpm run build && cd ../../services/api && pnpm run build && cd ../../apps/web && pnpm run build"]
+build = ["bash", "scripts/deploy-build.sh"]
 
 [userenv]
 

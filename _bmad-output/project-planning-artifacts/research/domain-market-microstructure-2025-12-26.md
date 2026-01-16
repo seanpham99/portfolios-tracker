@@ -110,7 +110,7 @@ This domain research examines the technical infrastructure and protocols require
 - **VCBS**: No publicly documented FIX API
 - **Reality**: Vietnamese brokerages use FIX for institutional clients and exchange connectivity, but **do not expose FIX APIs to retail developers**
 
-**Verdict for Fin-Sight:**
+**Verdict for Portfolios Tracker:**
 
 - **Not recommended for MVP**: Overkill for portfolio tracking, high complexity, no Vietnamese broker FIX access
 - **Future consideration**: If targeting institutional clients or building order execution features
@@ -179,10 +179,10 @@ This domain research examines the technical infrastructure and protocols require
 **Vietnamese Broker Applicability:**
 
 - **SSI/VPS/VCBS**: No publicly documented REST APIs for retail portfolio data
-- **Workaround**: CSV export from broker platforms → manual import to Fin-Sight (MVP strategy)
+- **Workaround**: CSV export from broker platforms → manual import to Portfolios Tracker (MVP strategy)
 - **vnstock**: Leverages SSI data for stock prices/fundamentals (not brokerage holdings)
 
-**Verdict for Fin-Sight:**
+**Verdict for Portfolios Tracker:**
 
 - **Use for market data**: Polygon.io (US stocks), Binance API (crypto), vnstock (VN stocks)
 - **Use for US brokers**: Plaid API (aggregates US brokerages), Alpaca API (commission-free trading platform with API)
@@ -237,7 +237,7 @@ This domain research examines the technical infrastructure and protocols require
 - **Firewall/proxy issues**: Some corporate networks block WebSocket
 - **Backpressure handling**: Client must keep up with message rate or buffer overflows
 
-**Verdict for Fin-Sight:**
+**Verdict for Portfolios Tracker:**
 
 - **Use for real-time features (Phase 2+)**:
   - Binance WebSocket for live crypto prices
@@ -254,8 +254,8 @@ This domain research examines the technical infrastructure and protocols require
 - **iBoard Platform**: Web, Pro (desktop), Mobile apps with 1M+ users
 - **No Public API**: No developer documentation found; likely uses proprietary API for internal apps
 - **Data Source**: vnstock library scrapes SSI data for stock fundamentals/prices
-- **Integration Strategy for Fin-Sight**:
-  - **MVP**: CSV export from iBoard → manual import to Fin-Sight
+- **Integration Strategy for Portfolios Tracker**:
+  - **MVP**: CSV export from iBoard → manual import to Portfolios Tracker
   - **Future**: Negotiate partnership for API access (after user traction proves demand)
 
 **VPS Securities:**
@@ -291,9 +291,9 @@ This domain research examines the technical infrastructure and protocols require
 | **US Broker Access**         | Rare (Interactive Brokers, Bloomberg)     | **Common** (Plaid, Alpaca, Schwab)      | Common (Alpaca, Polygon, IEX)        |
 | **Cost**                     | High (enterprise fees)                    | **Free to moderate** (API tiers)        | Moderate (data provider fees)        |
 | **Maintenance Burden**       | High (session recovery, heartbeats)       | **Low** (stateless)                     | Medium (connection handling)         |
-| **Fin-Sight MVP Fit**        | ❌ Overkill, not needed                   | ✅ **Best for MVP**                     | 🟡 Phase 2+ for real-time features   |
+| **Portfolios Tracker MVP Fit**        | ❌ Overkill, not needed                   | ✅ **Best for MVP**                     | 🟡 Phase 2+ for real-time features   |
 
-**Recommendation for Fin-Sight MVP:**
+**Recommendation for Portfolios Tracker MVP:**
 
 1. **REST APIs** for market data (Polygon.io, Binance, vnstock)
 2. **CSV import** for Vietnamese brokerage holdings (SSI, VPS, VCBS)
@@ -354,7 +354,7 @@ This domain research examines the technical infrastructure and protocols require
 
 ---
 
-### Symbol Mapping Strategy for Fin-Sight
+### Symbol Mapping Strategy for Portfolios Tracker
 
 **Database Schema:**
 
@@ -654,7 +654,7 @@ class VnstockAdapter:
 
 ---
 
-### Normalization Best Practices for Fin-Sight
+### Normalization Best Practices for Portfolios Tracker
 
 1. **Store in native format, convert at query time**:
    - Database: Store prices in VND, USD, USDT as received
@@ -709,7 +709,7 @@ class VnstockAdapter:
 
 **Revenue Model:** Freemium - delayed data free, real-time $10/mo premium. Target: 10% paid conversion at 50K users = $50K/mo revenue, $15.4K/mo costs = $34.6K profit.
 
-**Strategy for Fin-Sight:**
+**Strategy for Portfolios Tracker:**
 
 - **MVP:** Delayed data (yfinance, vnstock, CoinGecko), real-time crypto via Binance (free)
 - **Phase 2:** Premium tier ($10/mo) - real-time US stocks (Polygon WebSocket)

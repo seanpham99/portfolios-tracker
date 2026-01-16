@@ -32,7 +32,7 @@ This domain research examines the mathematical and methodological foundations fo
 - **Multi-currency accounting**: FX conversion timing, realized vs unrealized gains, currency-neutral performance
 
 **Key Context:**  
-Fin-Sight differentiates on "transparent calculations"—users must understand how every number is calculated. This requires selecting industry-standard methodologies, clearly documenting formulas, and providing drill-down capabilities from aggregated metrics to individual transactions.
+Portfolios Tracker differentiates on "transparent calculations"—users must understand how every number is calculated. This requires selecting industry-standard methodologies, clearly documenting formulas, and providing drill-down capabilities from aggregated metrics to individual transactions.
 
 **Architectural Implications:**  
 Calculation engine design, data model requirements, real-time vs batch computation tradeoffs, auditability and reproducibility requirements.
@@ -574,7 +574,7 @@ w = weights
 
 ## 4. Strategic Synthesis: MVP Recommendations
 
-### 4.1 Core Calculation Requirements for Fin-Sight MVP
+### 4.1 Core Calculation Requirements for Portfolios Tracker MVP
 
 **Performance Metrics (Priority 1)**:
 
@@ -982,7 +982,7 @@ calculation_version VARCHAR(10) -- e.g., "v1.0.2"
 - ✅ FX gain/loss breakdown
 - ✅ Scenario analysis ("What if I had bought earlier?")
 
-**Outcome**: Sophisticated analytics differentiate Fin-Sight from competitors.
+**Outcome**: Sophisticated analytics differentiate Portfolios Tracker from competitors.
 
 ---
 

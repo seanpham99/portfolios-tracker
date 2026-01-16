@@ -28,7 +28,7 @@ import {
   CreateConnectionDto,
   ValidateConnectionDto,
   ValidationResultDto,
-} from '@workspace/api-types';
+} from '@workspace/shared-types/api';
 import { AuthGuard } from '../portfolios/guards/auth.guard';
 import { UserId } from '../portfolios/decorators/user-id.decorator';
 

@@ -1,156 +1,277 @@
-# Style Guide - Fin-Sight UI System
+# Style Guide - Portfolios Tracker UI System
 
-> **Design System**: Tailwind v4 + CSS Variables + shadcn/ui components  
-> **Last Updated**: 2025-12-30
+> **Design System**: Tailwind v4 + CSS Variables + shadcn/ui + Glassmorphism  
+> **Last Updated**: 2026-01-15  
+> **Typography**: Space Grotesk (headings) + DM Sans (body)
 
 ---
 
 ## Table of Contents
 
-1. [Color System](#color-system)
-2. [Typography](#typography)
-3. [Layout System](#layout-system)
-4. [Spacing & Sizing](#spacing--sizing)
-5. [Component Utilities](#component-utilities)
-6. [Component Patterns](#component-patterns)
-7. [Responsive Design](#responsive-design)
-8. [Accessibility](#accessibility)
-9. [Motion & Animation](#motion--animation)
-10. [Data Visualization](#data-visualization)
-11. [Migration Guide](#migration-guide)
-12. [Best Practices](#best-practices)
-13. [Tailwind v4 Notes](#tailwind-v4-notes)
+1. [Design Philosophy](#design-philosophy)
+2. [Typography System](#typography-system)
+3. [Color System](#color-system)
+4. [Glassmorphism & Surfaces](#glassmorphism--surfaces)
+5. [Layout System](#layout-system)
+6. [Spacing & Sizing](#spacing--sizing)
+7. [Component Patterns](#component-patterns)
+8. [Motion & Animation](#motion--animation)
+9. [Responsive Design](#responsive-design)
+10. [Accessibility](#accessibility)
+11. [Data Visualization](#data-visualization)
+12. [Marketing Components](#marketing-components)
+13. [Best Practices](#best-practices)
+
+---
+
+## Design Philosophy
+
+### Fintech Premium Experience
+
+Based on UI/UX Pro Max recommendations for Fintech/Portfolio SaaS products:
+
+| Principle         | Application                                  |
+| ----------------- | -------------------------------------------- |
+| **Style**         | Glassmorphism + Dark Mode (OLED)             |
+| **Feel**          | Premium, trustworthy, calm under volatility  |
+| **Motion**        | Smooth micro-interactions, staggered reveals |
+| **Accessibility** | WCAG 2.1 AA compliant                        |
+
+### Core Values
+
+- **Clarity-first**: Prioritize legibility, hierarchy, and minimalism
+- **Predictability**: Favor familiar patterns with progressive disclosure
+- **Calm motion**: Short, subtle transitions respecting `prefers-reduced-motion`
+- **Trust through transparency**: Show methodology, data freshness, calculation lineage
+- **Speed to value**: ≤3 clicks to drill; ≤15 minutes to first complete portfolio
+
+---
+
+## Typography System
+
+### Font Pairing: Tech Startup
+
+Selected from UI/UX Pro Max for tech companies, startups, and SaaS products.
+
+| Role          | Font           | Weights            | CSS Variable   |
+| ------------- | -------------- | ------------------ | -------------- |
+| **Headings**  | Space Grotesk  | 400, 500, 600, 700 | `font-heading` |
+| **Body**      | DM Sans        | 400, 500, 700      | `font-sans`    |
+| **Monospace** | JetBrains Mono | 400                | `font-mono`    |
+
+### Google Fonts Import
+
+```css
+@import url("https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&family=Space+Grotesk:wght@400;500;600;700&display=swap");
+```
+
+### CSS Variables
+
+```css
+--font-sans: "DM Sans", sans-serif;
+--font-heading: "Space Grotesk", sans-serif;
+--font-mono: JetBrains Mono, monospace;
+```
+
+### Type Scale
+
+| Element    | Class                  | Size          | Weight          | Usage               |
+| ---------- | ---------------------- | ------------- | --------------- | ------------------- |
+| Hero       | `text-6xl lg:text-7xl` | 3.75-4.5rem   | `font-bold`     | Marketing headlines |
+| H1         | `text-4xl md:text-5xl` | 2.25-3rem     | `font-bold`     | Page titles         |
+| H2         | `text-3xl md:text-4xl` | 1.875-2.25rem | `font-bold`     | Section headers     |
+| H3         | `text-xl md:text-2xl`  | 1.25-1.5rem   | `font-semibold` | Card titles         |
+| Body Large | `text-lg`              | 1.125rem      | `font-normal`   | Lead paragraphs     |
+| Body       | `text-base`            | 1rem          | `font-normal`   | Default body text   |
+| Small      | `text-sm`              | 0.875rem      | `font-normal`   | Labels, captions    |
+| XS         | `text-xs`              | 0.75rem       | `font-normal`   | Metadata, badges    |
+
+### Usage Examples
+
+```tsx
+// Marketing Hero (use font-heading via style prop)
+<h1
+  className="text-4xl md:text-6xl lg:text-7xl font-bold text-white"
+  style={{ fontFamily: 'var(--font-heading)' }}
+>
+  Your wealth, one dashboard
+</h1>
+
+// Section Headers
+<h2
+  className="text-3xl md:text-5xl font-bold text-white"
+  style={{ fontFamily: 'var(--font-heading)' }}
+>
+  Everything you need
+</h2>
+
+// Body Text
+<p className="text-lg text-zinc-400">
+  Connect all your accounts and track your net worth.
+</p>
+
+// Financial Values
+<div className="text-3xl font-bold text-white">$847,392</div>
+```
 
 ---
 
 ## Color System
 
-### Philosophy
+### Semantic Tokens
 
-We use **semantic color tokens** defined as CSS variables in `globals.css`. This provides:
-
-- Single source of truth for colors
-- Automatic light/dark mode adaptation
-- Maintainable theming
-- Clear intent through naming
-
-### Token Categories
+All colors are defined as CSS variables for automatic light/dark mode support.
 
 #### Base Tokens (shadcn/ui)
 
-These are inherited from shadcn/ui and should be your first choice:
-
-| Token              | Usage               | Example                 |
-| ------------------ | ------------------- | ----------------------- |
-| `background`       | Page background     | `bg-background`         |
-| `foreground`       | Primary text        | `text-foreground`       |
-| `card`             | Card backgrounds    | `bg-card`               |
-| `card-foreground`  | Card text           | `text-card-foreground`  |
-| `muted`            | Subtle backgrounds  | `bg-muted`              |
-| `muted-foreground` | Secondary text      | `text-muted-foreground` |
-| `border`           | Standard borders    | `border-border`         |
-| `input`            | Input backgrounds   | `bg-input`              |
-| `primary`          | Primary actions     | `bg-primary`            |
-| `destructive`      | Destructive actions | `bg-destructive`        |
+| Token              | Tailwind Class          | Usage                     |
+| ------------------ | ----------------------- | ------------------------- |
+| `background`       | `bg-background`         | Page background           |
+| `foreground`       | `text-foreground`       | Primary text              |
+| `card`             | `bg-card`               | Card backgrounds          |
+| `muted`            | `bg-muted`              | Subtle backgrounds        |
+| `muted-foreground` | `text-muted-foreground` | Secondary text            |
+| `primary`          | `bg-primary`            | Primary actions (emerald) |
+| `secondary`        | `bg-secondary`          | Secondary actions         |
+| `destructive`      | `bg-destructive`        | Error/destructive         |
+| `border`           | `border-border`         | Standard borders          |
 
 #### Extended Surface Tokens
 
-For advanced UI patterns (glassmorphism, elevated surfaces):
-
-| Token              | Usage                                         | Tailwind Class        |
-| ------------------ | --------------------------------------------- | --------------------- |
-| `surface`          | Standard surface (slightly lighter than card) | `bg-surface`          |
-| `surface-elevated` | Elevated surface (hover states)               | `bg-surface-elevated` |
-| `surface-glass`    | Semi-transparent glass effect                 | `bg-surface-glass`    |
-
-**Dark Mode Values:**
-
-```css
---surface: oklch(0.17 0.02 260); /* Slightly lighter than card */
---surface-elevated: oklch(0.2 0.02 260); /* Even lighter for elevation */
---surface-glass: oklch(0.17 0.02 260 / 50%); /* Semi-transparent */
-```
+| Token              | Tailwind Class        | Dark Mode Value            |
+| ------------------ | --------------------- | -------------------------- |
+| `surface`          | `bg-surface`          | oklch(0.17 0.02 260)       |
+| `surface-elevated` | `bg-surface-elevated` | oklch(0.20 0.02 260)       |
+| `surface-glass`    | `bg-surface-glass`    | oklch(0.17 0.02 260 / 50%) |
 
 #### Extended Border Tokens
 
-| Token           | Usage                                 | Tailwind Class         |
-| --------------- | ------------------------------------- | ---------------------- |
-| `border-subtle` | Very subtle borders (6% opacity)      | `border-border-subtle` |
-| `border-medium` | Medium emphasis borders (12% opacity) | `border-border-medium` |
+| Token           | Tailwind Class         | Opacity   |
+| --------------- | ---------------------- | --------- |
+| `border-subtle` | `border-border-subtle` | 6% white  |
+| `border-medium` | `border-border-medium` | 12% white |
 
-#### Extended Overlay Tokens
+### Fintech Color Palette
 
-| Token            | Usage                       | Tailwind Class      |
-| ---------------- | --------------------------- | ------------------- |
-| `overlay-light`  | Light overlay (3% opacity)  | `bg-overlay-light`  |
-| `overlay-medium` | Medium overlay (5% opacity) | `bg-overlay-medium` |
+**Primary Colors:**
+
+| Color       | Hex     | Class              | Usage                     |
+| ----------- | ------- | ------------------ | ------------------------- |
+| Emerald 500 | #10B981 | `text-emerald-500` | Primary actions, positive |
+| Cyan 500    | #06B6D4 | `text-cyan-500`    | Accents, highlights       |
+| Purple 500  | #8B5CF6 | `text-purple-500`  | Secondary accents         |
+
+**Background & Surface:**
+
+| Color     | Hex     | Usage            |
+| --------- | ------- | ---------------- |
+| Slate 900 | #0F172A | Page background  |
+| Zinc 900  | #18181B | Card backgrounds |
+| Zinc 950  | #09090B | Deep background  |
+
+**Text:**
+
+| Color    | Hex     | Class           | Usage                  |
+| -------- | ------- | --------------- | ---------------------- |
+| White    | #FFFFFF | `text-white`    | Primary text, headings |
+| Zinc 300 | #D4D4D8 | `text-zinc-300` | Body text              |
+| Zinc 400 | #A1A1AA | `text-zinc-400` | Secondary text         |
+| Zinc 500 | #71717A | `text-zinc-500` | Muted text             |
+
+### Gradient System
+
+```tsx
+// Primary CTA Gradient
+className = "bg-gradient-to-r from-emerald-500 to-cyan-500";
+
+// Hover State
+className = "hover:from-emerald-400 hover:to-cyan-400";
+
+// Text Gradient
+className = "bg-gradient-to-r from-emerald-400 to-cyan-400 bg-clip-text text-transparent";
+
+// Glow Effect
+className = "bg-gradient-to-r from-emerald-500/20 via-cyan-500/20 to-purple-500/20 blur-3xl";
+
+// Feature Accent Gradients
+const gradients = {
+  emerald: "from-emerald-500 to-cyan-500",
+  purple: "from-purple-500 to-pink-500",
+  orange: "from-orange-500 to-amber-500",
+  cyan: "from-cyan-500 to-blue-500",
+  indigo: "from-blue-500 to-indigo-500",
+  rose: "from-pink-500 to-rose-500",
+};
+```
 
 ---
 
-## Typography
+## Glassmorphism & Surfaces
 
-### Font System
+### Glass Card Utilities
 
-We use system font stack for optimal performance and native appearance:
-
-```css
-/* packages/ui/src/styles/globals.css */
-body {
-  font-family:
-    -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue",
-    Arial, sans-serif;
-}
-```
-
-### Type Scale
-
-Based on Tailwind's default scale, mapped to semantic usage:
-
-| Element    | Class       | Size            | Weight          | Line Height | Usage                  |
-| ---------- | ----------- | --------------- | --------------- | ----------- | ---------------------- |
-| Hero       | `text-6xl`  | 3.75rem (60px)  | `font-bold`     | 1           | Landing page headlines |
-| H1         | `text-5xl`  | 3rem (48px)     | `font-bold`     | 1           | Page titles            |
-| H2         | `text-4xl`  | 2.25rem (36px)  | `font-semibold` | 1.2         | Section headers        |
-| H3         | `text-3xl`  | 1.875rem (30px) | `font-semibold` | 1.2         | Subsection headers     |
-| H4         | `text-2xl`  | 1.5rem (24px)   | `font-semibold` | 1.33        | Card titles            |
-| H5         | `text-xl`   | 1.25rem (20px)  | `font-medium`   | 1.4         | Small headings         |
-| Body Large | `text-lg`   | 1.125rem (18px) | `font-normal`   | 1.55        | Important body text    |
-| Body       | `text-base` | 1rem (16px)     | `font-normal`   | 1.5         | Default body text      |
-| Body Small | `text-sm`   | 0.875rem (14px) | `font-normal`   | 1.43        | Secondary text, labels |
-| Caption    | `text-xs`   | 0.75rem (12px)  | `font-normal`   | 1.33        | Metadata, timestamps   |
-
-### Financial Display Font
-
-For displaying financial data (portfolio values, P&L):
+Pre-built utility classes in `globals.css`:
 
 ```tsx
-// Use font-serif for elegant number display
-<div className="font-serif text-3xl font-light tracking-tight text-foreground">
-  $65,450.00
+// Basic glass card
+<div className="glass-card">
+  {/* Frosted glass with backdrop-blur */}
+</div>
+
+// Glass card with hover effect
+<div className="glass-card-hover">
+  {/* Includes border/background transitions */}
 </div>
 ```
 
-### Usage Examples
+**CSS Definition:**
+
+```css
+.glass-card {
+  border-radius: 1rem;
+  border-width: 1px;
+  border-color: var(--border-subtle);
+  background-color: var(--surface-glass);
+  backdrop-filter: blur(24px);
+  box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1);
+}
+
+.glass-card-hover {
+  /* Inherits glass-card styles */
+  transition: all 300ms ease;
+}
+
+.glass-card-hover:hover {
+  border-color: var(--border);
+  background-color: var(--overlay-medium);
+}
+```
+
+### Surface Elevation
 
 ```tsx
-// Page Title
-<h1 className="text-5xl font-bold text-foreground">Dashboard</h1>
+// Standard surface
+<Card className="surface-primary">
 
-// Section Header
-<h2 className="text-4xl font-semibold text-foreground mb-6">Your Portfolios</h2>
+// Elevated surface (for hover states)
+<Card className="surface-elevated">
 
-// Card Title
-<CardTitle className="text-2xl font-semibold">Personal Wealth</CardTitle>
+// Elevated with hover effect
+<Card className="surface-elevated-hover">
+```
 
-// Body Text
-<p className="text-base text-muted-foreground">Your portfolio summary</p>
+### Marketing Card Pattern
 
-// Label/Caption
-<span className="text-xs text-muted-foreground">Last updated 5 min ago</span>
+```tsx
+<div className="group relative p-6 md:p-8 rounded-2xl border border-white/5 bg-zinc-900/50 hover:bg-zinc-900/80 hover:border-white/10 transition-all duration-300 cursor-pointer">
+  {/* Gradient glow on hover */}
+  <div
+    className="absolute inset-0 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-500 -z-10 blur-xl bg-gradient-to-r from-emerald-500 to-cyan-500"
+    style={{ transform: "scale(0.9)" }}
+  />
 
-// Financial Value (serif for elegance)
-<div className="font-serif text-3xl font-light tracking-tight">
-  $10,500.00
+  {/* Content */}
+  <div className="relative z-10">{/* ... */}</div>
 </div>
 ```
 
@@ -160,242 +281,49 @@ For displaying financial data (portfolio values, P&L):
 
 ### Container Widths
 
-We use Tailwind's responsive container with custom max-widths:
+| Page Type | Max Width   | Usage          |
+| --------- | ----------- | -------------- |
+| Marketing | `max-w-6xl` | Landing pages  |
+| Dashboard | `max-w-7xl` | App content    |
+| Forms     | `max-w-2xl` | Settings, auth |
 
 ```tsx
-// Full-width page container
-<div className="container mx-auto px-4 sm:px-6 lg:px-8">
-  {/* Content */}
-</div>
+// Marketing container
+<div className="container mx-auto px-4 md:px-6 max-w-6xl">
 
-// Constrained content width (for readability)
-<div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-  {/* Dashboard content */}
-</div>
-
-// Narrow content (forms, articles)
-<div className="mx-auto max-w-2xl px-4">
-  {/* Auth forms */}
-</div>
+// Dashboard container
+<div className="container mx-auto px-4 sm:px-6 lg:px-8 max-w-7xl">
 ```
 
-### Container Pattern Decision Matrix
+### Floating Navigation
 
-Choose the appropriate container pattern based on your page type:
-
-| Page Type          | Max Width    | Padding Pattern             | Use Case                                  | Example Pages                  |
-| ------------------ | ------------ | --------------------------- | ----------------------------------------- | ------------------------------ |
-| **Dashboard/List** | `max-w-7xl`  | `px-4 sm:px-6 lg:px-8 py-6` | Primary content with cards, tables, grids | Dashboard, Portfolio List      |
-| **Settings/Forms** | `max-w-2xl`  | `px-4 sm:px-6 lg:px-8 py-6` | Narrow focused content                    | Settings, Login, Sign Up       |
-| **Detail Pages**   | `max-w-7xl`  | `px-4 sm:px-6 lg:px-8 py-6` | Asset details, portfolio details          | Asset Detail, Portfolio Detail |
-| **Full-Width**     | No max-width | `px-4 sm:px-6 lg:px-8 py-0` | Charts, data visualizations (rare)        | Data Viz Pages                 |
-
-**Implementation Examples:**
+For marketing pages, use floating pill navigation:
 
 ```tsx
-// ✅ Primary Content Pages (Dashboard, Portfolio List)
-export default function Dashboard() {
-  return (
-    <div className="container mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-6">
-      <div className="space-y-6">
-        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-          <h1 className="text-2xl font-semibold text-foreground sm:text-3xl lg:text-4xl">
-            Portfolios
-          </h1>
-          <Button variant="outline" className="w-full sm:w-auto">
-            <Plus className="mr-2 h-4 w-4" /> New Portfolio
-          </Button>
-        </div>
-        <div className="grid grid-cols-12 gap-6">
-          {portfolios.map((p) => (
-            <div key={p.id} className="col-span-12 sm:col-span-6 lg:col-span-4">
-              <PortfolioCard portfolio={p} />
-            </div>
-          ))}
-        </div>
-      </div>
-    </div>
-  );
-}
-
-// ✅ Settings/Form Pages (Narrow Content)
-export default function SettingsPage() {
-  return (
-    <div className="container mx-auto max-w-2xl px-4 sm:px-6 lg:px-8 py-6">
-      <div className="space-y-6">
-        <div>
-          <h2 className="font-serif text-2xl font-light text-foreground sm:text-3xl mb-2">
-            Settings
-          </h2>
-          <p className="text-sm text-muted-foreground">
-            Manage your preferences
-          </p>
-        </div>
-        {/* Settings cards */}
-      </div>
-    </div>
-  );
-}
-
-// ✅ Connections Page (Full-Width with Container)
-export default function ConnectionsPage() {
-  return (
-    <div className="container mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-6">
-      <div className="space-y-6">
-        <div>
-          <h1 className="text-2xl font-semibold text-foreground sm:text-3xl lg:text-4xl">
-            Exchange Connections
-          </h1>
-          <p className="text-muted-foreground mt-2">
-            Connect your crypto exchange accounts
-          </p>
-        </div>
-        {/* Connection cards */}
-      </div>
-    </div>
-  );
-}
+<header className="fixed top-4 left-4 right-4 z-50 mx-auto max-w-6xl">
+  <nav className="flex items-center justify-between rounded-full border border-white/10 bg-black/60 backdrop-blur-xl px-4 py-2 md:px-6 md:py-3">
+    {/* Navigation content */}
+  </nav>
+</header>
 ```
 
-### Breakpoints
-
-Tailwind v4 default breakpoints (mobile-first):
-
-| Breakpoint | Min Width | Usage                                 |
-| ---------- | --------- | ------------------------------------- |
-| `sm`       | 640px     | Small tablets, large phones landscape |
-| `md`       | 768px     | Tablets                               |
-| `lg`       | 1024px    | Laptops, small desktops               |
-| `xl`       | 1280px    | Large desktops                        |
-| `2xl`      | 1536px    | Extra large screens                   |
-
-### Grid Layouts
-
-**12-Column Grid System:**
-
-All complex layouts should use a 12-column grid base for consistency and predictability:
+### 12-Column Grid
 
 ```tsx
-// ✅ Responsive card grid using 12-column base
-<div className="grid grid-cols-12 gap-6">
-  {portfolios.map((p) => (
-    <div key={p.id} className="col-span-12 sm:col-span-6 lg:col-span-4">
-      <PortfolioCard portfolio={p} />
-    </div>
+// Responsive card grid
+<div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+  {items.map(item => (
+    <Card key={item.id} className="col-span-1" />
   ))}
 </div>
 
-// ✅ Sidebar + content split (3 + 9 columns)
-<div className="grid grid-cols-12 gap-8">
-  {/* Sidebar */}
-  <aside className="col-span-12 lg:col-span-3">
-    <Nav />
-  </aside>
-
-  {/* Main content */}
-  <main className="col-span-12 lg:col-span-9">
-    <Outlet />
-  </main>
-</div>
-
-// ✅ Dashboard metrics (3 equal columns = 4 cols each)
-<div className="grid grid-cols-12 gap-6">
-  <div className="col-span-12 md:col-span-4">
-    <MetricCard title="Total Value" value="$65,450" />
-  </div>
-  <div className="col-span-12 md:col-span-4">
-    <MetricCard title="Total Gain" value="+$3,450" />
-  </div>
-  <div className="col-span-12 md:col-span-4">
-    <MetricCard title="Return" value="+5.5%" />
-  </div>
-</div>
-
-// ❌ Don't use arbitrary column counts
-<div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
-  {/* Use 12-column system instead */}
+// Bento grid (mixed sizes)
+<div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
+  <div className="lg:col-span-2">{/* Large card */}</div>
+  <div>{/* Normal card */}</div>
+  <div>{/* Normal card */}</div>
 </div>
 ```
-
-**Standard Gap Values:**
-
-- Cards/items: `gap-6` (1.5rem / 24px)
-- Sections: `gap-8` (2rem / 32px)
-- Tight spacing: `gap-4` (1rem / 16px)
-
-**Dashboard 2-column layout:**
-
-```tsx
-<div className="grid grid-cols-1 gap-6 lg:grid-cols-12">
-  {/* Main content: 8 columns on large screens */}
-  <div className="lg:col-span-8">
-    <PerformanceChart />
-  </div>
-
-  {/* Sidebar: 4 columns on large screens */}
-  <div className="lg:col-span-4">
-    <AssetAllocation />
-  </div>
-</div>
-```
-
-**Holdings table with metrics:**
-
-```tsx
-<div className="grid grid-cols-1 gap-4 md:grid-cols-3">
-  <MetricCard title="Total Value" value="$65,450" />
-  <MetricCard title="Total Gain" value="+$3,450" />
-  <MetricCard title="Return" value="+5.5%" />
-</div>
-```
-
-### Flex Layouts
-
-```tsx
-// Horizontal stack with spacing
-<div className="flex items-center gap-2">
-  <Icon />
-  <span>Label</span>
-</div>
-
-// Justified toolbar
-<div className="flex items-center justify-between">
-  <h2>Holdings</h2>
-  <Button>Add Transaction</Button>
-</div>
-
-// Vertical stack
-<div className="flex flex-col gap-4">
-  <Card />
-  <Card />
-</div>
-
-// ✅ Responsive header with full-width button on mobile
-<div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-  <h1 className="text-2xl font-semibold text-foreground sm:text-3xl lg:text-4xl">
-    Portfolios
-  </h1>
-  <Button variant="outline" className="w-full sm:w-auto">
-    <Plus className="mr-2 h-4 w-4" /> New Portfolio
-  </Button>
-</div>
-```
-
-### Layout vs Grid vs Flex Decision Matrix
-
-Choose the right layout approach:
-
-| Pattern            | Use When                                                            | Example                                                   |
-| ------------------ | ------------------------------------------------------------------- | --------------------------------------------------------- |
-| **12-Column Grid** | Complex layouts with multiple items, card grids, dashboard sections | Portfolio cards, metrics panels, sidebar + content        |
-| **Flex**           | Simple linear arrangements, toolbars, headers, small groups         | Header with title + button, icon + label, vertical stacks |
-| **Container**      | Page-level structure, max-width constraints                         | All page wrappers (`max-w-7xl`, `max-w-2xl`)              |
-
-**Rule of thumb:**
-
-- Single-axis alignment → Flex
-- Multi-item grid → 12-column Grid
-- Page structure → Container
 
 ---
 
@@ -403,401 +331,291 @@ Choose the right layout approach:
 
 ### Spacing Scale
 
-Use Tailwind's spacing scale consistently:
+| Class   | Size   | Usage                 |
+| ------- | ------ | --------------------- |
+| `gap-2` | 0.5rem | Compact (icon + text) |
+| `gap-4` | 1rem   | Default spacing       |
+| `gap-6` | 1.5rem | Cards, sections       |
+| `gap-8` | 2rem   | Major sections        |
 
-| Class             | Size          | Usage                              |
-| ----------------- | ------------- | ---------------------------------- |
-| `gap-1` / `p-1`   | 0.25rem (4px) | Tight spacing (icon + text)        |
-| `gap-2` / `p-2`   | 0.5rem (8px)  | Compact spacing                    |
-| `gap-4` / `p-4`   | 1rem (16px)   | Default spacing (cards, sections)  |
-| `gap-6` / `p-6`   | 1.5rem (24px) | Comfortable spacing (card padding) |
-| `gap-8` / `p-8`   | 2rem (32px)   | Section spacing                    |
-| `gap-12` / `p-12` | 3rem (48px)   | Major section dividers             |
-
-### Common Patterns
+### Section Spacing
 
 ```tsx
-// Card padding
-<Card className="p-6">
-  <CardHeader className="space-y-1.5">
-    <CardTitle>Title</CardTitle>
-    <CardDescription>Description</CardDescription>
-  </CardHeader>
-  <CardContent className="space-y-4">
-    {/* Content */}
-  </CardContent>
-</Card>
+// Marketing section
+<section className="py-24 md:py-32 relative overflow-hidden">
 
-// Section spacing
-<section className="py-12">
-  <div className="space-y-8">
-    {/* Sections within */}
-  </div>
-</section>
-
-// Form field spacing
-<div className="space-y-4">
-  <div className="space-y-2">
-    <Label>Email</Label>
-    <Input />
-  </div>
-  <div className="space-y-2">
-    <Label>Password</Label>
-    <Input type="password" />
-  </div>
-</div>
+// Dashboard section
+<section className="py-6 space-y-6">
 ```
 
----
-
-## Component Utilities
-
-Pre-built utility classes for common patterns:
-
-### Glass Morphism
+### Card Padding
 
 ```tsx
-// Basic glass card
-<div className="glass-card">
-  {/* Glass effect with backdrop-blur */}
-</div>
+// Marketing cards
+<div className="p-6 md:p-8 rounded-2xl">
 
-// Glass card with hover effect
-<div className="glass-card-hover">
-  {/* Includes transitions */}
-</div>
-```
-
-**CSS Definition:**
-
-```css
-.glass-card {
-  @apply rounded-2xl border border-border-subtle bg-surface-glass backdrop-blur-xl shadow-lg;
-}
-
-.glass-card-hover {
-  @apply glass-card transition-all duration-300 hover:border-border hover:bg-overlay-medium;
-}
-```
-
-### Surface Patterns
-
-```tsx
-// Primary surface
-<Card className="surface-primary">
-
-// Elevated surface
-<Card className="surface-elevated">
-
-// Elevated with hover effect
-<Card className="surface-elevated-hover">
-```
-
-**CSS Definitions:**
-
-```css
-.surface-primary {
-  @apply bg-surface border-border;
-}
-
-.surface-elevated {
-  @apply bg-surface-elevated border-border shadow-md;
-}
-
-.surface-elevated-hover {
-  @apply surface-elevated transition-all hover:shadow-lg hover:border-border-medium;
-}
-```
-
-### Skeleton Loading
-
-```tsx
-<Skeleton className="skeleton-surface" />
-```
-
-**CSS Definition:**
-
-```css
-.skeleton-surface {
-  @apply animate-pulse bg-muted/50;
-}
+// Dashboard cards
+<Card className="p-4 md:p-6">
 ```
 
 ---
 
 ## Component Patterns
 
-### Using shadcn/ui Components
-
-**Always start with shadcn base components** rather than creating custom alternatives:
-
-```bash
-# Add components as needed
-pnpx shadcn@latest add button
-pnpx shadcn@latest add card
-pnpx shadcn@latest add dialog
-pnpx shadcn@latest add input
-pnpx shadcn@latest add select
-pnpx shadcn@latest add table
-```
-
-### Extending shadcn Components
-
-Extend base components using composition, not duplication:
+### Buttons
 
 ```tsx
-// ✅ Good: Extend Button with composition
-import { Button } from "@workspace/ui/components/button";
+// Primary CTA (gradient)
+<Button className="bg-gradient-to-r from-emerald-500 to-cyan-500 hover:from-emerald-400 hover:to-cyan-400 text-white rounded-full px-8 font-medium shadow-lg shadow-emerald-500/25 hover:shadow-emerald-500/40 cursor-pointer">
+  Get Started
+</Button>
 
-export function IconButton({ icon: Icon, ...props }) {
+// Secondary (outline)
+<Button variant="outline" className="rounded-full px-8 border-zinc-700 text-zinc-300 hover:text-white hover:bg-white/5 cursor-pointer">
+  Learn More
+</Button>
+
+// Ghost
+<Button variant="ghost" className="text-zinc-300 hover:text-white cursor-pointer">
+  Log in
+</Button>
+```
+
+### Badges
+
+```tsx
+// Announcement badge
+<div className="inline-flex items-center gap-2 rounded-full border border-emerald-500/20 bg-emerald-500/10 px-4 py-1.5 text-sm font-medium text-emerald-400">
+  <span className="flex h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
+  <span>New Feature</span>
+</div>
+
+// Feature icons with gradient
+<div className="inline-flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-br from-emerald-500 to-cyan-500 shadow-lg">
+  <Icon className="h-6 w-6 text-white" />
+</div>
+```
+
+### Cards with Hover Effects
+
+```tsx
+// Feature card
+<motion.div
+  className="group p-8 rounded-2xl border border-white/5 bg-zinc-900/50 hover:bg-zinc-900/80 hover:border-white/10 transition-all duration-300 cursor-pointer"
+  whileHover={{ y: -4 }}
+>
+  {/* Glow effect */}
+  <div className="absolute inset-0 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-500 -z-10 blur-xl bg-gradient-to-r from-emerald-500 to-cyan-500" />
+
+  {/* Content */}
+</motion.div>
+```
+
+### Testimonial Cards
+
+```tsx
+<div className="p-6 md:p-8 rounded-2xl border border-white/5 bg-zinc-900/50 hover:border-white/20 transition-all duration-500 cursor-pointer">
+  {/* Stars */}
+  <div className="flex gap-1 mb-4">
+    {[...Array(5)].map((_, i) => (
+      <Star key={i} className="h-4 w-4 text-yellow-500 fill-yellow-500" />
+    ))}
+  </div>
+
+  {/* Quote */}
+  <blockquote className="text-zinc-300 mb-6">"{testimonial.quote}"</blockquote>
+
+  {/* Avatar with gradient */}
+  <div className="flex items-center gap-4">
+    <div className="h-12 w-12 rounded-full bg-gradient-to-br from-emerald-500 to-cyan-500 flex items-center justify-center font-bold text-white">
+      {initials}
+    </div>
+    <div>
+      <div className="font-semibold text-white">{name}</div>
+      <div className="text-sm text-zinc-500">{role}</div>
+    </div>
+  </div>
+</div>
+```
+
+### Pricing Cards
+
+```tsx
+<div
+  className={cn(
+    "p-6 md:p-8 rounded-2xl border transition-all duration-300",
+    isPopular
+      ? "border-emerald-500/50 bg-gradient-to-b from-emerald-500/10 to-transparent"
+      : "border-white/5 bg-zinc-900/50 hover:border-white/10"
+  )}
+>
+  {/* Popular badge */}
+  {isPopular && (
+    <div className="absolute -top-4 left-1/2 -translate-x-1/2">
+      <div className="bg-gradient-to-r from-emerald-500 to-cyan-500 text-white text-xs font-bold px-4 py-1.5 rounded-full">
+        Most Popular
+      </div>
+    </div>
+  )}
+
+  {/* Content */}
+</div>
+```
+
+---
+
+## Motion & Animation
+
+### Framer Motion Patterns
+
+**Fade + Slide Up (default):**
+
+```tsx
+<motion.div
+  initial={{ opacity: 0, y: 20 }}
+  animate={{ opacity: 1, y: 0 }}
+  transition={{ duration: 0.5 }}
+>
+```
+
+**Viewport Animation:**
+
+```tsx
+<motion.div
+  initial={{ opacity: 0, y: 20 }}
+  whileInView={{ opacity: 1, y: 0 }}
+  viewport={{ once: true, margin: "-100px" }}
+  transition={{ duration: 0.5 }}
+>
+```
+
+**Staggered Children:**
+
+```tsx
+const containerVariants = {
+  hidden: { opacity: 0 },
+  visible: {
+    opacity: 1,
+    transition: { staggerChildren: 0.1 },
+  },
+};
+
+const itemVariants = {
+  hidden: { opacity: 0, y: 20 },
+  visible: { opacity: 1, y: 0 },
+};
+
+<motion.div variants={containerVariants} initial="hidden" whileInView="visible">
+  {items.map((item) => (
+    <motion.div key={item.id} variants={itemVariants}>
+      {/* Item content */}
+    </motion.div>
+  ))}
+</motion.div>;
+```
+
+**Hover Lift:**
+
+```tsx
+<motion.div whileHover={{ y: -4 }}>
+```
+
+**Floating Animation:**
+
+```tsx
+<motion.div
+  animate={{ y: [0, -10, 0] }}
+  transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
+>
+```
+
+**Background Gradient Animation:**
+
+```tsx
+<motion.div
+  className="bg-gradient-to-r from-emerald-500/20 to-cyan-500/20"
+  animate={{ scale: [1, 1.1, 1], opacity: [0.3, 0.4, 0.3] }}
+  transition={{ duration: 8, repeat: Infinity, ease: "easeInOut" }}
+/>
+```
+
+### Animated Counter
+
+```tsx
+import { useMotionValue, useTransform, animate } from "framer-motion";
+
+function AnimatedCounter({ value, suffix = "" }) {
+  const count = useMotionValue(0);
+  const rounded = useTransform(count, (latest) => Math.round(latest));
+
+  useEffect(() => {
+    const controls = animate(count, value, {
+      duration: 2,
+      ease: "easeOut",
+    });
+    return () => controls.stop();
+  }, [count, value]);
+
+  return <motion.span>{rounded}</motion.span>;
+}
+```
+
+### Reduced Motion Support
+
+```tsx
+import { useReducedMotion } from "framer-motion";
+
+function AnimatedComponent() {
+  const shouldReduceMotion = useReducedMotion();
+
   return (
-    <Button size="icon" variant="ghost" {...props}>
-      <Icon className="h-4 w-4" />
-    </Button>
+    <motion.div
+      initial={{ opacity: 0, y: shouldReduceMotion ? 0 : 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: shouldReduceMotion ? 0 : 0.4 }}
+    >
+      {children}
+    </motion.div>
   );
 }
-
-// ❌ Bad: Duplicate button implementation
-export function IconButton() {
-  return <button className="...">...</button>;
-}
-```
-
-### Card Patterns
-
-```tsx
-import {
-  Card,
-  CardHeader,
-  CardTitle,
-  CardDescription,
-  CardContent,
-  CardFooter,
-} from "@workspace/ui/components/card";
-
-// Portfolio Summary Card
-<Card className="surface-elevated-hover">
-  <CardHeader>
-    <CardTitle className="text-base text-muted-foreground">
-      Personal Wealth
-    </CardTitle>
-    <CardDescription>Last updated 5 min ago</CardDescription>
-  </CardHeader>
-  <CardContent>
-    <div className="font-serif text-3xl font-light">$65,450</div>
-    <div className="text-sm text-emerald-500">+$3,450 (+5.5%)</div>
-  </CardContent>
-  <CardFooter className="justify-between">
-    <span className="text-xs text-muted-foreground">VND Portfolio</span>
-    <Button variant="ghost" size="sm">
-      View
-    </Button>
-  </CardFooter>
-</Card>;
-```
-
-### Form Patterns
-
-```tsx
-import { Input } from '@workspace/ui/components/input';
-import { Label } from '@workspace/ui/components/label';
-import { Button } from '@workspace/ui/components/button';
-
-// Form field with label
-<div className="space-y-2">
-  <Label htmlFor="email">Email</Label>
-  <Input
-    id="email"
-    type="email"
-    placeholder="you@example.com"
-    className="border-border-subtle bg-overlay-light"
-  />
-</div>
-
-// Input with icon
-<div className="relative">
-  <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-  <Input className="pl-10" placeholder="Email" />
-</div>
-
-// Search input
-<div className="relative">
-  <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-  <Input
-    className="pl-10"
-    placeholder="Search assets..."
-    type="search"
-  />
-</div>
-```
-
-### Dialog/Modal Patterns
-
-```tsx
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogDescription,
-} from "@workspace/ui/components/dialog";
-
-// Modal with form
-<Dialog open={open} onOpenChange={setOpen}>
-  <DialogContent className="sm:max-w-[425px]">
-    <DialogHeader>
-      <DialogTitle>Add Transaction</DialogTitle>
-      <DialogDescription>
-        Enter transaction details for your portfolio
-      </DialogDescription>
-    </DialogHeader>
-    <form className="space-y-4">{/* Form fields */}</form>
-  </DialogContent>
-</Dialog>;
-```
-
-### Table Patterns
-
-```tsx
-import {
-  Table,
-  TableHeader,
-  TableBody,
-  TableRow,
-  TableHead,
-  TableCell,
-} from "@workspace/ui/components/table";
-
-// Holdings table
-<Table>
-  <TableHeader>
-    <TableRow>
-      <TableHead>Asset</TableHead>
-      <TableHead className="text-right">Quantity</TableHead>
-      <TableHead className="text-right">Value</TableHead>
-      <TableHead className="text-right">P/L</TableHead>
-    </TableRow>
-  </TableHeader>
-  <TableBody>
-    {holdings.map((h) => (
-      <TableRow key={h.id} className="hover:bg-muted/50">
-        <TableCell className="font-medium">{h.symbol}</TableCell>
-        <TableCell className="text-right">{h.quantity}</TableCell>
-        <TableCell className="text-right">{formatCurrency(h.value)}</TableCell>
-        <TableCell className="text-right">
-          <span className={h.pnl > 0 ? "text-emerald-500" : "text-red-500"}>
-            {formatCurrency(h.pnl)}
-          </span>
-        </TableCell>
-      </TableRow>
-    ))}
-  </TableBody>
-</Table>;
-```
-
-### Badge Patterns
-
-```tsx
-import { Badge } from '@workspace/ui/components/badge';
-
-// Status badges
-<Badge variant="default">Active</Badge>
-<Badge variant="secondary">Pending</Badge>
-<Badge variant="destructive">Expired</Badge>
-
-// Asset type badges
-<Badge variant="outline" className="border-blue-500/50 text-blue-500">
-  US Equity
-</Badge>
-<Badge variant="outline" className="border-amber-500/50 text-amber-500">
-  Crypto
-</Badge>
-```
-
-### Skeleton Loading Patterns
-
-```tsx
-import { Skeleton } from '@workspace/ui/components/skeleton';
-
-// Loading card
-<Card className="surface-primary animate-pulse">
-  <CardHeader>
-    <Skeleton className="h-4 w-32 skeleton-surface" />
-    <Skeleton className="h-3 w-24 skeleton-surface" />
-  </CardHeader>
-  <CardContent>
-    <Skeleton className="h-8 w-48 skeleton-surface mb-2" />
-    <Skeleton className="h-4 w-32 skeleton-surface" />
-  </CardContent>
-</Card>
-
-// Loading table rows
-<TableRow>
-  <TableCell><Skeleton className="h-4 w-16 skeleton-surface" /></TableCell>
-  <TableCell><Skeleton className="h-4 w-20 skeleton-surface" /></TableCell>
-  <TableCell><Skeleton className="h-4 w-24 skeleton-surface" /></TableCell>
-</TableRow>
 ```
 
 ---
 
 ## Responsive Design
 
-### Mobile-First Approach
+### Breakpoints
 
-Always design for mobile first, then enhance for larger screens:
+| Breakpoint | Width  | Navigation    |
+| ---------- | ------ | ------------- |
+| `sm`       | 640px  | Mobile menu   |
+| `md`       | 768px  | Tablet        |
+| `lg`       | 1024px | Desktop       |
+| `xl`       | 1280px | Large desktop |
+| `2xl`      | 1536px | Extra large   |
 
-```tsx
-// ✅ Good: Mobile-first
-<div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-  <h1 className="text-2xl md:text-4xl">Dashboard</h1>
-  <Button className="w-full md:w-auto">Add Portfolio</Button>
-</div>
-
-// ❌ Bad: Desktop-first (requires overrides)
-<div className="hidden md:flex lg:grid">
-```
-
-### Responsive Patterns
+### Mobile-First Patterns
 
 ```tsx
-// Responsive grid (1 → 2 → 3 columns)
-<div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
+// Typography
+<h1 className="text-4xl md:text-6xl lg:text-7xl">
 
-// Responsive padding
-<div className="px-4 sm:px-6 lg:px-8">
+// Grid
+<div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
 
-// Responsive text size
-<h1 className="text-2xl sm:text-3xl lg:text-4xl">
+// Spacing
+<div className="p-4 md:p-6 lg:p-8">
 
-// Hide on mobile, show on desktop
-<div className="hidden lg:block">
-
-// Show on mobile, hide on desktop
-<div className="lg:hidden">
-
-// Responsive flex direction
-<div className="flex flex-col lg:flex-row">
+// Visibility
+<div className="hidden md:block">  // Desktop only
+<div className="md:hidden">        // Mobile only
 ```
 
-### Touch-Friendly Design
+### Touch-Friendly
 
-Ensure interactive elements are touch-friendly (minimum 44x44px):
-
-```tsx
-// Button sizes
-<Button size="sm">Small</Button>        // 32px height
-<Button size="default">Default</Button>  // 36px height
-<Button size="lg">Large</Button>        // 40px height
-
-// Icon buttons (already 44x44px minimum)
-<Button size="icon" variant="ghost">
-  <Icon className="h-4 w-4" />
-</Button>
-
-// Touch-friendly table rows
-<TableRow className="hover:bg-muted/50 cursor-pointer min-h-[44px]">
-```
+- Buttons: Minimum 44x44px touch targets
+- Links: Adequate spacing between clickable elements
+- All interactive: `cursor-pointer` class
 
 ---
 
@@ -805,543 +623,122 @@ Ensure interactive elements are touch-friendly (minimum 44x44px):
 
 ### WCAG 2.1 AA Compliance
 
-Our design system meets WCAG 2.1 AA standards:
+| Requirement             | Implementation                       |
+| ----------------------- | ------------------------------------ |
+| **Color Contrast**      | 4.5:1 minimum for normal text        |
+| **Focus Indicators**    | Ring with `ring-emerald-500/50`      |
+| **Keyboard Navigation** | All interactive elements accessible  |
+| **ARIA Labels**         | Meaningful labels for icons, buttons |
+| **Error Announcements** | `role="alert"` for errors            |
+| **Alt Text**            | Descriptive alt for images           |
 
-- **Color contrast**: 4.5:1 for normal text, 3:1 for large text
-- **Keyboard navigation**: All interactive elements accessible via keyboard
-- **Focus indicators**: Visible focus rings on all focusable elements
-- **ARIA labels**: Meaningful labels for screen readers
-
-### Keyboard Navigation
-
-```tsx
-// Focus rings are already styled globally
-* {
-  @apply outline-ring/50;
-}
-
-// Button groups with arrow key navigation
-<div role="group" aria-label="Asset filters">
-  <Button>All</Button>
-  <Button>VN</Button>
-  <Button>US</Button>
-</div>
-
-// Skip to content link
-<a href="#main-content" className="sr-only focus:not-sr-only focus:absolute focus:top-4 focus:left-4 focus:z-50">
-  Skip to content
-</a>
-```
-
-### ARIA Patterns
-
-````tsx
-### Official Documentation
-- [Tailwind v4 Documentation](https://tailwindcss.com/docs/v4-beta)
-- [shadcn/ui Components](https://ui.shadcn.com/docs/components)
-- [shadcn/ui Theming](https://ui.shadcn.com/docs/theming)
-- [Radix UI Primitives](https://www.radix-ui.com/primitives)
-- [Framer Motion](https://www.framer.com/motion/)
-- [OKLCH Color Space](https://oklch.com/)
-
-### Project Files
-- Color System: `/packages/ui/src/styles/globals.css`
-- Components: `/packages/ui/src/components/`
-- Architecture: `/_bmad-output/architecture.md`
-
-### Adding New Components
-
-Always use shadcn CLI to add new components:
-
-```bash
-# Available components
-pnpx shadcn@latest add
-
-# Add specific component
-pnpx shadcn@latest add button
-pnpx shadcn@latest add card
-pnpx shadcn@latest add dialog
-pnpx shadcn@latest add form
-pnpx shadcn@latest add table
-pnpx shadcn@latest add tabs
-pnpx shadcn@latest add select
-pnpx shadcn@latest add popover
-pnpx shadcn@latest add dropdown-menu
-pnpx shadcn@latest add badge
-pnpx shadcn@latest add skeleton
-pnpx shadcn@latest add progress
-pnpx shadcn@latest add toast
-````
-
-Components will be added to `/packages/ui/src/components/` and automatically use our theme tokens.
-
----
-
-## Quick Reference
-
-### Common Component Combinations
+### Interactive Elements
 
 ```tsx
-// Dashboard card with header and action
-<Card className="surface-elevated-hover">
-  <CardHeader className="flex flex-row items-center justify-between">
-    <div>
-      <CardTitle>Portfolio Name</CardTitle>
-      <CardDescription>Last updated 5m ago</CardDescription>
-    </div>
-    <Button variant="ghost" size="icon">
-      <MoreVertical className="h-4 w-4" />
-    </Button>
-  </CardHeader>
-  <CardContent>
-    <div className="font-serif text-3xl font-light">$65,450</div>
-  </CardContent>
-</Card>
+// All buttons, links, cards
+className="cursor-pointer"
 
-// Form with validation
-<form className="space-y-4">
-  <div className="space-y-2">
-    <Label htmlFor="email">Email</Label>
-    <Input
-      id="email"
-      type="email"
-      className="border-border-subtle bg-overlay-light"
-    />
-    <p className="text-sm text-destructive">Error message</p>
-  </div>
-  <Button type="submit" className="w-full">Submit</Button>
-</form>
+// Icon buttons
+<button aria-label="Close dialog">
+  <X className="h-4 w-4" />
+  <span className="sr-only">Close</span>
+</button>
 
-// Data table with actions
-<Table>
-  <TableHeader>
-    <TableRow>
-      <TableHead>Asset</TableHead>
-      <TableHead className="text-right">Value</TableHead>
-      <TableHead className="w-[100px]">Actions</TableHead>
-    </TableRow>
-  </TableHeader>
-  <TableBody>
-    <TableRow className="hover:bg-muted/50">
-      <TableCell className="font-medium">AAPL</TableCell>
-      <TableCell className="text-right font-mono">$15,000</TableCell>
-      <TableCell>
-        <Button variant="ghost" size="sm">Edit</Button>
-      </TableCell>
-    </TableRow>
-  </TableBody>
-</Table>
-```
-
----
-
-## Questions?
-
-For questions about styling:
-
-1. **Check this guide first** - Most patterns are documented
-2. **Check shadcn/ui docs** - For component-specific patterns
-3. **Look at existing components** - See how others implemented it
-4. **Check `globals.css`** - For available tokens and utilities
-5. **Ask in team chat** - For architecture decisions
-
----
-
-## Contributing to the Style Guide
-
-Found a missing pattern or have improvements?
-
-1. Create examples in a feature branch
-2. Document the pattern with code examples
-3. Add "before/after" comparisons if replacing old patterns
-4. Update this guide with the new pattern
-5. Create PR with `docs:` prefix
-
----
-
-**Remember**:
-
-- ✅ **Always use shadcn components** - Don't recreate what exists
-- ✅ **Extend, don't duplicate** - Compose shadcn components
-- ✅ **Use semantic tokens** - No hardcoded colors
-- ✅ **Mobile-first** - Design for small screens first
-- ✅ **Accessibility** - WCAG 2.1 AA compliance
-- ✅ **Consistency** - Follow established patterns
-
-🎨 Happy building!
-
-</Dialog>
-
-// Icon with label for screen readers
-<Button aria-label="Close dialog">
-<X className="h-4 w-4" />
-<span className="sr-only">Close</span>
-</Button>
-
-````
-
-### Color Contrast
-
-Our semantic tokens ensure proper contrast:
-
-```tsx
-// ✅ Good: Uses semantic tokens with proper contrast
-<div className="bg-background text-foreground">
-  <p className="text-muted-foreground">Secondary text</p>
-</div>
-
-// ✅ Good: Error states with sufficient contrast
-<span className="text-destructive">Error message</span>
-
-// ❌ Bad: Low contrast custom colors
-<div className="bg-zinc-900 text-zinc-800"> // Fails WCAG
-````
-
-### Focus Management
-
-```tsx
-// Auto-focus first input in modal
-import { useEffect, useRef } from "react";
-
-function AddTransactionDialog() {
-  const firstInputRef = useRef<HTMLInputElement>(null);
-
-  useEffect(() => {
-    if (open) {
-      firstInputRef.current?.focus();
-    }
-  }, [open]);
-
-  return (
-    <Dialog open={open}>
-      <DialogContent>
-        <Input ref={firstInputRef} />
-      </DialogContent>
-    </Dialog>
-  );
-}
-
-// Return focus after dialog closes (Dialog component handles this)
-```
-
----
-
-## Motion & Animation
-
-### Framer Motion Integration
-
-We use Framer Motion for smooth animations:
-
-```tsx
-import { motion } from 'framer-motion';
-
-// Fade in on mount
-<motion.div
-  initial={{ opacity: 0 }}
-  animate={{ opacity: 1 }}
-  transition={{ duration: 0.3 }}
->
-  {children}
-</motion.div>
-
-// Slide up animation
-<motion.div
-  initial={{ opacity: 0, y: 20 }}
-  animate={{ opacity: 1, y: 0 }}
-  transition={{ duration: 0.4, ease: "easeOut" }}
->
-  <Card />
-</motion.div>
-
-// Staggered children
-<motion.div
-  initial="hidden"
-  animate="visible"
-  variants={{
-    hidden: { opacity: 0 },
-    visible: {
-      opacity: 1,
-      transition: {
-        staggerChildren: 0.1
-      }
-    }
-  }}
->
-  {items.map(item => (
-    <motion.div
-      key={item.id}
-      variants={{
-        hidden: { opacity: 0, y: 20 },
-        visible: { opacity: 1, y: 0 }
-      }}
-    >
-      <PortfolioCard {...item} />
-    </motion.div>
-  ))}
-</motion.div>
-```
-
-### Reduced Motion Support
-
-Respect user's motion preferences:
-
-```tsx
-import { useReducedMotion } from "framer-motion";
-
-function AnimatedCard() {
-  const shouldReduceMotion = useReducedMotion();
-
-  return (
-    <motion.div
-      initial={{ opacity: 0, y: shouldReduceMotion ? 0 : 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{
-        duration: shouldReduceMotion ? 0 : 0.4,
-      }}
-    >
-      <Card />
-    </motion.div>
-  );
-}
-```
-
-### CSS Transitions
-
-For simple transitions, use Tailwind utilities:
-
-```tsx
-// Hover effects
-<Button className="transition-all hover:scale-105">
-  Click me
-</Button>
-
-// Color transitions
-<div className="bg-background transition-colors hover:bg-muted">
-
-// Transform transitions
-<div className="transition-transform hover:-translate-y-1">
+// Focus visible
+<Button className="focus-visible:ring-2 focus-visible:ring-emerald-500">
 ```
 
 ---
 
 ## Data Visualization
 
-### Chart Patterns
+### Chart Colors
 
 ```tsx
-// TradingView widget (primary)
-import { TradingViewWidget } from "@/components/trading-view-widget";
-
-<div className="rounded-xl border border-border-subtle bg-surface p-0 shadow-xl h-[500px]">
-  <TradingViewWidget symbol={ticker} />
-</div>;
-
-// Recharts fallback
-import {
-  LineChart,
-  Line,
-  XAxis,
-  YAxis,
-  Tooltip,
-  ResponsiveContainer,
-} from "recharts";
-
-<ResponsiveContainer width="100%" height={300}>
-  <LineChart data={data}>
-    <XAxis dataKey="date" stroke="var(--muted-foreground)" />
-    <YAxis stroke="var(--muted-foreground)" />
-    <Tooltip
-      contentStyle={{
-        backgroundColor: "var(--surface)",
-        border: "1px solid var(--border)",
-        borderRadius: "0.5rem",
-      }}
-    />
-    <Line
-      type="monotone"
-      dataKey="value"
-      stroke="var(--primary)"
-      strokeWidth={2}
-    />
-  </LineChart>
-</ResponsiveContainer>;
+const chartColors = {
+  primary: "var(--primary)", // Emerald
+  secondary: "var(--secondary)", // Purple
+  accent: "var(--accent)", // Cyan
+  positive: "#10B981", // Green
+  negative: "#EF4444", // Red
+  neutral: "#6B7280", // Gray
+};
 ```
 
-### Table Patterns for Financial Data
+### Financial Display
 
 ```tsx
-// Right-align numbers, use monospace font
-<TableCell className="text-right font-mono">
-  {formatNumber(value)}
-</TableCell>
+// Positive P&L
+<span className="text-emerald-400 flex items-center gap-1">
+  <TrendingUp className="h-4 w-4" />
+  +12.4%
+</span>
 
-// Color-coded P/L
-<TableCell className="text-right">
-  <span className={cn(
-    "font-mono",
-    pnl >= 0 ? "text-emerald-500" : "text-red-500"
-  )}>
-    {pnl >= 0 ? '+' : ''}{formatCurrency(pnl)}
-  </span>
-</TableCell>
-
-// Percentage with badge
-<TableCell className="text-right">
-  <Badge variant={change >= 0 ? "default" : "destructive"}>
-    {change >= 0 ? '↑' : '↓'} {Math.abs(change).toFixed(2)}%
-  </Badge>
-</TableCell>
+// Negative P&L
+<span className="text-red-400 flex items-center gap-1">
+  <TrendingDown className="h-4 w-4" />
+  -3.2%
+</span>
 ```
 
-### Progress & Allocation Indicators
+### Progress/Allocation Bars
 
 ```tsx
-import { Progress } from '@workspace/ui/components/progress';
-
-// Asset allocation bar
-<div className="space-y-2">
-  <div className="flex justify-between text-sm">
-    <span>US Equities</span>
-    <span className="text-muted-foreground">45%</span>
-  </div>
-  <Progress value={45} className="h-2" />
-</div>
-
-// Multi-segment allocation
-<div className="flex h-2 w-full overflow-hidden rounded-full bg-muted">
-  <div className="bg-blue-500" style={{ width: '40%' }} />
-  <div className="bg-emerald-500" style={{ width: '35%' }} />
-  <div className="bg-amber-500" style={{ width: '25%' }} />
+// Gradient progress bar
+<div className="h-2 w-full rounded-full bg-zinc-700">
+  <div
+    className="h-2 rounded-full bg-gradient-to-r from-emerald-500 to-cyan-500"
+    style={{ width: "75%" }}
+  />
 </div>
 ```
 
 ---
 
-## Migration Guide
+## Marketing Components
 
-### Common Replacements
-
-#### Backgrounds
-
-| ❌ Hardcoded      | ✅ Semantic Token   | Usage            |
-| ----------------- | ------------------- | ---------------- |
-| `bg-zinc-900`     | `bg-surface`        | Standard surface |
-| `bg-zinc-900/50`  | `bg-surface-glass`  | Semi-transparent |
-| `bg-zinc-950`     | `bg-background`     | Page background  |
-| `bg-white/[0.03]` | `bg-overlay-light`  | Light overlay    |
-| `bg-white/[0.05]` | `bg-overlay-medium` | Medium overlay   |
-
-#### Borders
-
-| ❌ Hardcoded          | ✅ Semantic Token      | Usage              |
-| --------------------- | ---------------------- | ------------------ |
-| `border-zinc-800`     | `border-border`        | Standard borders   |
-| `border-zinc-700`     | `border-border-medium` | Hover borders      |
-| `border-white/6`      | `border-border-subtle` | Subtle borders     |
-| `border-white/[0.08]` | `border-border-subtle` | Alternative subtle |
-| `border-white/12`     | `border-border-medium` | Medium borders     |
-
-#### Text
-
-| ❌ Hardcoded    | ✅ Semantic Token       | Usage            |
-| --------------- | ----------------------- | ---------------- |
-| `text-white`    | `text-foreground`       | Primary text     |
-| `text-zinc-400` | `text-muted-foreground` | Secondary text   |
-| `text-zinc-500` | `text-muted-foreground` | Muted text       |
-| `text-zinc-600` | `text-muted-foreground` | Placeholder text |
-
-### Before & After Examples
-
-#### Example 1: Portfolio Card
-
-**Before:**
+### Hero Section Pattern
 
 ```tsx
-<Card className="h-full bg-zinc-900 border-zinc-800 hover:border-zinc-700 hover:shadow-lg transition-all">
-  <CardHeader>
-    <CardTitle className="text-sm font-medium text-zinc-400">
-      Portfolio Name
-    </CardTitle>
-  </CardHeader>
-  <CardContent>
-    <div className="text-2xl font-bold text-white">$10,000</div>
-  </CardContent>
-</Card>
+<section className="relative pt-32 pb-24 md:pt-44 md:pb-32 overflow-hidden">
+  {/* Animated gradient orbs */}
+  <div className="absolute inset-0 -z-10">
+    <motion.div className="absolute ... bg-emerald-500/30 blur-[120px]" />
+    <motion.div className="absolute ... bg-purple-500/20 blur-[100px]" />
+  </div>
+
+  {/* Content */}
+  <div className="container mx-auto px-4 md:px-6 text-center">
+    {/* Badge, heading, subheading, CTAs, stats */}
+  </div>
+
+  {/* Dashboard mockup */}
+  <motion.div className="mt-20 relative mx-auto max-w-5xl">
+    {/* Glow effect */}
+    <div className="absolute -inset-4 bg-gradient-to-r from-emerald-500/20 ... blur-3xl" />
+
+    {/* Mockup card */}
+    <div className="rounded-2xl border border-white/10 bg-zinc-900/80 backdrop-blur-xl">
+      {/* Browser dots + content */}
+    </div>
+  </motion.div>
+</section>
 ```
 
-**After:**
+### CTA Section Pattern
 
 ```tsx
-<Card className="h-full surface-elevated-hover">
-  <CardHeader>
-    <CardTitle className="text-sm font-medium text-muted-foreground">
-      Portfolio Name
-    </CardTitle>
-  </CardHeader>
-  <CardContent>
-    <div className="text-2xl font-bold text-foreground">$10,000</div>
-  </CardContent>
-</Card>
-```
+<section className="py-24 md:py-32">
+  <div className="relative rounded-3xl overflow-hidden">
+    {/* Animated gradient background */}
+    <div className="absolute inset-0 bg-gradient-to-br from-emerald-600 via-cyan-600 to-emerald-600 bg-[length:200%_200%] animate-gradient-slow" />
 
-#### Example 2: Glass Card
-
-**Before:**
-
-```tsx
-<div className="relative rounded-2xl border border-white/[0.08] bg-white/[0.03] backdrop-blur-xl shadow-[0_8px_32px_rgba(0,0,0,0.3)] hover:border-white/[0.15] hover:bg-white/[0.05]">
-  {children}
-</div>
-```
-
-**After:**
-
-```tsx
-<div className="glass-card-hover shadow-[0_8px_32px_rgba(0,0,0,0.3)]">
-  {children}
-</div>
-```
-
-#### Example 3: Auth Form Input
-
-**Before:**
-
-```tsx
-<Input
-  className="pl-10 h-11 border-white/10 bg-white/5 text-white placeholder:text-zinc-600 focus:bg-zinc-900/50 focus:border-emerald-500/50"
-  placeholder="Email"
-/>
-```
-
-**After:**
-
-```tsx
-<Input
-  className="pl-10 h-11 border-border-subtle bg-overlay-light text-foreground placeholder:text-muted-foreground focus:bg-surface-glass focus:border-primary/50"
-  placeholder="Email"
-/>
-```
-
-### Decision Tree
-
-```
-Need styling?
-├─ Is it a standard UI element (text, background, border)?
-│  └─ Use base tokens (foreground, background, border, muted-foreground)
-│
-├─ Is it a surface/card?
-│  ├─ Standard card → bg-card or bg-surface
-│  ├─ Elevated/hover → surface-elevated-hover utility
-│  └─ Glass effect → glass-card or glass-card-hover utility
-│
-├─ Is it a border?
-│  ├─ Standard → border-border
-│  ├─ Subtle → border-border-subtle
-│  └─ Emphasized → border-border-medium
-│
-└─ Is it an overlay?
-   ├─ Light → bg-overlay-light
-   └─ Medium → bg-overlay-medium
+    {/* Content */}
+    <div className="relative px-6 py-16 md:px-16 md:py-24 text-center">
+      {/* Badge, heading, CTAs, trust indicators */}
+    </div>
+  </div>
+</section>
 ```
 
 ---
@@ -1350,189 +747,40 @@ Need styling?
 
 ### ✅ Do
 
-- **Use semantic tokens**: `text-foreground`, not `text-white`
-- **Use utilities**: `glass-card`, not custom inline styles
-- **Check shadcn tokens first**: Before reaching for extended tokens
-- **Consider theme modes**: Tokens work in light/dark automatically
-- **Use component composition**: Combine utilities for complex effects
-
-```tsx
-// Good
-<Card className="surface-elevated-hover">
-  <CardTitle className="text-muted-foreground">Title</CardTitle>
-</Card>
-
-// Also good - combining utilities
-<div className="glass-card p-6 space-y-4">
-  <h2 className="text-foreground font-bold">Heading</h2>
-  <p className="text-muted-foreground">Description</p>
-</div>
-```
+- Use semantic color tokens (`text-foreground`, not `text-white`)
+- Apply `cursor-pointer` to all interactive elements
+- Use Space Grotesk for headings via `style={{ fontFamily: 'var(--font-heading)' }}`
+- Use gradients for primary CTAs
+- Add hover states with smooth transitions (300ms)
+- Respect `prefers-reduced-motion`
+- Use Framer Motion for complex animations
+- Apply glassmorphism utilities for cards
 
 ### ❌ Don't
 
-- **No hardcoded colors**: Never use `bg-zinc-900`, `text-white`, etc.
-- **No opacity math**: Don't use `bg-white/[0.08]`
-- **No arbitrary values for colors**: Use defined tokens
-- **No inline hex/rgb**: No `bg-[#1a1a1a]`
-
-```tsx
-// Bad
-<Card className="bg-zinc-900 border-zinc-800 text-white">
-  <p className="text-zinc-400">Text</p>
-</Card>
-
-// Bad
-<div className="bg-white/[0.08] border-white/[0.15]">
-  Content
-</div>
-```
-
-### Adding New Color Needs
-
-If you need a color that doesn't exist:
-
-1. **First**: Check if existing tokens can be reused
-2. **Second**: Check if you can compose existing tokens
-3. **Third**: Propose new semantic token in `globals.css`
-
-**Adding a new token:**
-
-```css
-/* packages/ui/src/styles/globals.css */
-
-@theme inline {
-  /* Add to theme config */
-  --color-surface-interactive: var(--surface-interactive);
-}
-
-:root {
-  --surface-interactive: oklch(0.95 0 0); /* Light mode */
-}
-
-.dark {
-  --surface-interactive: oklch(0.22 0.02 260); /* Dark mode */
-}
-```
-
-Then use: `bg-surface-interactive`
-
----
-
-## Tailwind v4 Notes
-
-### CSS-Based Configuration
-
-Tailwind v4 uses CSS for configuration instead of `tailwind.config.js`:
-
-```css
-/* All configuration in CSS */
-@theme inline {
-  --color-brand: var(--primary);
-  --radius-card: 1rem;
-}
-```
-
-### Exposing CSS Variables
-
-To make CSS variables available as Tailwind classes:
-
-```css
-@theme inline {
-  --color-surface: var(--surface);
-}
-```
-
-Now you can use: `bg-surface`
-
-### Custom Variants
-
-```css
-@custom-variant dark (&:is(.dark *));
-```
-
-This creates the `.dark` variant used throughout the app.
-
-### No Config File Needed
-
-- ❌ `tailwind.config.js` - Not used in v4
-- ✅ `globals.css` - All config here
-- ✅ `@theme inline` - Expose variables
-- ✅ `@layer components` - Custom utilities
-
----
-
-## Component Examples
-
-### Glassmorphism Card
-
-```tsx
-import { GlassCard } from "@/components/glass-card";
-
-<GlassCard hover onClick={() => console.log("clicked")}>
-  <div className="p-6">
-    <h3 className="text-foreground font-semibold">Title</h3>
-    <p className="text-muted-foreground">Description</p>
-  </div>
-</GlassCard>;
-```
-
-### Elevated Surface Card
-
-```tsx
-import {
-  Card,
-  CardHeader,
-  CardTitle,
-  CardContent,
-} from "@workspace/ui/components/card";
-
-<Card className="surface-elevated-hover">
-  <CardHeader>
-    <CardTitle>Dashboard</CardTitle>
-  </CardHeader>
-  <CardContent>
-    <p className="text-muted-foreground">Your content here</p>
-  </CardContent>
-</Card>;
-```
-
-### Loading Skeleton
-
-```tsx
-import { Skeleton } from "@workspace/ui/components/skeleton";
-
-<Card className="surface-primary animate-pulse">
-  <CardHeader>
-    <Skeleton className="h-4 w-32 skeleton-surface" />
-  </CardHeader>
-  <CardContent>
-    <Skeleton className="h-8 w-48 skeleton-surface mb-2" />
-    <Skeleton className="h-4 w-64 skeleton-surface" />
-  </CardContent>
-</Card>;
-```
+- Hardcode colors (`bg-zinc-900` → `bg-surface`)
+- Use emojis as icons (use Lucide React instead)
+- Forget cursor states on clickable elements
+- Use linear easing (prefer ease-out)
+- Add animations without reduced-motion fallback
+- Mix different icon sizes randomly
+- Use scale transforms that cause layout shift
 
 ---
 
 ## Resources
 
 - [Tailwind v4 Documentation](https://tailwindcss.com/docs/v4-beta)
-- [shadcn/ui Theming](https://ui.shadcn.com/docs/theming)
-- [OKLCH Color Space](https://oklch.com/)
-- Project: `/packages/ui/src/styles/globals.css`
+- [shadcn/ui Components](https://ui.shadcn.com/)
+- [Framer Motion](https://www.framer.com/motion/)
+- [Lucide Icons](https://lucide.dev/)
+- [Space Grotesk](https://fonts.google.com/specimen/Space+Grotesk)
+- [DM Sans](https://fonts.google.com/specimen/DM+Sans)
+- **Project Files:**
+  - CSS: `/packages/ui/src/styles/globals.css`
+  - Marketing Components: `/apps/web/src/features/marketing/components/`
+  - UX Spec: `/_bmad-output/project-planning-artifacts/ux/ux-design-specification.md`
 
 ---
 
-## Questions?
-
-For questions about styling:
-
-1. Check this guide first
-2. Look at existing components for patterns
-3. Check `globals.css` for available tokens
-4. Ask in team chat or create a discussion
-
----
-
-**Remember**: Consistency is key! Using semantic tokens makes the entire app easier to maintain and theme. 🎨
+**Remember**: Premium fintech design = glassmorphism + gradients + smooth motion + trust indicators 🎨

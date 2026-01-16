@@ -23,7 +23,7 @@ Thank you for your interest in contributing to Portfolios Tracker! This guide wi
 ```bash
 # Clone the repository
 git clone <repository-url>
-cd fin-sight
+cd portfolios-tracker
 
 # Install dependencies
 pnpm install

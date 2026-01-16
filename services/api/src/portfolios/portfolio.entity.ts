@@ -1,4 +1,4 @@
-import { Database } from '@workspace/database-types';
+import { Database } from '@workspace/shared-types/database';
 
 /**
  * Portfolio entity interface matching database schema

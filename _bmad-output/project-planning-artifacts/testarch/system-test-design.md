@@ -1,4 +1,4 @@
-# Test Design: fin-sight - System-Level Strategy
+# Test Design: portfolios-tracker - System-Level Strategy
 
 **Date:** 2025-12-26
 **Author:** Son
@@ -8,7 +8,7 @@
 
 ## Executive Summary
 
-**Scope:** System-level test design and testability review for the fin-sight v1.0 platform. This document outlines the high-level testing strategy, architectural risks, and coverage priorities before proceeding to implementation.
+**Scope:** System-level test design and testability review for the portfolios-tracker v1.0 platform. This document outlines the high-level testing strategy, architectural risks, and coverage priorities before proceeding to implementation.
 
 **Risk Summary:**
 
@@ -33,7 +33,7 @@
 | ------- | -------- | --------------------------------------------------------------------------- | ----------- | ------ | ----- | --------------------------------------------------------------------------- | ----- | ---------- |
 | R-001   | DATA     | Data mismatch between Supabase (holdings) and ClickHouse (prices)           | 2           | 3      | 6     | API-level integration tests with mocked dual-database responses             | Tech  | 2025-12-30 |
 | R-002   | SEC      | Supabase RLS bypass allows users to view other users' portfolios            | 2           | 3      | 6     | Automated security gate verifying RBAC/RLS at the database/API boundary     | Sec   | 2025-12-30 |
-| R-003   | BUS      | Payment webhook failure (SePay/Polar) prevents feature unlocks              | 2           | 3      | 6     | Idempotent webhook tests with mock provider signatures and retry scenarios  | Tech  | 2025-12-30 |
+| R-003   | BUS      | Payment webhook failure (SePay) prevents feature unlocks                    | 2           | 3      | 6     | Idempotent webhook tests with mock provider signatures and retry scenarios  | Tech  | 2025-12-30 |
 | R-004   | PERF     | ClickHouse analytics queries exceed 500ms P95 latency under concurrent load | 2           | 3      | 6     | Load testing with k6 specifically targeting the analytics/aggregation layer | Tech  | 2025-12-30 |
 | R-005   | TECH     | Crypto API integration (CCXT) hits rate limits or token refresh fails       | 3           | 2      | 6     | Circuit breaker and retry logic validation with network interception        | Tech  | 2025-12-30 |
 

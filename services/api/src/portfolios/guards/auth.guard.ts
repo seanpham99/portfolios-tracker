@@ -6,7 +6,7 @@ import {
   Inject,
 } from '@nestjs/common';
 import { SupabaseClient, User } from '@supabase/supabase-js';
-import { Database } from '@workspace/database-types';
+import { Database } from '@workspace/shared-types/database';
 import { Request } from 'express';
 
 // Extend Express Request to include user
@@ -51,6 +51,7 @@ export class AuthGuard implements CanActivate {
         throw new UnauthorizedException('Invalid or expired token');
       }
 
+      console.log('AuthGuard: User authenticated:', user.id);
       // Attach user to request for downstream use
       request.user = user;
       return true;

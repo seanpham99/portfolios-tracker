@@ -1,10 +1,20 @@
 ---
-project_name: "fin-sight"
+project_name: "portfolios-tracker"
 user_name: "Son"
-date: "2025-12-29"
+date: "2026-01-15T18:50:00Z"
 sections_completed:
-  ["discovery", "typescript", "react", "testing", "code-quality", "workflow"]
-workflow_status: "complete"
+  [
+    "technology_stack",
+    "language_rules",
+    "framework_rules",
+    "testing_rules",
+    "quality_rules",
+    "workflow_rules",
+    "anti_patterns",
+  ]
+status: "complete"
+rule_count: 28
+optimized_for_llm: true
 ---
 
 # Project Context for AI Agents
@@ -15,184 +25,74 @@ _This file contains critical rules and patterns that AI agents must follow when 
 
 ## Technology Stack & Versions
 
-### Frontend (React 19 + Vite + React Router 7)
-
-- **React**: 19.2.3 (latest features including Actions, useOptimistic)
-- **React Router**: 7.11.0 (file-based routing with `@react-router/fs-routes`)
-- **Vite**: 7.3.0 (build tool with HMR)
-- **TypeScript**: 5.9.3 (strict mode enabled)
-- **TanStack React Query**: 5.90.12 (server state management)
-- **Framer Motion**: 12.23.26 (animations per UX spec)
-- **Radix UI**: Latest (accessible component primitives)
-- **Tailwind CSS**: 4.1.18 (utility-first styling)
-- **Zustand**: Latest (UI state management only)
-
-### Backend & Data
-
-- **Supabase**: 2.89.0 (Auth + Postgres database)
-- **ClickHouse**: Existing production system (market data analytics)
-- **Redis**: Planned (30s TTL caching layer)
-
-### Monorepo & Tooling
-
-- **Turborepo**: 2.7.2 (build orchestration)
-- **pnpm**: 10.26.2 (package manager)
-- **Node.js**: >=20.0.0 (engine requirement)
-- **Vitest**: Latest (testing framework)
-
----
+- **Monorepo**: Turborepo 2.7.4 with pnpm 10.26.2
+- **Frontend (apps/web)**: Next.js 16.1.2, React 19.2.3, Tailwind CSS 4, Radix UI/Shadcn UI, TanStack Query 5, Recharts.
+- **Backend (services/api)**: NestJS 11.1.10, Swagger 11.2.3, Supabase JS 2.89, Upstash Redis 1.36, CCXT 4.5.29.
+- **Shared Packages**: `@workspace/shared-types` (DTOs/Schemas), `@workspace/ui` (Primitives).
+- **Core Infrastructure**: Supabase (Auth/Postgres), Upstash (Redis), ClickHouse (Analytics).
 
 ## Critical Implementation Rules
 
-### TypeScript Configuration & Patterns
+### Language-Specific Rules
 
-**ALWAYS:**
+- **ESM-First Imports**: Internal imports **MUST** include the `.js` extension (e.g., `import { x } from "./utils.js"`).
+- **Type Safety**: Import all shared DTOs and models from `@workspace/shared-types`. Never redefine shared types.
+- **Financial Precision**: **NEVER** use float math for currency. Use string-based decimals or high-precision math libraries.
+- **Dual Validation**: Mirror **Zod** (Frontend) validation with **Class-Validator** (Backend) DTO decorators.
+- **Standard Envelope**: API responses must follow: `{ success: boolean, data: any, error: any, meta: any }`.
 
-- Use TypeScript strict mode (configured in tsconfig)
-- Import with `@/*` path aliases for src files: `import { X } from '@/api/hooks/use-portfolios'`
-- Import workspace packages with `@workspace/*`: `import { Button } from '@workspace/ui'`
-- Use `import type` for type-only imports to optimize bundles
-- Run `react-router typegen` before type-checking to generate route types
-- Place shared types in `@workspace/database-types` or `@workspace/api-types` packages
-- Co-locate feature-specific types next to implementation files
-- Use named exports (`export const`, `export function`) rather than default exports
+### Framework-Specific Rules
 
-**NEVER:**
+- **Feature-Based UI**: Logic MUST live in `apps/web/src/features/`. Co-locate components, hooks, and tests.
+- **Server State**: Use **TanStack Query** as the single source of truth for external data. Avoid syncing to local state.
+- **UI Architecture**: Build on `@workspace/ui` primitives. Use **Tailwind CSS 4** with mobile-first responsiveness.
+- **NestJS Modules**: Organize by domain (e.g., `src/portfolios/`). Place `dto/`, `guards/`, and `decorators/` in sub-folders.
 
-- Use implicit `any` types (strict mode prevents this)
-- Duplicate types that exist in shared packages
-- Import from relative paths when `@/*` or `@workspace/*` aliases are available
-- Mix default and named exports in the same file
+### Testing Rules
 
-### React 19 + React Router 7 Patterns
+- **Co-location Strategy**: Place `*.test.ts/tsx` or `*.spec.ts` files directly alongside the source code.
+- **Frontend Testing**: Use **Vitest** with `@testing-library/react`. Mock at the API client level, not the hook level.
+- **Backend Testing**: Use **Jest** and standard NestJS testing modules.
+- **E2E Testing**: Use **Playwright** in `tests/e2e/` for critical user journeys and resiliency checks.
 
-**ALWAYS:**
+### Code Quality & Style Rules
 
-- Use React Query for ALL server state management (portfolios, transactions, settings, etc.)
-- Use Zustand ONLY for UI state (theme, sidebar, modals) - NEVER for server data
-- Follow file-based routing conventions: `_prefix` for layouts, `$param` for dynamic routes, `.` for nesting
-- Name route files with underscores for layouts: `_protected._layout.dashboard.tsx`
-- Create custom React Query hooks in `api/hooks/` named as `use-[feature].ts`
-- Export multiple related hooks from the same file (e.g., `usePortfolios`, `usePortfolio`, `useCreatePortfolio`)
-- Invalidate React Query cache after mutations: `queryClient.invalidateQueries(['portfolios'])`
-- Use React 19 Actions and useOptimistic for form handling
-- Use Framer Motion (v12.23.26) for micro-interactions per UX spec
-- Co-locate hooks, components, and tests by feature domain
+- **Standard Naming**: `kebab-case` for files/folders, `PascalCase` for classes/components, `camelCase` for vars/funcs.
+- **Formatting**: Double quotes, `printWidth: 100`, semi-colons required. `_` prefix for unused vars.
+- **Documentation**: JSDoc **REQUIRED** for any complex calculation logic in `@workspace/finance` or utilities.
+- **Clean Registry**: Use shared configs from `packages/eslint-config`.
 
-**NEVER:**
+### Development Workflow Rules
 
-- Store server data in Zustand (use React Query instead)
-- Prop drill server state (fetch at consumption point with React Query hooks)
-- Create routes with regular files (must follow underscore/$ conventions)
-- Mix client and server rendering patterns (app is SPA with Vite)
-- Use useEffect for data fetching (use React Query hooks)
+- **Conventional Commits**: Strictly follow `type: subject` pattern (e.g., `feat: add crypto sync`).
+- **Changesets**: Include a changeset (`pnpm changeset`) for any user-facing PRs.
+- **CI/CD**: GitHub Actions run tests/linting on every push. Turborepo handles build caching.
 
-### Testing Patterns (Vitest + React Testing Library)
+### Critical Don't-Miss Rules (Anti-Patterns)
 
-**ALWAYS:**
-
-- Co-locate test files next to implementation: `use-portfolios.test.tsx` next to `use-portfolios.ts`
-- Use Vitest globals: `describe`, `it`, `expect`, `vi` (no imports needed)
-- Wrap React Query hooks in `QueryClientProvider` with test client for testing
-- Mock API calls with `vi.mock('@/lib/api')` to isolate unit tests
-- Use `beforeEach` and `afterEach` for test setup/cleanup
-- Test critical hooks and complex logic first (React Query hooks, utilities)
-- Follow MVP testing strategy: E2E critical paths (Playwright), unit tests for complex logic
-
-**NEVER:**
-
-- Skip tests for new React Query hooks (they're critical for data flow)
-- Test implementation details (test behavior, not internal state)
-- Forget to clean up mocks between tests (use `vi.restoreAllMocks()`)
-- Aim for 100% coverage in MVP phase (quality over coverage per architecture)
-
-### Code Quality & API Patterns
-
-**NestJS Backend (services/api):**
-
-- Organize by feature modules (connections, portfolios, transactions)
-- Use DTOs with class-validator decorators for validation
-- Inject dependencies via constructor: `constructor(private readonly service: Service) {}`
-- Keep controllers thin (routing), services thick (business logic)
-- Enable decorators in tsconfig: `experimentalDecorators: true`, `emitDecoratorMetadata: true`
-
-**API Client:**
-
-- Use `apiFetch` wrapper from `@/lib/api` for all API calls
-- Define response types in `@workspace/api-types` package
-- Return typed responses: `apiFetch<Portfolio[]>('/api/portfolios')`
-
-**Code Style:**
-
-- Files: kebab-case (`use-portfolios.ts`, `portfolio-card.tsx`)
-- Functions/variables: camelCase (`createPortfolio`, `portfolioData`)
-- Classes/types: PascalCase (`Portfolio`, `CreatePortfolioDto`)
-- Organize by feature domain (group related code together)
-- Follow ESLint config (@workspace/eslint-config/react for frontend)
-
-**NEVER:**
-
-- Mix naming conventions within same codebase layer
-- Disable ESLint rules without team discussion
-- Use `any` type (use `unknown` with type guards)
-- Create generic utility files (organize by feature)
-
-### Development Workflow & Critical Anti-Patterns
-
-**Monorepo Workflow:**
-
-- Run `pnpm install` from workspace root (not inside packages)
-- Use `pnpm --filter <package>` for package-specific commands
-- Type-check before committing: `pnpm run type-check` from root
-- Generate route types: `pnpm --filter web run typegen` before type-checking
-- Use `workspace:*` protocol for internal dependencies
-
-**Git Conventions:**
-
-- Write descriptive commits: `feat(portfolios): add holdings table with sortable columns`
-- Keep commits atomic (one logical change)
-- Test locally before pushing (type-check + tests pass)
-
-**Critical Anti-Patterns (NEVER):**
-
-- Store API keys/secrets in code (use `.env`, never commit)
-- Fetch server data in useEffect (use React Query hooks)
-- Store server data in Zustand (React Query is source of truth)
-- Import from `src/` when `@/*` alias exists
-- Mix default and named exports
-- Prop drill more than 2 levels (use React Query or context)
-- Use `index.ts` barrel files (slows HMR and tree-shaking)
-
-**Performance Guidelines:**
-
-- Use React Query's `staleTime` for stable data
-- Memoize expensive calculations with `useMemo`
-- Use `React.memo()` for frequently rendered components with same props
-- Lazy load routes with React Router lazy imports
-- Measure before optimizing (React DevTools Profiler)
-- Don't over-memoize (has overhead)
+- **Floating Point Math**: Never use for money or net worth aggregation.
+- **Redundant State**: Do not store Query-managed data in Zustand or local state.
+- **Direct DB Access**: Apps must use shared types from `@workspace/shared-types`; do not define schemas locally.
+- **Resiliency**: UI must handle stale data scenarios (staleness > 60s) with "Staleness Banners" or badges.
+- **Rate Limits**: Implement exponential backoff for all external API calls (e.g., CCXT/Binance).
+- **Security**: filtering via Supabase RLS is mandatory. Never bypass RLS in the client or standard API routes.
 
 ---
 
-## Usage Instructions for AI Agents
+## Usage Guidelines
 
-**When implementing features:**
+**For AI Agents:**
 
-1. Read this file FIRST before writing code
-2. Follow ALWAYS rules strictly - they prevent common mistakes
-3. Avoid NEVER patterns - they're based on project-specific decisions
-4. Reference architecture.md for broader architectural context
-5. When in doubt, ask the user rather than assuming
+- Read this file before implementing any code.
+- Follow ALL rules exactly as documented.
+- When in doubt, prefer the more restrictive option.
+- Update this file if new, recurring patterns emerge.
 
-**This file captures:**
+**For Humans:**
 
-- Unobvious patterns that aren't in typical documentation
-- Project-specific decisions (React Query vs Zustand split)
-- Version-specific features (React 19, React Router 7)
-- Team conventions (naming, organization, workflow)
+- Keep this file lean and focused on agent needs.
+- Update when technology stack or core patterns change.
+- Review quarterly for outdated rules.
+- Remove rules that become native or obvious over time.
 
-**This file does NOT replace:**
-
-- Official documentation for libraries/frameworks
-- The architecture.md document (read both together)
-- Code review and team communication
+_Last Updated: 2026-01-15_

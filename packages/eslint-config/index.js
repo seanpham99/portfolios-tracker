@@ -28,3 +28,6 @@ export const config = [
     ignores: ["dist", "node_modules", "build", ".turbo", "coverage"],
   },
 ];
+
+// Default export for convenience
+export default config;

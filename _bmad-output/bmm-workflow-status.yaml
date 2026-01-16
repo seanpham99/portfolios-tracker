@@ -1,0 +1,130 @@
+# Workflow Status Template
+
+# This tracks progress through BMM methodology Analysis, Planning, and Solutioning phases.
+# Implementation phase is tracked separately in sprint-status.yaml
+
+# STATUS DEFINITIONS:
+# ==================
+# Initial Status (before completion):
+#   - required: Must be completed to progress
+#   - optional: Can be completed but not required
+#   - recommended: Strongly suggested but not required
+#   - conditional: Required only if certain conditions met (e.g., if_has_ui)
+#
+# Completion Status:
+#   - {file-path}: File created/found (e.g., "docs/product-brief.md")
+#   - skipped: Optional/conditional workflow that was skipped
+
+generated: "2026-01-15"
+project: "portfolios-tracker"
+project_type: "Portfolio (asset) tracker for personal and small-medium investment teams - stocks, crypto, commodities across multiple exchanges"
+selected_track: "bmad-method"
+field_type: "brownfield"
+workflow_path: "_bmad/bmm/workflows/workflow-status/paths/method-brownfield.yaml"
+
+workflow_status:
+  # PREREQUISITE: Documentation (if undocumented)
+  document-project:
+    status: skipped
+    agent: analyst
+    command: document-project
+    phase: prerequisite
+    purpose: "Understand existing codebase before planning"
+    note: "Planning artifacts present (PRD/UX); comprehensive documentation will be covered by Architecture + Project Context"
+
+  # PHASE 0: Discovery (Optional - User Selected)
+  research:
+    status: completed
+    agent: analyst
+    command: research
+    phase: 0
+    completed: "2025-12-26"
+    artifacts:
+      - "_bmad-output/project-planning-artifacts/research/market-us-portfolio-tracking-multi-asset-research-2025-12-26.md"
+      - "_bmad-output/project-planning-artifacts/research/market-vietnam-portfolio-tracking-research-2025-12-26.md"
+      - "_bmad-output/project-planning-artifacts/research/domain-portfolio-calculations-analytics-2025-12-26.md"
+      - "_bmad-output/project-planning-artifacts/research/domain-market-microstructure-2025-12-26.md"
+      - "_bmad-output/project-planning-artifacts/research/vietnam-stock-market-mechanics-research-2025-12-26.md"
+      - "_bmad-output/project-planning-artifacts/research/domain-asset-specific-knowledge-research-2025-12-26.md"
+
+  brainstorm-project:
+    status: optional
+    agent: analyst
+    command: brainstorm-project
+    phase: 0
+    note: "Not selected"
+
+  product-brief:
+    status: optional
+    agent: analyst
+    command: product-brief
+    phase: 0
+    note: "Not selected"
+
+  # PHASE 1: Planning
+  prd:
+    status: completed
+    agent: pm
+    command: prd
+    phase: 1
+    artifacts:
+      - "_bmad-output/prd.md"
+
+  create-ux-design:
+    status: completed
+    agent: ux-designer
+    command: create-ux-design
+    phase: 1
+    artifacts:
+      - "_bmad-output/project-planning-artifacts/ux/ux-design-specification.md"
+
+  # PHASE 2: Solutioning
+  create-architecture:
+    status: completed
+    agent: architect
+    command: create-architecture
+    phase: 2
+    completed: "2026-01-15"
+    artifacts:
+      - "_bmad-output/architecture.md"
+
+  create-epics-and-stories:
+    status: completed
+    agent: pm
+    command: create-epics-and-stories
+    phase: 2
+    note: "Break down PRD into implementable epics and stories"
+    completed: "2025-12-26"
+    artifacts:
+      - "_bmad-output/project-planning-artifacts/epics.md"
+
+  test-design:
+    status: completed
+    agent: tea
+    command: test-design
+    phase: 2
+    note: "System-level testability review completed"
+    completed: "2025-12-26"
+    artifacts:
+      - "_bmad-output/project-planning-artifacts/testarch/system-test-design.md"
+
+  validate-architecture:
+    status: optional
+    agent: architect
+    command: validate-architecture
+    phase: 2
+
+  implementation-readiness:
+    status: required
+    agent: architect
+    command: implementation-readiness
+    phase: 2
+
+  # PHASE 3: Implementation
+  sprint-planning:
+    status: completed
+    agent: sm
+    command: sprint-planning
+    phase: 3
+    artifacts:
+      - "_bmad-output/implementation-artifacts/sprint-status.yaml"

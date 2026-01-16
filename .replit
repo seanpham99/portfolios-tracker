@@ -50,12 +50,12 @@ args = "cd apps/web && pnpm run dev"
 waitForPort = 5000
 
 [[ports]]
-localPort = 3000
-externalPort = 3000
-
-[[ports]]
 localPort = 5000
 externalPort = 5000
+
+[[ports]]
+localPort = 3000
+externalPort = 3000
 
 [[ports]]
 localPort = 5000
@@ -63,7 +63,11 @@ externalPort = 80
 
 [deployment]
 deploymentTarget = "autoscale"
-run = ["bash", "-c", "PORT=3000 node services/api/dist/main.js & cd apps/web && PORT=5000 pnpm run start"]
+run = [
+  "bash",
+  "-c",
+  "PORT=3000 node services/api/dist/main.js & cd apps/web && PORT=5000 pnpm run start",
+]
 build = ["bash", "scripts/deploy-build.sh"]
 
 [userenv]

@@ -10,40 +10,33 @@ runButton = "Project"
 
 [[workflows.workflow]]
 name = "Project"
+mode = "sequential"
+author = "agent"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "cd packages/shared-types && pnpm run build"
+
+[[workflows.workflow.tasks]]
+task = "workflow.run"
+args = "Dev Servers"
+
+[[workflows.workflow]]
+name = "Dev Servers"
 mode = "parallel"
 author = "agent"
 
 [[workflows.workflow.tasks]]
-task = "workflow.run"
-args = "Next.js Dev Server"
-
-[[workflows.workflow.tasks]]
-task = "workflow.run"
-args = "NestJS API Server"
-
-[[workflows.workflow]]
-name = "Next.js Dev Server"
-author = "agent"
+task = "shell.exec"
+args = "cd apps/web && pnpm run dev"
 
 [[workflows.workflow.tasks]]
 task = "shell.exec"
-args = "pnpm run dev --filter @workspace/web -- --port 5000 --hostname 0.0.0.0"
-waitForPort = 5000
-
-[workflows.workflow.metadata]
-outputType = "webview"
-
-[[workflows.workflow]]
-name = "NestJS API Server"
-author = "agent"
-
-[[workflows.workflow.tasks]]
-task = "shell.exec"
-args = "pnpm run dev --filter @workspace/api"
+args = "cd apps/api && pnpm run start:dev"
 waitForPort = 3001
 
 [workflows.workflow.metadata]
-outputType = "console"
+outputType = "webview"
 
 [[ports]]
 localPort = 5000
@@ -55,5 +48,7 @@ externalPort = 3001
 
 [deployment]
 deploymentTarget = "autoscale"
-run = ["pnpm run start --filter @workspace/web -- --port 5000 --hostname 0.0.0.0"]
+run = [
+  "pnpm run start --filter @workspace/web -- --port 5000 --hostname 0.0.0.0",
+]
 build = ["pnpm run build --filter @workspace/web"]

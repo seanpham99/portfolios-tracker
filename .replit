@@ -35,7 +35,7 @@ outputType = "console"
 [[workflows.workflow.tasks]]
 task = "shell.exec"
 args = "cd services/api && pnpm run dev"
-waitForPort = 3001
+waitForPort = 3000
 
 [[workflows.workflow]]
 name = "Next.js Frontend"
@@ -54,12 +54,12 @@ localPort = 3000
 externalPort = 3000
 
 [[ports]]
-localPort = 3001
-externalPort = 3001
+localPort = 5000
+externalPort = 5000
 
 [deployment]
 deploymentTarget = "autoscale"
-run = ["bash", "-c", "PORT=3001 node services/api/dist/main.js & cd apps/web && PORT=3000 pnpm run start"]
+run = ["bash", "-c", "PORT=3000 node services/api/dist/main.js & cd apps/web && PORT=5000 pnpm run start"]
 build = ["bash", "scripts/deploy-build.sh"]
 
 [userenv]

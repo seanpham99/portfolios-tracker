@@ -94,23 +94,29 @@ The project uses Turborepo with pnpm workspaces organized as:
 ## Running the Application
 
 The project runs two servers in parallel:
+
 1. **Next.js Web App** on port 5000 (frontend)
-2. **NestJS API** on port 3001 (backend)
+2. **NestJS API** on port 3000 (backend)
 
 Build order: `packages/shared-types` must be built before the API can start.
 
 ### CORS Configuration
+
 The API is configured with CORS_ORIGIN environment variable allowing:
+
 - `https://*.replit.dev`
 - `https://*.replit.app`
 
 ### Production Deployment
+
 The deployment is configured to run both services together:
+
 - **Build**: Builds shared-types, API, and web app sequentially
 - **Run**: Starts the NestJS API in background, then the Next.js frontend
 - **Target**: Autoscale deployment for automatic scaling
 
 ### Additional Tools
+
 - **Changesets**: Version management
 - **Husky + lint-staged**: Pre-commit hooks
 - **Syncpack**: Dependency version synchronization

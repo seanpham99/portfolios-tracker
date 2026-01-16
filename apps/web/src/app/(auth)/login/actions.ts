@@ -29,7 +29,7 @@ export async function login(prevState: LoginState, formData: FormData): Promise<
 export async function signInWithGoogle() {
   const supabase = await createClient();
   const headersList = await headers();
-  const origin = headersList.get("origin") || "http://localhost:3001";
+  const origin = headersList.get("origin") || "http://localhost:5000";
 
   const { data, error } = await supabase.auth.signInWithOAuth({
     provider: "google",
@@ -52,7 +52,7 @@ export async function signInWithGoogle() {
 export async function signup(prevState: LoginState, formData: FormData): Promise<LoginState> {
   const supabase = await createClient();
   const headersList = await headers();
-  const origin = headersList.get("origin") || "http://localhost:3001";
+  const origin = headersList.get("origin") || "http://localhost:5000";
 
   const email = formData.get("email") as string;
   const password = formData.get("password") as string;
@@ -78,7 +78,7 @@ export async function forgotPassword(
 ): Promise<LoginState> {
   const supabase = await createClient();
   const headersList = await headers();
-  const origin = headersList.get("origin") || "http://localhost:3001";
+  const origin = headersList.get("origin") || "http://localhost:5000";
 
   const email = formData.get("email") as string;
 

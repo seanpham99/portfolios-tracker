@@ -223,11 +223,13 @@ function LoginForm() {
 
 export default function LoginPage() {
   return (
-    <Suspense fallback={
-      <div className="w-full flex justify-center items-center py-12">
-        <Loader2 className="h-8 w-8 animate-spin text-emerald-500" />
-      </div>
-    }>
+    <Suspense
+      fallback={
+        <div className="w-full flex justify-center items-center py-12">
+          <Loader2 className="h-8 w-8 animate-spin text-emerald-500" />
+        </div>
+      }
+    >
       <LoginForm />
     </Suspense>
   );

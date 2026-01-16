@@ -423,6 +423,9 @@ importers:
         specifier: ^4.3.5
         version: 4.3.5
     devDependencies:
+      "@tailwindcss/postcss":
+        specifier: ^4.1.18
+        version: 4.1.18
       "@types/react":
         specifier: ^19.2.8
         version: 19.2.8

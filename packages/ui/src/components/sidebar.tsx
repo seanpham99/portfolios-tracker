@@ -187,7 +187,7 @@ function Sidebar({
           data-sidebar="sidebar"
           data-slot="sidebar"
           data-mobile="true"
-          className="bg-sidebar text-sidebar-foreground w-[--sidebar-width-mobile] max-w-[80vw] p-0 [&>button]:hidden"
+          className="bg-sidebar text-sidebar-foreground w-[var(--sidebar-width-mobile)] max-w-[80vw] p-0 [&>button]:hidden"
           side={side}
           style={
             {
@@ -217,23 +217,31 @@ function Sidebar({
       {/* This is what handles the sidebar gap on desktop */}
       <div
         data-slot="sidebar-gap"
+        data-collapsible={collapsible}
         className={cn(
-          "relative h-full bg-transparent transition-[width] duration-200 ease-linear",
-          "w-[--sidebar-width]",
-          "group-data-[collapsible=offcanvas]:w-0",
+          "relative h-full bg-transparent transition-[width] duration-300 ease-in-out",
+          "w-[var(--sidebar-width)]",
           "group-data-[side=right]:rotate-180",
-          "group-data-[collapsible=icon]:w-[--sidebar-width-icon]"
+          collapsible === "offcanvas" && "group-data-[state=collapsed]:w-0",
+          collapsible === "icon" && "group-data-[state=collapsed]:w-[var(--sidebar-width-icon)]"
         )}
       />
       <div
         data-slot="sidebar-container"
+        data-collapsible={collapsible}
         className={cn(
-          "fixed top-0 bottom-0 z-10 hidden h-svh transition-[left,right,width] duration-200 ease-linear md:flex",
-          "w-[--sidebar-width]",
-          "group-data-[collapsible=icon]:w-[--sidebar-width-icon]",
+          "fixed top-0 bottom-0 z-30 hidden h-svh transition-[left,right,width] duration-300 ease-in-out md:flex",
+          "w-[var(--sidebar-width)]",
+          collapsible === "icon" && "group-data-[state=collapsed]:w-[var(--sidebar-width-icon)]",
           side === "left"
-            ? "left-0 group-data-[collapsible=offcanvas]:left-[calc(var(--sidebar-width)*-1)]"
-            : "right-0 group-data-[collapsible=offcanvas]:right-[calc(var(--sidebar-width)*-1)]",
+            ? cn(
+                "left-0",
+                collapsible === "offcanvas" && "group-data-[state=collapsed]:left-[calc(var(--sidebar-width)*-1)]"
+              )
+            : cn(
+                "right-0", 
+                collapsible === "offcanvas" && "group-data-[state=collapsed]:right-[calc(var(--sidebar-width)*-1)]"
+              ),
           variant === "floating" || variant === "inset"
             ? "p-2"
             : "group-data-[side=left]:border-r group-data-[side=right]:border-l",
@@ -289,7 +297,6 @@ function SidebarRail({ className, ...props }: React.ComponentProps<"button">) {
       aria-label="Toggle Sidebar"
       tabIndex={-1}
       onClick={toggleSidebar}
-      title="Toggle Sidebar"
       className={cn(
         "hover:after:bg-sidebar-border absolute inset-y-0 z-20 hidden w-4 -translate-x-1/2 transition-all ease-linear group-data-[side=left]:-right-4 group-data-[side=right]:left-0 after:absolute after:inset-y-0 after:left-1/2 after:w-[2px] sm:flex",
         "in-data-[side=left]:cursor-w-resize in-data-[side=right]:cursor-e-resize",

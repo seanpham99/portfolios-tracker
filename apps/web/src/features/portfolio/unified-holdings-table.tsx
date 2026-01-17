@@ -19,6 +19,7 @@ import {
 import Link from "next/link";
 import { useHoldings } from "@/features/portfolio/hooks/use-holdings";
 import { HoldingDto as Holding, CalculationMethod } from "@workspace/shared-types/api";
+import { MetricInfoCard, MetricKeys } from "@/features/metrics";
 import { HoverCard, HoverCardTrigger, HoverCardContent } from "@workspace/ui/components/hover-card";
 import {
   Empty,
@@ -177,25 +178,7 @@ export function UnifiedHoldingsTable({ portfolioId, onAddAsset }: UnifiedHolding
         header: () => (
           <div className="flex items-center justify-end gap-1.5">
             <span>P/L</span>
-            <HoverCard>
-              <HoverCardTrigger asChild>
-                <button
-                  aria-label="View methodology for P/L calculation"
-                  className="inline-flex items-center justify-center text-zinc-500 hover:text-zinc-300 transition-colors"
-                  tabIndex={0}
-                >
-                  <Info className="h-3.5 w-3.5" />
-                </button>
-              </HoverCardTrigger>
-              <HoverCardContent side="top" className="max-w-xs">
-                <div className="space-y-1.5">
-                  <p className="text-xs font-medium">Cost Basis Calculation</p>
-                  <p className="text-xs text-zinc-400">
-                    Hover over a row to see specific methodology and data source for that asset.
-                  </p>
-                </div>
-              </HoverCardContent>
-            </HoverCard>
+            <MetricInfoCard metricKey={MetricKeys.UNREALIZED_PL} />
           </div>
         ),
         cell: (info) => {

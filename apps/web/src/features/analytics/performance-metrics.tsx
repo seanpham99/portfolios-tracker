@@ -1,6 +1,7 @@
 import { motion } from "framer-motion";
 import type { PerformanceMetrics } from "./analytics.types";
 import { TrendingUp, TrendingDown } from "lucide-react";
+import { MetricInfoCard, MetricKeys } from "@/features/metrics";
 
 interface PerformanceMetricsProps {
   metrics: PerformanceMetrics;
@@ -32,7 +33,10 @@ export function PerformanceMetricsPanel({ metrics, currency }: PerformanceMetric
     >
       {/* Current Value */}
       <div className="rounded-xl border border-border-subtle bg-surface-glass p-6">
-        <div className="mb-2 text-sm font-medium text-muted-foreground">Current Value</div>
+        <div className="mb-2 flex items-center gap-2 text-sm font-medium text-muted-foreground">
+          Current Value
+          <MetricInfoCard metricKey={MetricKeys.NET_WORTH} iconSize="sm" />
+        </div>
         <div className="font-serif text-3xl font-light tracking-tight text-foreground">
           {formatCurrency(metrics.currentValue)}
         </div>
@@ -42,6 +46,7 @@ export function PerformanceMetricsPanel({ metrics, currency }: PerformanceMetric
       <div className="rounded-xl border border-border-subtle bg-surface-glass p-6">
         <div className="mb-2 flex items-center gap-2 text-sm font-medium text-muted-foreground">
           <span>Total Change</span>
+          <MetricInfoCard metricKey={MetricKeys.TOTAL_GAIN} iconSize="sm" />
           {isPositive ? (
             <TrendingUp className="h-4 w-4 text-green-600" />
           ) : (
@@ -59,7 +64,10 @@ export function PerformanceMetricsPanel({ metrics, currency }: PerformanceMetric
 
       {/* Percentage Change */}
       <div className="rounded-xl border border-border-subtle bg-surface-glass p-6">
-        <div className="mb-2 text-sm font-medium text-muted-foreground">Return (%)</div>
+        <div className="mb-2 flex items-center gap-2 text-sm font-medium text-muted-foreground">
+          Return (%)
+          <MetricInfoCard metricKey={MetricKeys.ASSET_GAIN} iconSize="sm" />
+        </div>
         <div
           className={`font-serif text-3xl font-light tracking-tight ${
             isPositive ? "text-green-600" : "text-red-600"

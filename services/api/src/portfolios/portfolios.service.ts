@@ -271,10 +271,14 @@ export class PortfoliosService {
         const txWithAsset = (transactions || []).find(
           (t) => (t.assets as any)?.symbol === symbol,
         );
-        const market = (txWithAsset?.assets as any)?.market;
+        const asset = txWithAsset?.assets as any;
+        const market = asset?.market;
+        const assetClass = asset?.asset_class;
+
         const price = await this.marketDataService.getCurrentPrice(
           symbol,
           market,
+          assetClass,
         );
         if (price !== null) {
           priceMap.set(symbol, price);
@@ -445,10 +449,14 @@ export class PortfoliosService {
         const txWithAsset = (transactions || []).find(
           (t) => (t.assets as any)?.symbol === symbol,
         );
-        const market = (txWithAsset?.assets as any)?.market;
+        const asset = txWithAsset?.assets as any;
+        const market = asset?.market;
+        const assetClass = asset?.asset_class;
+
         const price = await this.marketDataService.getCurrentPrice(
           symbol,
           market,
+          assetClass,
         );
         if (price !== null) {
           priceMap.set(symbol, price);

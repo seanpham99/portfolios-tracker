@@ -1,4 +1,4 @@
-# generated: 2026-01-16
+# generated: 2026-01-17
 # project: portfolios-tracker
 # project_key: portfolios-tracker
 # tracking_system: file-system
@@ -33,7 +33,7 @@
 # - SM typically creates next story after previous one is 'done' to incorporate learnings
 # - Dev moves story to 'review', then runs code-review (fresh context, different LLM recommended)
 
-generated: 2026-01-16
+generated: 2026-01-17
 project: portfolios-tracker
 project_key: portfolios-tracker
 tracking_system: file-system
@@ -55,7 +55,7 @@ development_status:
   2-3-multi-currency-accounting-fx-separation: done
   epic-2-retrospective: done
 
-  epic-3: in-progress
+  epic-3: done
   3-1-tradingview-chart-integration: done
   3-2-professional-technical-indicators: done
   3-3-calculation-methodology-data-transparency: done
@@ -63,7 +63,7 @@ development_status:
   epic-3-retrospective: done
 
   epic-4: in-progress
-  4-1-cross-provider-asset-discovery: ready-for-dev
+  4-1-cross-provider-asset-discovery: done
   4-2-asset-request-capture-queue: backlog
   4-3-mock-data-eviction-service-hardening: backlog
   4-4-data-source-reliability-staleness-controls: backlog

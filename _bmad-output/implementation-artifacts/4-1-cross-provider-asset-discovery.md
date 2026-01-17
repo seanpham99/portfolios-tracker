@@ -1,6 +1,6 @@
 # Story 4.1: Cross-Provider Asset Discovery & Intelligent Onboarding
 
-Status: ready-for-dev
+Status: done
 
 <!-- Note: Validation is complete. Applied roadmap pivot and UI logic refactoring. -->
 

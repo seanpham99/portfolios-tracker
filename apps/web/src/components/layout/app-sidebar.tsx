@@ -14,12 +14,14 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
   SidebarRail,
+  useSidebar,
 } from "@workspace/ui/components/sidebar";
 import { Avatar, AvatarFallback } from "@workspace/ui/components/avatar";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
+  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@workspace/ui/components/dropdown-menu";
 import {
@@ -31,6 +33,7 @@ import {
   LogOut,
   Wallet,
   User as UserIcon,
+  ChevronUp,
 } from "lucide-react";
 import { signOut } from "@/app/(auth)/login/actions";
 
@@ -40,9 +43,11 @@ interface AppSidebarProps {
 
 export function AppSidebar({ user }: AppSidebarProps) {
   const pathname = usePathname();
+  const { state } = useSidebar();
+  const isCollapsed = state === "collapsed";
 
   const menuItems = [
-    { to: "/dashboard", icon: LayoutDashboard, label: "Overview" },
+    { to: "/dashboard", icon: LayoutDashboard, label: "Dashboard" },
     { to: "/history", icon: History, label: "History" },
     { to: "/analytics", icon: TrendingUp, label: "Analytics" },
     { to: "/settings", icon: Settings, label: "Settings" },
@@ -56,35 +61,41 @@ export function AppSidebar({ user }: AppSidebarProps) {
     return pathname.startsWith(itemPath);
   };
 
+  const userInitial = (user.email?.[0] ?? "U").toUpperCase();
+  const userName = user?.email?.split("@")[0] || "User";
+
   return (
-    <Sidebar
-      collapsible="icon"
-      variant="sidebar"
-      className="border-r border-white/5 bg-black/40 backdrop-blur-xl transition-all duration-300"
-    >
-      <SidebarHeader className="pb-4 pt-6 z-20">
-        <div className="flex items-center gap-3 px-2 group-data-[collapsible=icon]:justify-center">
-          <div className="relative flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-linear-to-br from-indigo-500 to-violet-600 shadow-lg shadow-indigo-500/25 border border-white/10 transition-transform hover:scale-105 group-data-[collapsible=icon]:h-8 group-data-[collapsible=icon]:w-8">
-            <Briefcase className="h-5 w-5 text-white group-data-[collapsible=icon]:h-4 group-data-[collapsible=icon]:w-4" />
-            <div className="absolute inset-0 rounded-xl ring-1 ring-inset ring-white/20" />
+    <Sidebar collapsible="icon" variant="sidebar" className="border-r border-border">
+      {/* Header / Logo */}
+      <SidebarHeader className="p-4">
+        <Link
+          href="/dashboard"
+          className="flex items-center gap-3 group-data-[collapsible=icon]:justify-center"
+        >
+          {/* Logo Icon */}
+          <div className="relative flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-linear-to-br from-primary to-primary/80 shadow-md ring-1 ring-primary/20 transition-transform duration-200 hover:scale-105 group-data-[collapsible=icon]:h-9 group-data-[collapsible=icon]:w-9">
+            <Briefcase className="h-5 w-5 text-primary-foreground group-data-[collapsible=icon]:h-4 group-data-[collapsible=icon]:w-4" />
           </div>
-          <div className="flex flex-col group-data-[collapsible=icon]:hidden overflow-hidden transition-all duration-300">
-            <span className="font-serif text-lg font-bold tracking-tight text-white whitespace-nowrap drop-shadow-md">
+
+          {/* Logo Text - Hidden when collapsed */}
+          <div className="flex flex-col overflow-hidden group-data-[collapsible=icon]:hidden">
+            <span className="font-bold text-foreground tracking-tight whitespace-nowrap">
               Portfolio Tracker
             </span>
-            <span className="text-[10px] uppercase tracking-widest text-indigo-300 font-bold">
-              Premium Edition
+            <span className="text-[10px] uppercase tracking-widest text-primary font-semibold">
+              Premium
             </span>
           </div>
-        </div>
+        </Link>
       </SidebarHeader>
 
-      <SidebarContent className="px-2">
+      {/* Main Navigation */}
+      <SidebarContent className="px-3 group-data-[collapsible=icon]:px-0">
         <SidebarGroup>
-          <SidebarGroupLabel className="text-white/40 uppercase tracking-widest text-[10px] font-semibold mb-2 px-2">
-            Main Menu
+          <SidebarGroupLabel className="text-muted-foreground uppercase tracking-widest text-[10px] font-semibold mb-1 px-2 group-data-[collapsible=icon]:hidden">
+            Navigation
           </SidebarGroupLabel>
-          <SidebarMenu>
+          <SidebarMenu className="space-y-1">
             {menuItems.map((item) => {
               const isActive = isRouteActive(item.to);
               return (
@@ -94,17 +105,21 @@ export function AppSidebar({ user }: AppSidebarProps) {
                     isActive={isActive}
                     tooltip={item.label}
                     className={`
-                      h-10 transition-all duration-200 ease-in-out rounded-lg
+                      h-10 rounded-lg transition-all duration-200 cursor-pointer
+                      group-data-[collapsible=icon]:justify-center group-data-[collapsible=icon]:px-0
                       ${
                         isActive
-                          ? "bg-linear-to-r from-indigo-500/10 to-transparent text-indigo-300 shadow-[inset_2px_0_0_0_var(--color-indigo-500)]"
-                          : "text-muted-foreground hover:text-white hover:bg-white/5"
+                          ? "bg-emerald-500/15 text-emerald-500 font-medium border border-emerald-500/20"
+                          : "text-muted-foreground hover:text-foreground hover:bg-foreground/10"
                       }
                     `}
                   >
-                    <Link href={item.to} className="flex items-center gap-3">
-                      <item.icon className={`h-4 w-4 ${isActive ? "text-indigo-400" : ""}`} />
-                      <span className="font-medium">{item.label}</span>
+                    <Link
+                      href={item.to}
+                      className="flex items-center gap-3 px-3 group-data-[collapsible=icon]:justify-center group-data-[collapsible=icon]:px-0"
+                    >
+                      <item.icon className="h-4 w-4 shrink-0" />
+                      <span className="group-data-[collapsible=icon]:hidden">{item.label}</span>
                     </Link>
                   </SidebarMenuButton>
                 </SidebarMenuItem>
@@ -114,56 +129,76 @@ export function AppSidebar({ user }: AppSidebarProps) {
         </SidebarGroup>
       </SidebarContent>
 
-      <SidebarFooter className="p-3">
+      {/* User Footer */}
+      <SidebarFooter className="p-3 group-data-[collapsible=icon]:p-2">
         <SidebarMenu>
           <SidebarMenuItem>
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <SidebarMenuButton
                   size="lg"
-                  className="rounded-xl data-[state=open]:bg-white/5 hover:bg-white/5 transition-colors border border-transparent hover:border-white/5"
+                  className="rounded-xl transition-colors cursor-pointer hover:bg-muted/50 data-[state=open]:bg-muted/50 group-data-[collapsible=icon]:justify-center"
                 >
-                  <Avatar className="h-8 w-8 rounded-lg border border-white/10 bg-white/5">
-                    <AvatarFallback className="rounded-lg bg-transparent text-xs font-medium text-white/70">
-                      {(user.email?.[0] ?? "U").toUpperCase()}
+                  {/* Avatar */}
+                  <Avatar className="h-8 w-8 rounded-lg ring-1 ring-border group-data-[collapsible=icon]:h-9 group-data-[collapsible=icon]:w-9">
+                    <AvatarFallback className="rounded-lg bg-primary/10 text-primary text-xs font-semibold">
+                      {userInitial}
                     </AvatarFallback>
                   </Avatar>
-                  <div className="grid flex-1 text-left text-sm leading-tight group-data-[collapsible=icon]:hidden">
-                    <span className="truncate font-semibold text-white/90">
-                      {user?.email?.split("@")[0] || "User"}
-                    </span>
-                    <span className="truncate text-xs text-muted-foreground">{user?.email}</span>
+
+                  {/* User Info - Hidden when collapsed */}
+                  <div className="flex-1 text-left leading-tight group-data-[collapsible=icon]:hidden">
+                    <p className="truncate font-medium text-foreground text-sm">{userName}</p>
+                    <p className="truncate text-xs text-muted-foreground">{user?.email}</p>
                   </div>
-                  <UserIcon className="ml-auto size-4 text-muted-foreground group-data-[collapsible=icon]:hidden opacity-50" />
+
+                  {/* Chevron - Hidden when collapsed */}
+                  <ChevronUp className="ml-auto h-4 w-4 text-muted-foreground group-data-[collapsible=icon]:hidden" />
                 </SidebarMenuButton>
               </DropdownMenuTrigger>
+
               <DropdownMenuContent
                 side="top"
-                align="end"
-                className="w-56 min-w-56 bg-black/90 backdrop-blur-xl border border-white/10 text-white rounded-xl shadow-2xl p-2"
+                align={isCollapsed ? "center" : "end"}
+                className="w-56 rounded-xl border border-border bg-popover p-1"
               >
-                <div className="px-2 py-1.5 text-sm font-semibold text-muted-foreground border-b border-white/5 mb-1">
-                  My Account
+                {/* User Info Header */}
+                <div className="px-3 py-2 border-b border-border mb-1">
+                  <p className="text-sm font-medium text-foreground">{userName}</p>
+                  <p className="text-xs text-muted-foreground truncate">{user?.email}</p>
                 </div>
-                <DropdownMenuItem className="focus:bg-white/10 focus:text-white cursor-pointer rounded-lg my-0.5">
-                  <UserIcon className="mr-2 h-4 w-4 opacity-70" /> Profile
-                </DropdownMenuItem>
-                <DropdownMenuItem className="focus:bg-white/10 focus:text-white cursor-pointer rounded-lg my-0.5">
-                  <Wallet className="mr-2 h-4 w-4 opacity-70" /> Billing
-                </DropdownMenuItem>
-                <DropdownMenuItem className="focus:bg-white/10 focus:text-white cursor-pointer rounded-lg my-0.5">
-                  <Settings className="mr-2 h-4 w-4 opacity-70" /> Preferences
+
+                <DropdownMenuItem asChild className="cursor-pointer rounded-lg">
+                  <Link href="/settings" className="flex items-center gap-2">
+                    <UserIcon className="h-4 w-4 text-muted-foreground" />
+                    <span>Profile</span>
+                  </Link>
                 </DropdownMenuItem>
 
-                <div className="h-px bg-white/5 my-1" />
+                <DropdownMenuItem asChild className="cursor-pointer rounded-lg">
+                  <Link href="/settings" className="flex items-center gap-2">
+                    <Wallet className="h-4 w-4 text-muted-foreground" />
+                    <span>Billing</span>
+                  </Link>
+                </DropdownMenuItem>
+
+                <DropdownMenuItem asChild className="cursor-pointer rounded-lg">
+                  <Link href="/settings" className="flex items-center gap-2">
+                    <Settings className="h-4 w-4 text-muted-foreground" />
+                    <span>Preferences</span>
+                  </Link>
+                </DropdownMenuItem>
+
+                <DropdownMenuSeparator />
+
                 <DropdownMenuItem
                   asChild
-                  className="focus:bg-rose-500/10 focus:text-rose-400 text-rose-400/80 cursor-pointer rounded-lg"
+                  className="cursor-pointer rounded-lg text-destructive focus:text-destructive"
                 >
                   <form action={signOut} className="w-full">
-                    <button type="submit" className="flex w-full items-center">
-                      <LogOut className="mr-2 h-4 w-4" />
-                      Sign Out
+                    <button type="submit" className="flex w-full items-center gap-2">
+                      <LogOut className="h-4 w-4" />
+                      <span>Sign Out</span>
                     </button>
                   </form>
                 </DropdownMenuItem>
@@ -172,7 +207,9 @@ export function AppSidebar({ user }: AppSidebarProps) {
           </SidebarMenuItem>
         </SidebarMenu>
       </SidebarFooter>
-      <SidebarRail className="after:bg-white/10 hover:after:bg-indigo-500/50 hover:after:w-1 after:transition-all" />
+
+      {/* Rail for collapse toggle */}
+      <SidebarRail className="hover:after:bg-primary/20" />
     </Sidebar>
   );
 }

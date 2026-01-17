@@ -265,10 +265,6 @@ export function DashboardClient() {
                       </Pie>
                     </PieChart>
                   </ResponsiveContainer>
-                  {/* Center Text */}
-                  <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-                    <span className="text-xs font-bold text-muted-foreground/50">MIX</span>
-                  </div>
                 </div>
                 {/* Legend */}
                 <div className="w-1/2 space-y-2">

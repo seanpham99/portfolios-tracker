@@ -59,15 +59,16 @@ FR1: Epic 1 - Unified Multi-Asset Tracking
 FR2: Epic 3 - Professional Technical Indicators
 FR3: Epic 2 - Transparent Financial Calculations
 FR4: Epic 2 - Multi-Currency & FX Separation
-FR5: Epic 5 - AI-Enhanced Insights
+FR5: Epic 6 - AI-Enhanced Insights
 FR6: Epic 1 - Manual Transaction Entry
-FR7: Epic 4 - Crypto API Sync
+FR7: Epic 5 - Crypto API Sync
 FR8: Epic 1 - Multi-Portfolio Dashboard
 FR9: Epic 1 - Unified Holdings View
 FR10: Epic 3 - Asset Detail & TradingView Charts
-FR11: Epic 4 - Provider Connection Settings
-FR12: Epic 5 - Freemium Tiers & Limits
-FR13: Epic 5 - SePay Payment Integration
+FR11: Epic 5 - Provider Connection Settings
+FR12: Epic 6 - Freemium Tiers & Limits
+FR13: Epic 6 - SePay Payment Integration
+FR14: Epic 4 - Universal Asset Discovery & Request Queue
 
 ## Epic List
 
@@ -203,12 +204,53 @@ As a user, I want a dedicated dashboard for each asset showing key performance s
 - **When** viewing the asset header.
 - **Then** I see real-time or near-real-time market data stats.
 
-### Epic 4: Automated Exchange Sync & Connections
+### Epic 4: Universal Asset Registry & Data Hardening
+
+Clean up all mock data and ensure the platform can track any asset requested by a user through a unified discovery and ingestion pipeline.
+**FRs covered:** FR14
+
+#### Story 4.1: Cross-Provider Asset Discovery
+
+As a user, I want to search for any asset symbol, so that the system can find it across all integrated providers (vnstock, Yahoo Finance, Coingecko, CCXT).
+**Acceptance Criteria:**
+
+- **Given** the Add Asset modal.
+- **When** I enter a symbol.
+- **Then** the system checks all active market data providers in parallel and returns the best match.
+
+#### Story 4.2: Asset Request Capture & Queue
+
+As a user, if an asset is not found in our current providers, I want to be able to submit it for tracking, so that the team can add it to our ingestion pipeline.
+**Acceptance Criteria:**
+
+- **Given** a search with zero results.
+- **When** I click "Request Asset Tracking".
+- **Then** the request is stored in a `pending_assets` queue for administrative review and automated backfilling.
+
+#### Story 4.3: Mock Data Eviction & Service Hardening
+
+As a developer, I want to replace all logic that uses hardcoded mock data for prices and totals, so that the application is production-ready for live user data.
+**Acceptance Criteria:**
+
+- **Given** the `PortfoliosService` and `AssetService`.
+- **When** calculating net worth or fetching price data.
+- **Then** every value is derived from a real database record or external API call with caching.
+
+#### Story 4.4: Data Source Reliability & Staleness Controls
+
+As a user, I want to see clear visual cues if my asset data is stale or if a provider is disconnected, so that I can make informed financial decisions.
+**Acceptance Criteria:**
+
+- **Given** an Asset Detail or Portfolio page.
+- **When** data is older than 5 minutes.
+- **Then** a "Stale Data" banner or indicator appears with a refresh trigger.
+
+### Epic 5: Automated Exchange Sync & Connections
 
 Automate portfolio tracking by enabling zero-maintenance syncing for crypto holdings via Binance and OKX APIs, and provide a centralized hub for managing external provider connections.
 **FRs covered:** FR7, FR11
 
-#### Story 4.1: Binance API Sync (Read-Only)
+#### Story 5.1: Binance API Sync (Read-Only)
 
 As a user, I want to connect my Binance account via API keys (read-only), so that my spot balances are automatically tracked.
 **Acceptance Criteria:**
@@ -217,7 +259,7 @@ As a user, I want to connect my Binance account via API keys (read-only), so tha
 - **When** I enter valid read-only Binance API keys.
 - **Then** the system successfully fetches and displays my current spot balances.
 
-#### Story 4.2: OKX API Sync (Read-Only)
+#### Story 5.2: OKX API Sync (Read-Only)
 
 As a user, I want to connect my OKX account via API keys, so that my holdings are automatically synchronized.
 **Acceptance Criteria:**
@@ -226,7 +268,7 @@ As a user, I want to connect my OKX account via API keys, so that my holdings ar
 - **When** I enter valid OKX API keys.
 - **Then** the system successfully synchronizes my balances.
 
-#### Story 4.3: Connections Management Hub
+#### Story 5.3: Connections Management Hub
 
 As a user, I want a centralized "Connections" page to manage all my external API integrations, so that I can easily see what's connected.
 **Acceptance Criteria:**
@@ -235,7 +277,7 @@ As a user, I want a centralized "Connections" page to manage all my external API
 - **When** I navigate to "Connections".
 - **Then** I see status cards for each provider with "Connected/Disconnected" indicators.
 
-#### Story 4.4: Background Sync & Polling (60s)
+#### Story 5.4: Background Sync & Polling (60s)
 
 As a user, I want my connected exchange balances to refresh automatically in the background, so that my portfolio is always up to date.
 **Acceptance Criteria:**
@@ -244,12 +286,12 @@ As a user, I want my connected exchange balances to refresh automatically in the
 - **When** the system is active.
 - **Then** it performs a background refresh every 60 seconds.
 
-### Epic 5: Premium Features & Monetization
+### Epic 6: Premium Features & Monetization
 
 Launch the core SaaS business model, including tier limits, AI-powered personalized insights, and integrated SePay payments for domestic and international users.
 **FRs covered:** FR5, FR12, FR13
 
-#### Story 5.1: Freemium Tiers & Asset Limits
+#### Story 6.1: Freemium Tiers & Asset Limits
 
 As a product owner, I want to restrict free users to 1 portfolio and 20 assets, so that I can encourage conversions to the paid "Pro" tier.
 **Acceptance Criteria:**
@@ -258,7 +300,7 @@ As a product owner, I want to restrict free users to 1 portfolio and 20 assets, 
 - **When** they attempt to create a second portfolio or add their 21st asset.
 - **Then** a modal appears informing them of the limit and offering an upgrade path.
 
-#### Story 5.2: SePay Payment Integration (Domestic & International)
+#### Story 6.2: SePay Payment Integration (Domestic & International)
 
 As a user, I want to pay for a subscription using SePay (supporting VND/USD), so that I can access premium features without limits.
 **Acceptance Criteria:**
@@ -267,7 +309,7 @@ As a user, I want to pay for a subscription using SePay (supporting VND/USD), so
 - **When** I select a plan and complete the SePay checkout.
 - **Then** the backend receives a verified webhook and instantly upgrades my account to the "Pro" tier.
 
-#### Story 5.3: AI-Powered Portfolio Insights (Gemini)
+#### Story 6.3: AI-Powered Portfolio Insights (Gemini)
 
 As a paid user, I want to receive personalized market commentary and portfolio analysis via the Gemini API, so that I can get deeper insights into my investment strategy.
 **Acceptance Criteria:**
@@ -276,7 +318,7 @@ As a paid user, I want to receive personalized market commentary and portfolio a
 - **When** they click "Generate Insights".
 - **Then** the system analyzes their holdings and provides a natural language summary of performance and market risks.
 
-#### Story 5.4: Admin Reconciliation Dashboard
+#### Story 6.4: Admin Reconciliation Dashboard
 
 As a system administrator, I want to see a list of recent payments and webhook events with their status, so that I can reconcile any delivery failures or payment anomalies.
 **Acceptance Criteria:**

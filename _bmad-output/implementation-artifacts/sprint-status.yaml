@@ -60,18 +60,25 @@ development_status:
   3-2-professional-technical-indicators: done
   3-3-calculation-methodology-data-transparency: done
   3-4-asset-performance-dashboard: done
-  epic-3-retrospective: optional
+  epic-3-retrospective: done
 
   epic-4: backlog
-  4-1-binance-api-sync-read-only: backlog
-  4-2-okx-api-sync-read-only: backlog
-  4-3-connections-management-hub: backlog
-  4-4-background-sync-polling-60s: backlog
+  4-1-cross-provider-asset-discovery: backlog
+  4-2-asset-request-capture-queue: backlog
+  4-3-mock-data-eviction-service-hardening: backlog
+  4-4-data-source-reliability-staleness-controls: backlog
   epic-4-retrospective: optional
 
   epic-5: backlog
-  5-1-freemium-tiers-asset-limits: backlog
-  5-2-sepay-payment-integration-domestic-international: backlog
-  5-3-ai-powered-portfolio-insights-gemini: backlog
-  5-4-admin-reconciliation-dashboard: backlog
+  5-1-binance-api-sync-read-only: backlog
+  5-2-okx-api-sync-read-only: backlog
+  5-3-connections-management-hub: backlog
+  5-4-background-sync-polling-60s: backlog
   epic-5-retrospective: optional
+
+  epic-6: backlog
+  6-1-freemium-tiers-asset-limits: backlog
+  6-2-sepay-payment-integration-domestic-international: backlog
+  6-3-ai-powered-portfolio-insights-gemini: backlog
+  6-4-admin-reconciliation-dashboard: backlog
+  epic-6-retrospective: optional

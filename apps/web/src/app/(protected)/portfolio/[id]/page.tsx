@@ -11,7 +11,17 @@ import { AddAssetModal } from "@/features/transactions/add-asset-modal";
 import { PerformanceDashboard } from "@/features/analytics/performance-dashboard";
 import { Button } from "@workspace/ui/components/button";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@workspace/ui/components/tabs";
-import { ChevronLeft, AlertCircle, Plus } from "lucide-react";
+import {
+  ChevronLeft,
+  AlertCircle,
+  Plus,
+  TrendingUp,
+  TrendingDown,
+  Wallet,
+  BarChart3,
+  PieChart,
+  List,
+} from "lucide-react";
 import {
   Empty,
   EmptyHeader,
@@ -37,7 +47,13 @@ export default function PortfolioDetailPage() {
   if (isLoading) {
     return (
       <div className="p-8">
-        <div className="animate-pulse h-64 bg-zinc-900 rounded-xl" />
+        <div className="animate-pulse space-y-6">
+          <div className="h-24 bg-muted rounded-xl" />
+          <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
+            <div className="h-64 bg-muted rounded-xl lg:col-span-2" />
+            <div className="h-64 bg-muted rounded-xl" />
+          </div>
+        </div>
       </div>
     );
   }
@@ -48,7 +64,7 @@ export default function PortfolioDetailPage() {
         <Empty>
           <EmptyHeader>
             <EmptyMedia variant="icon">
-              <AlertCircle className="h-6 w-6 text-red-500" />
+              <AlertCircle className="h-6 w-6 text-destructive" />
             </EmptyMedia>
             <EmptyTitle>Portfolio not found</EmptyTitle>
             <EmptyDescription>
@@ -75,127 +91,176 @@ export default function PortfolioDetailPage() {
     }).format(value);
   };
 
+  // Calculate total gain/loss (mock - ideally from API)
+  const totalGain = portfolio.netWorth * 0.12; // Example: 12% gain
+  const isPositive = totalGain >= 0;
+
   return (
     <div className="flex h-full flex-col">
-      {/* Top Bar: Portfolio Header - Glassmorphic */}
-      <div className="border-b border-border/50 py-6 bg-background/60 backdrop-blur-md sticky top-0 z-10 transition-colors duration-300">
-        <div className="mx-auto max-w-7xl px-4">
+      {/* Header */}
+      <header className="border-b border-border bg-background/80 backdrop-blur-sm sticky top-0 z-10">
+        <div className="mx-auto max-w-7xl px-6 py-5">
+          {/* Breadcrumb */}
           <Breadcrumb className="mb-4">
-            <BreadcrumbList>
+            <BreadcrumbList className="text-sm">
               <BreadcrumbItem>
                 <BreadcrumbLink asChild>
-                  <Link href="/dashboard" className="hover:text-foreground transition-colors">
+                  <Link
+                    href="/dashboard"
+                    className="text-muted-foreground hover:text-foreground transition-colors"
+                  >
                     Dashboard
                   </Link>
                 </BreadcrumbLink>
               </BreadcrumbItem>
-              <BreadcrumbSeparator />
+              <BreadcrumbSeparator className="text-muted-foreground/50" />
               <BreadcrumbItem>
-                <BreadcrumbPage className="text-emerald-400 font-medium">
+                <BreadcrumbPage className="text-foreground font-medium">
                   {portfolio.name}
                 </BreadcrumbPage>
               </BreadcrumbItem>
             </BreadcrumbList>
           </Breadcrumb>
 
-          <div className="flex items-center justify-between">
+          {/* Portfolio Info Row */}
+          <div className="flex flex-wrap items-start justify-between gap-6">
             <div className="flex items-center gap-4">
-              <div>
-                <h1 className="text-3xl font-bold font-sans tracking-tight text-foreground mb-1">
+              {/* Portfolio Icon */}
+              <div className="flex h-14 w-14 items-center justify-center rounded-xl bg-linear-to-br from-primary/20 to-primary/5 text-primary ring-1 ring-primary/20">
+                <Wallet className="h-6 w-6" />
+              </div>
+
+              {/* Portfolio Details */}
+              <div className="space-y-1">
+                <h1 className="text-2xl font-bold text-foreground tracking-tight">
                   {portfolio.name}
                 </h1>
                 <p className="text-sm text-muted-foreground">
-                  {portfolio.description || "No description"}
+                  {portfolio.description || "Multi-asset investment portfolio"}
                 </p>
               </div>
             </div>
 
+            {/* Net Worth & Action */}
             <div className="flex items-center gap-6">
-              {/* Summary Stats */}
-              <div className="flex flex-col items-end">
-                <span className="mb-px text-xs font-bold text-muted-foreground uppercase tracking-wider">
+              <div className="text-right">
+                <p className="text-xs text-muted-foreground font-medium uppercase tracking-wide mb-1">
                   Net Worth
-                </span>
-                <div className="text-right">
-                  <span className="font-sans text-3xl font-bold tracking-tight text-foreground">
+                </p>
+                <div className="flex items-baseline gap-2">
+                  <span className="text-3xl font-bold text-foreground tabular-nums">
                     {formatCurrency(portfolio.netWorth)}
+                  </span>
+                  <span
+                    className={`flex items-center gap-0.5 text-sm font-medium ${isPositive ? "text-emerald-600 dark:text-emerald-400" : "text-rose-600 dark:text-rose-400"}`}
+                  >
+                    {isPositive ? (
+                      <TrendingUp className="h-4 w-4" />
+                    ) : (
+                      <TrendingDown className="h-4 w-4" />
+                    )}
+                    {isPositive ? "+" : ""}
+                    {formatCurrency(totalGain)}
                   </span>
                 </div>
               </div>
 
               <Button
                 onClick={() => setIsAddAssetOpen(true)}
-                className="bg-emerald-600 hover:bg-emerald-500 text-white shadow-lg shadow-emerald-500/20 transition-all hover:scale-105 rounded-full font-medium"
+                className="bg-primary hover:bg-primary/90 text-primary-foreground shadow-sm font-medium gap-2"
               >
-                <Plus className="mr-2 h-4 w-4" /> Add Asset
+                <Plus className="h-4 w-4" /> Add Asset
               </Button>
             </div>
           </div>
         </div>
-      </div>
+      </header>
 
-      {/* Main Content: Scrollable */}
-      <div className="flex-1 overflow-y-auto p-4 md:p-8">
+      {/* Main Content */}
+      <main className="flex-1 overflow-y-auto p-6">
         <div className="mx-auto max-w-7xl">
           <Tabs defaultValue="overview" className="space-y-6">
-            <TabsList className="bg-muted/10 border border-border/10 p-1 rounded-xl">
+            {/* Tab Navigation */}
+            <TabsList className="bg-muted/50 border border-border p-1 rounded-lg h-auto">
               <TabsTrigger
                 value="overview"
-                className="rounded-lg data-[state=active]:bg-background data-[state=active]:text-foreground data-[state=active]:shadow-sm"
+                className="rounded-md px-4 py-2 text-sm font-medium data-[state=active]:bg-background data-[state=active]:text-foreground data-[state=active]:shadow-sm gap-2"
               >
+                <BarChart3 className="h-4 w-4" />
                 Overview
               </TabsTrigger>
               <TabsTrigger
                 value="performance"
-                className="rounded-lg data-[state=active]:bg-white/10 data-[state=active]:text-white data-[state=active]:shadow-none"
+                className="rounded-md px-4 py-2 text-sm font-medium data-[state=active]:bg-background data-[state=active]:text-foreground data-[state=active]:shadow-sm gap-2"
               >
+                <TrendingUp className="h-4 w-4" />
                 Performance
               </TabsTrigger>
               <TabsTrigger
                 value="holdings"
-                className="rounded-lg data-[state=active]:bg-background data-[state=active]:text-foreground data-[state=active]:shadow-sm"
+                className="rounded-md px-4 py-2 text-sm font-medium data-[state=active]:bg-background data-[state=active]:text-foreground data-[state=active]:shadow-sm gap-2"
               >
+                <List className="h-4 w-4" />
                 Holdings
               </TabsTrigger>
             </TabsList>
 
+            {/* Overview Tab */}
             <TabsContent
               value="overview"
-              className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500"
+              className="space-y-6 animate-in fade-in slide-in-from-bottom-2 duration-300"
             >
-              {/* Top Row: Charts */}
+              {/* Charts Row */}
               <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
-                <div className="glass-card lg:col-span-2 p-1 overflow-hidden">
-                  <PortfolioHistoryChart portfolioId={id} />
+                {/* History Chart */}
+                <div className="lg:col-span-2 rounded-xl border border-border bg-card overflow-hidden">
+                  <div className="flex items-center gap-2 px-5 py-4 border-b border-border">
+                    <BarChart3 className="h-4 w-4 text-primary" />
+                    <h3 className="font-medium text-foreground">Portfolio History</h3>
+                  </div>
+                  <div className="p-1">
+                    <PortfolioHistoryChart portfolioId={id} />
+                  </div>
                 </div>
-                <div className="glass-card p-4 flex items-center justify-center">
-                  <AllocationDonut portfolioId={id} />
+
+                {/* Allocation Donut */}
+                <div className="rounded-xl border border-border bg-card overflow-hidden">
+                  <div className="flex items-center gap-2 px-5 py-4 border-b border-border">
+                    <PieChart className="h-4 w-4 text-primary" />
+                    <h3 className="font-medium text-foreground">Allocation</h3>
+                  </div>
+                  <div className="p-4 flex items-center justify-center">
+                    <AllocationDonut portfolioId={id} />
+                  </div>
                 </div>
               </div>
 
-              {/* Bottom Row: Holdings Table */}
-              <div className="glass-card overflow-hidden">
+              {/* Holdings Table */}
+              <div className="rounded-xl border border-border bg-card overflow-hidden">
                 <UnifiedHoldingsTable portfolioId={id} onAddAsset={() => setIsAddAssetOpen(true)} />
               </div>
             </TabsContent>
 
+            {/* Performance Tab */}
             <TabsContent
               value="performance"
-              className="glass-card p-6 animate-in fade-in slide-in-from-bottom-4 duration-500"
+              className="rounded-xl border border-border bg-card p-6 animate-in fade-in slide-in-from-bottom-2 duration-300"
             >
               <PerformanceDashboard portfolioId={id} onAddAsset={() => setIsAddAssetOpen(true)} />
             </TabsContent>
 
+            {/* Holdings Tab */}
             <TabsContent
               value="holdings"
-              className="glass-card overflow-hidden animate-in fade-in slide-in-from-bottom-4 duration-500"
+              className="rounded-xl border border-border bg-card overflow-hidden animate-in fade-in slide-in-from-bottom-2 duration-300"
             >
               <UnifiedHoldingsTable portfolioId={id} onAddAsset={() => setIsAddAssetOpen(true)} />
             </TabsContent>
           </Tabs>
         </div>
-      </div>
+      </main>
 
+      {/* Add Asset Modal */}
       <AddAssetModal
         isOpen={isAddAssetOpen}
         onClose={() => setIsAddAssetOpen(false)}

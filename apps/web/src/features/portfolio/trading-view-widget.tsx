@@ -1,7 +1,9 @@
 import React, { useEffect, useRef, memo } from "react";
+import { useTheme } from "next-themes";
 
 function TradingViewWidget({ symbol }: { symbol: string }) {
   const container = useRef<HTMLDivElement>(null);
+  const { resolvedTheme } = useTheme();
 
   useEffect(() => {
     if (!container.current) return;
@@ -33,7 +35,7 @@ function TradingViewWidget({ symbol }: { symbol: string }) {
       symbol: getTradingViewSymbol(),
       interval: "D",
       timezone: "Etc/UTC",
-      theme: "dark",
+      theme: resolvedTheme === "dark" ? "dark" : "light",
       style: "1",
       locale: "en",
       allow_symbol_change: true,
@@ -42,7 +44,7 @@ function TradingViewWidget({ symbol }: { symbol: string }) {
     });
 
     container.current.appendChild(script);
-  }, [symbol]);
+  }, [symbol, resolvedTheme]);
 
   return <div className="tradingview-widget-container h-full w-full" ref={container} />;
 }

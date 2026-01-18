@@ -98,6 +98,47 @@ export type Database = {
           },
         ];
       };
+      portfolio_snapshots: {
+        Row: {
+          created_at: string;
+          id: string;
+          metadata: Json | null;
+          net_worth: number;
+          portfolio_id: string;
+          timestamp: string;
+          total_cost: number;
+          user_id: string;
+        };
+        Insert: {
+          created_at?: string;
+          id?: string;
+          metadata?: Json | null;
+          net_worth: number;
+          portfolio_id: string;
+          timestamp?: string;
+          total_cost: number;
+          user_id: string;
+        };
+        Update: {
+          created_at?: string;
+          id?: string;
+          metadata?: Json | null;
+          net_worth?: number;
+          portfolio_id?: string;
+          timestamp?: string;
+          total_cost?: number;
+          user_id?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "portfolio_snapshots_portfolio_id_fkey";
+            columns: ["portfolio_id"];
+            isOneToOne: false;
+            referencedRelation: "portfolios";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
       portfolios: {
         Row: {
           base_currency: string;
@@ -480,6 +521,12 @@ export type UpdateAssets = Database["public"]["Tables"]["assets"]["Update"];
 export type PendingAssets = Database["public"]["Tables"]["pending_assets"]["Row"];
 export type InsertPendingAssets = Database["public"]["Tables"]["pending_assets"]["Insert"];
 export type UpdatePendingAssets = Database["public"]["Tables"]["pending_assets"]["Update"];
+
+export type PortfolioSnapshots = Database["public"]["Tables"]["portfolio_snapshots"]["Row"];
+export type InsertPortfolioSnapshots =
+  Database["public"]["Tables"]["portfolio_snapshots"]["Insert"];
+export type UpdatePortfolioSnapshots =
+  Database["public"]["Tables"]["portfolio_snapshots"]["Update"];
 
 export type Portfolios = Database["public"]["Tables"]["portfolios"]["Row"];
 export type InsertPortfolios = Database["public"]["Tables"]["portfolios"]["Insert"];

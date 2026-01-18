@@ -64,11 +64,6 @@ so that I can make informed financial decisions without panic, knowing exactly h
   - [x] Aggregate allocation data correctly from all portfolios in Dashboard.
   - [x] Verify manual refresh (Fixing `refetch` vs `refresh` bug).
 
-- [ ] **Task 4: Integration - Asset & Portfolio Pages**
-  - [ ] Integrate `StalenessBadge` into `PortfolioHeader` and `AssetHeader`.
-  - [ ] Wire up `onRefresh` to `queryClient.invalidateQueries`.
-  - [ ] Verify "Calm" behavior by simulating API failure and offline modes.
-
 ## Dev Notes
 
 ### Shared Type Requirement

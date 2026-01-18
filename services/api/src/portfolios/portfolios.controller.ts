@@ -23,10 +23,12 @@ import {
   AssetDetailsResponseDto,
   ApiResponse,
   createApiResponse,
-} from '@workspace/shared-types/api';
+  PortfolioHistoryResponseDto,
+} from '@workspace/shared-types';
 import { Portfolio } from './portfolio.entity';
 import { AuthGuard } from './guards/auth.guard';
 import { UserId } from './decorators/user-id.decorator';
+import { SnapshotService } from './snapshot.service';
 
 /**
  * Controller for portfolio management endpoints
@@ -35,7 +37,10 @@ import { UserId } from './decorators/user-id.decorator';
 @Controller('portfolios')
 @UseGuards(AuthGuard)
 export class PortfoliosController {
-  constructor(private readonly portfoliosService: PortfoliosService) {}
+  constructor(
+    private readonly portfoliosService: PortfoliosService,
+    private readonly snapshotService: SnapshotService,
+  ) {}
 
   /**
    * POST /portfolios - Create a new portfolio
@@ -84,8 +89,22 @@ export class PortfoliosController {
   }
 
   /**
-   * GET /portfolios/:id/holdings - Get holdings for specific portfolio
+   * GET /portfolios/:id/history - Get portfolio history
    */
+  @Get(':id/history')
+  async getHistory(
+    @UserId() userId: string,
+    @Param('id', ParseUUIDPipe) id: string,
+    @Query('range') range: '1D' | '1W' | '1M' | '3M' | '1Y' | 'ALL' = '1M',
+  ): Promise<ApiResponse<PortfolioHistoryResponseDto['data']>> {
+    const { data, meta } = await this.snapshotService.getHistory(
+      userId,
+      id,
+      range,
+    );
+    return createApiResponse(data, meta.staleness || new Date());
+  }
+
   /**
    * GET /portfolios/:id/assets/:symbol/details - Get details for asset in portfolio
    */
@@ -126,6 +145,7 @@ export class PortfoliosController {
 
   /**
    * GET /portfolios/:id - Get a specific portfolio by ID
+   * Also triggers a snapshot capture if the last one was > 24h ago
    */
   @Get(':id')
   async findOne(
@@ -139,6 +159,15 @@ export class PortfoliosController {
       id,
       refresh,
     );
+
+    // Lazy Snapshot Trigger (Fire and Forget)
+    // We don't await this to keep the API response fast
+    this.snapshotService.shouldCapture(id).then((should) => {
+      if (should) {
+        this.snapshotService.captureSnapshot(userId, id, 'user_view');
+      }
+    });
+
     return createApiResponse(data, meta.staleness);
   }
 

@@ -11,16 +11,14 @@ import {
   Transactions,
   Assets,
   Portfolios,
-} from '@workspace/shared-types/database';
-import { Decimal } from 'decimal.js';
-import { CreatePortfolioDto, UpdatePortfolioDto } from './dto';
-import {
   HoldingDto,
   CalculationMethod,
   PortfolioSummaryDto,
   CreateTransactionDto,
   AssetDetailsResponseDto,
-} from '@workspace/shared-types/api';
+} from '@workspace/shared-types';
+import { Decimal } from 'decimal.js';
+import { CreatePortfolioDto, UpdatePortfolioDto } from './dto';
 import { Portfolio } from './portfolio.entity';
 import { CacheService } from '../common/cache';
 import { MarketDataService, QuoteWithMetadata } from '../market-data';

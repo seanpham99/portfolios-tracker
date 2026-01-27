@@ -61,7 +61,7 @@ NFR8: **Resiliency** — Exponential backoff for external APIs; Idempotent webho
 
 - **Monorepo Architecture:** Turborepo 2.7.4 with pnpm 10.26.2.
 - **ESM-First Imports:** Internal imports MUST include the `.js` extension.
-- **Shared Package Strategy:** Usage of `@workspace/shared-types`, `@workspace/ui`, and `@workspace/finance`.
+- **Shared Package Strategy:** Usage of `@workspace/shared-types`, `@workspace/ui`.
 - **Hybrid Read Path:** Separation of NestJS/Redis (Hot) from Clickhouse (Deep Analytics).
 
 ### PRD Completeness Assessment

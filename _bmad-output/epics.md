@@ -46,7 +46,7 @@ NFR8: Resiliency (Exponential backoff for external APIs; non-blocking "Calm" err
 
 - **Monorepo Architecture**: Turborepo 2.7.4 with pnpm 10.26.2.
 - **ESM-First Imports**: Internal imports MUST include the `.js` extension.
-- **Shared Package Usage**: Use `@workspace/shared-types` (DTOs), `@workspace/ui` (Primitives), and `@workspace/finance` (Logic).
+- **Shared Package Usage**: Use `@workspace/shared-types` (DTOs), `@workspace/ui` (Primitives).
 - **Feature-Based UI**: Frontend logic located in `apps/web/src/features/`.
 - **Hybrid Read Path**: Separation of fast user feedback (NestJS/Redis) from deep analytics (Clickhouse).
 - **Project Initialization**: Use `npx create-turbo@latest ./ --example kitchen-sink` as the first implementation step.

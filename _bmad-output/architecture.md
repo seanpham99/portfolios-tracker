@@ -42,7 +42,7 @@ Architecture must support high performance (P95 < 200ms) with a specific polling
 - **Brownfield Integration:** Must seamlessly extend existing Airflow/ClickHouse data pipeline.
 - **Frontend:** Next.js 16.1.2 (React 19.2.3), Tailwind CSS 4, Radix UI/Shadcn UI, TanStack Query 5, Recharts.
 - **Backend:** NestJS 11.1.10, Swagger 11.2.3 (OpenAPI), Supabase JS 2.89, Upstash Redis 1.36, CCXT 4.5.29.
-- **Shared Packages:** `@workspace/shared-types` (DTOs/Schemas), `@workspace/ui` (Primitives), `@workspace/finance` (Logic).
+- **Shared Packages:** `@workspace/shared-types` (DTOs/Schemas), `@workspace/ui` (Primitives).
 - **Core Infrastructure:** Turborepo 2.7.4 with pnpm 10.26.2. Supabase (Auth/Postgres), Upstash (Redis), ClickHouse (Analytics).
 
 ### Cross-Cutting Concerns Identified
@@ -90,7 +90,7 @@ Next.js 16 with Turbopack/Webpack (optimized via Turborepo 2.7.4 caching).
 Frontend: Vitest + @testing-library/react. Backend: Jest. E2E: Playwright.
 
 **Code Organization:**
-Modular monorepo structure with `@workspace/shared-types`, `@workspace/ui`, and shared calculation logic in `@workspace/finance`.
+Modular monorepo structure with `@workspace/shared-types`, `@workspace/ui`.
 
 **Development Experience:**
 Fast HMR, unified linting/formatting (ESLint/Prettier), and centralized dependency management.
@@ -140,7 +140,6 @@ Fast HMR, unified linting/formatting (ESLint/Prettier), and centralized dependen
 ### Frontend Architecture
 
 - **State Management:** Zustand (Local app state) + TanStack Query (Server state orchestration).
-- **Component Logic:** Shared business logic for calculations (FIFO/Weighted Avg) in a dedicated `@workspace/finance` package.
 
 ### Decision Impact Analysis
 
@@ -185,7 +184,6 @@ The `PortfolioCalculator` shared service depends on the unified `Trade[]` type f
 
 **Project Organization:**
 
-- **Shared Logic:** All financial math (FIFO, FX gains) **MUST** live in `@workspace/finance`.
 - **Shared Types:** All DTOs and Database models live in `@workspace/shared-types`. AI Agents **MUST** use `supabase-types.ts` via the `@workspace/shared-types/database` export for all entity definitions to ensure consistency with the schema.
 - **UI Components:** Reusable primitive components live in `@workspace/ui`.
 
@@ -243,7 +241,7 @@ The `PortfolioCalculator` shared service depends on the unified `Trade[]` type f
 - Use shared `@workspace/` packages for types and finance logic.
 - Follow the API Response Envelope for all new endpoints.
 - **ESM-First Imports**: Internal imports must include the `.js` extension.
-- Never use floating point math for money; use string-based decimal logic in `@workspace/finance`.
+- Never use floating point math for money; use string-based decimal logic.
 
 **Pattern Enforcement:**
 
@@ -274,7 +272,6 @@ portfolios-tracker/
 │   │   │   └── common/
 │   │   └── package.json
 ├── packages/
-│   ├── finance/                 # @workspace/finance: FIFO/WAP, FX logic
 │   ├── shared-types/            # @workspace/shared-types: DTOs/Schemas
 │   ├── ui/                      # @workspace/ui: Radix/Shadcn primitives
 |   ├── typescript-config/       # Shared typescript configs
@@ -305,7 +302,7 @@ portfolios-tracker/
 
 **Feature/Epic Mapping:**
 
-- **Multi-Asset Support (VN, Global, Crypto):** Logic in `@workspace/finance`, ingestion in `apps/api/src/portfolios`.
+- **Multi-Asset Support (VN, Global, Crypto):** Logic in `apps/api`.
 - **Unified Dashboard:** UI in `apps/web/src/features/dashboard`, server state in `apps/web/src/hooks`.
 
 **Cross-Cutting Concerns:**

@@ -46,7 +46,6 @@ portfolios-tracker/
 ├── services/
 │   └── api/                     # NestJS Backend API
 ├── packages/
-│   ├── finance/                 # @workspace/finance: Core financial logic (FIFO, FX)
 │   ├── shared-types/            # @workspace/shared-types: Shared DTOs & Schemas
 │   ├── ui/                      # @workspace/ui: Radix/Shadcn primitives
 │   ├── typescript-config/       # Shared TS configurations
@@ -96,7 +95,7 @@ portfolios-tracker/
 ## 🏗️ Architectural Principles
 
 - **ESM-First**: All internal imports must include the `.js` extension.
-- **Financial Accuracy**: No floating point math for money; all calculations use string-based decimal logic in `@workspace/finance`.
+- **Financial Accuracy**: No floating point math for money; all calculations use string-based decimal logic.
 - **API Response Envelope**: Consistent response format `{ success, data, error, meta: { staleness } }`.
 - **Security First**: Supabase RLS enforced at the database level; Least Privilege Principle for all service roles.
 

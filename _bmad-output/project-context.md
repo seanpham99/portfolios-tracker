@@ -59,7 +59,6 @@ _This file contains critical rules and patterns that AI agents must follow when 
 
 - **Standard Naming**: `kebab-case` for files/folders, `PascalCase` for classes/components, `camelCase` for vars/funcs.
 - **Formatting**: Double quotes, `printWidth: 100`, semi-colons required. `_` prefix for unused vars.
-- **Documentation**: JSDoc **REQUIRED** for any complex calculation logic in `@workspace/finance` or utilities.
 - **Clean Registry**: Use shared configs from `packages/eslint-config`.
 
 ### Development Workflow Rules

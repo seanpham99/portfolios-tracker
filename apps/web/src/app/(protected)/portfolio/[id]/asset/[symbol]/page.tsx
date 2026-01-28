@@ -173,6 +173,13 @@ export default function AssetDetailPage() {
                   <span className="font-mono">{symbol}</span>
                   <span className="h-1 w-1 rounded-full bg-muted-foreground/30" />
                   <span>{details.market}</span>
+                  <span className="h-1 w-1 rounded-full bg-muted-foreground/30" />
+                  <Link
+                    href={`/asset/${symbol}`}
+                    className="flex items-center gap-1 text-muted-foreground hover:text-foreground transition-colors"
+                  >
+                    View Full Asset <ExternalLink className="h-3 w-3" />
+                  </Link>
                 </div>
               </div>
             </div>

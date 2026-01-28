@@ -65,14 +65,14 @@ export function UnifiedHoldingsTable({ portfolioId, onAddAsset }: UnifiedHolding
             href={`/portfolio/${portfolioId || "all"}/asset/${info.getValue()}`}
             className="flex items-center gap-3 transition-colors hover:opacity-80 group"
           >
-            <div className="flex h-8 w-8 items-center justify-center rounded-full bg-white/5 text-xs font-medium text-white group-hover:bg-white/10 transition-colors">
+            <div className="flex h-8 w-8 items-center justify-center rounded-full bg-muted/50 text-xs font-medium text-foreground group-hover:bg-muted transition-colors">
               {info.getValue()[0]}
             </div>
             <div>
-              <div className="font-medium text-white group-hover:text-emerald-400 transition-colors">
+              <div className="font-medium text-foreground group-hover:text-emerald-400 transition-colors">
                 {info.getValue()}
               </div>
-              <div className="text-xs text-zinc-500">{info.row.original.name}</div>
+              <div className="text-xs text-muted-foreground">{info.row.original.name}</div>
             </div>
           </Link>
         ),
@@ -109,7 +109,7 @@ export function UnifiedHoldingsTable({ portfolioId, onAddAsset }: UnifiedHolding
       columnHelper.accessor("price", {
         header: () => <div className="text-right">Price</div>,
         cell: (info) => (
-          <div className="text-right tabular-nums text-zinc-300">
+          <div className="text-right tabular-nums text-muted-foreground">
             {info.getValue()
               ? new Intl.NumberFormat("en-US", {
                   style: "currency",
@@ -124,7 +124,7 @@ export function UnifiedHoldingsTable({ portfolioId, onAddAsset }: UnifiedHolding
         header: () => <div className="text-right">24h Change</div>,
         cell: (info) => {
           const val = info.getValue();
-          if (val === undefined) return <div className="text-right text-zinc-500">-</div>;
+          if (val === undefined) return <div className="text-right text-muted-foreground">-</div>;
           return (
             <div
               className={`flex items-center justify-end gap-1 ${val >= 0 ? "text-emerald-400" : "text-rose-400"}`}
@@ -147,7 +147,7 @@ export function UnifiedHoldingsTable({ portfolioId, onAddAsset }: UnifiedHolding
           const px = info.row.original.price;
           const computed = val ?? (qty && px ? qty * px : undefined);
           return (
-            <div className="text-right font-medium tabular-nums text-white">
+            <div className="text-right font-medium tabular-nums text-foreground">
               {computed
                 ? new Intl.NumberFormat("en-US", {
                     style: "currency",
@@ -168,7 +168,7 @@ export function UnifiedHoldingsTable({ portfolioId, onAddAsset }: UnifiedHolding
         cell: (info) => {
           const val = info.getValue();
 
-          if (val === undefined) return <div className="text-right text-zinc-500">-</div>;
+          if (val === undefined) return <div className="text-right text-muted-foreground">-</div>;
 
           return (
             <div className="flex items-center justify-end gap-1.5">
@@ -202,22 +202,22 @@ export function UnifiedHoldingsTable({ portfolioId, onAddAsset }: UnifiedHolding
   });
 
   return (
-    <div className="w-full rounded-xl border border-white/5 bg-zinc-900/50">
-      <div className="flex items-center justify-between border-b border-white/5 px-6 py-4">
-        <h3 className="font-serif text-lg font-light text-white">Holdings</h3>
+    <div className="w-full rounded-xl border border-border-subtle bg-surface/50">
+      <div className="flex items-center justify-between border-b border-border-subtle px-6 py-4">
+        <h3 className="font-sans text-lg font-semibold text-foreground">Holdings</h3>
         <div className="flex items-center gap-3">
           {onAddAsset && (
             <Button
               variant="outline"
               size="sm"
               onClick={onAddAsset}
-              className="h-8 gap-1.5 border-white/10 bg-white/5 text-zinc-300 hover:bg-white/10 hover:text-white"
+              className="h-8 gap-1.5 border-border bg-surface/50 text-muted-foreground hover:bg-surface-elevated hover:text-foreground"
             >
               <Plus className="h-3.5 w-3.5" />
               Add Asset
             </Button>
           )}
-          <button className="flex items-center gap-1.5 rounded-lg border border-white/10 bg-white/5 px-3 py-1.5 text-xs font-medium text-zinc-300 hover:bg-white/10">
+          <button className="flex items-center gap-1.5 rounded-lg border border-border bg-surface/50 px-3 py-1.5 text-xs font-medium text-muted-foreground hover:bg-surface-elevated hover:text-foreground">
             <TrendingUp className="h-3.5 w-3.5" />
             Analytics
           </button>
@@ -225,15 +225,15 @@ export function UnifiedHoldingsTable({ portfolioId, onAddAsset }: UnifiedHolding
       </div>
 
       {/* Filters (AC 5) */}
-      <div className="flex items-center gap-2 border-b border-white/5 px-6 py-3 bg-white/2">
-        <Filter className="w-3.5 h-3.5 text-zinc-500" />
-        <span className="text-xs font-medium text-zinc-500 mr-2">Filter by:</span>
+      <div className="flex items-center gap-2 border-b border-border-subtle px-6 py-3 bg-muted/20">
+        <Filter className="w-3.5 h-3.5 text-muted-foreground" />
+        <span className="text-xs font-medium text-muted-foreground mr-2">Filter by:</span>
         {(["ALL", "VN", "US", "CRYPTO"] as const).map((f) => (
           <button
             key={f}
             onClick={() => setFilter(f)}
             className={`px-2.5 py-1 text-xs font-medium rounded-full transition-colors ${
-              filter === f ? "bg-white/10 text-white" : "text-zinc-500 hover:text-zinc-300"
+              filter === f ? "bg-muted text-foreground" : "text-muted-foreground hover:text-foreground"
             }`}
           >
             {f === "ALL" ? "All Assets" : f === "VN" ? "🇻🇳 VN" : f === "US" ? "🇺🇸 US" : "₿ Crypto"}
@@ -245,11 +245,11 @@ export function UnifiedHoldingsTable({ portfolioId, onAddAsset }: UnifiedHolding
         <table className="w-full text-left text-sm">
           <thead>
             {table.getHeaderGroups().map((headerGroup) => (
-              <tr key={headerGroup.id} className="border-b border-white/5 text-xs text-zinc-500">
+              <tr key={headerGroup.id} className="border-b border-border-subtle text-xs text-muted-foreground">
                 {headerGroup.headers.map((header) => (
                   <th
                     key={header.id}
-                    className="px-6 py-3 font-medium cursor-pointer hover:text-zinc-300"
+                    className="px-6 py-3 font-medium cursor-pointer hover:text-foreground"
                     onClick={header.column.getToggleSortingHandler()}
                   >
                     {flexRender(header.column.columnDef.header, header.getContext())}
@@ -258,15 +258,15 @@ export function UnifiedHoldingsTable({ portfolioId, onAddAsset }: UnifiedHolding
               </tr>
             ))}
           </thead>
-          <tbody className="divide-y divide-white/5">
+          <tbody className="divide-y divide-border-subtle">
             {isLoading ? (
               <tr>
                 <td colSpan={6} className="p-0">
-                  <div className="flex items-center justify-center py-12 text-zinc-500">
+                  <div className="flex items-center justify-center py-12 text-muted-foreground">
                     <div className="animate-pulse flex items-center gap-2">
-                      <div className="h-2 w-2 rounded-full bg-zinc-500"></div>
-                      <div className="h-2 w-2 rounded-full bg-zinc-500 animation-delay-150"></div>
-                      <div className="h-2 w-2 rounded-full bg-zinc-500 animation-delay-300"></div>
+                      <div className="h-2 w-2 rounded-full bg-muted-foreground"></div>
+                      <div className="h-2 w-2 rounded-full bg-muted-foreground animation-delay-150"></div>
+                      <div className="h-2 w-2 rounded-full bg-muted-foreground animation-delay-300"></div>
                     </div>
                     <span className="ml-3">Loading holdings...</span>
                   </div>
@@ -275,12 +275,12 @@ export function UnifiedHoldingsTable({ portfolioId, onAddAsset }: UnifiedHolding
             ) : isError || holdings.length === 0 ? (
               <tr>
                 <td colSpan={6} className="p-0">
-                  <Empty className="py-12">
-                    <EmptyHeader>
-                      <EmptyMedia variant="icon" className="bg-zinc-800 text-zinc-400">
-                        <Briefcase className="h-5 w-5" />
-                      </EmptyMedia>
-                      <EmptyTitle className="text-white">No holdings yet</EmptyTitle>
+                    <Empty className="py-12">
+                      <EmptyHeader>
+                        <EmptyMedia variant="icon" className="bg-muted text-muted-foreground">
+                          <Briefcase className="h-5 w-5" />
+                        </EmptyMedia>
+                        <EmptyTitle className="text-foreground">No holdings yet</EmptyTitle>
                       <EmptyDescription>
                         Start building your portfolio by adding your first transaction.
                       </EmptyDescription>
@@ -305,7 +305,7 @@ export function UnifiedHoldingsTable({ portfolioId, onAddAsset }: UnifiedHolding
               </tr>
             ) : (
               table.getRowModel().rows.map((row) => (
-                <tr key={row.id} className="group hover:bg-white/5 transition-colors">
+                <tr key={row.id} className="group hover:bg-muted/30 transition-colors">
                   {row.getVisibleCells().map((cell) => (
                     <td key={cell.id} className="px-6 py-4">
                       {flexRender(cell.column.columnDef.cell, cell.getContext())}

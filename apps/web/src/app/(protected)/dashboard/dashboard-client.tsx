@@ -104,8 +104,8 @@ export function DashboardClient() {
     return (
       <div className="container mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-12">
         <div className="flex flex-col h-[60vh] items-center justify-center rounded-3xl border border-border/50 bg-surface/50 backdrop-blur-xl p-8 text-center">
-          <div className="bg-indigo-500/10 p-4 rounded-full mb-6">
-            <Briefcase className="h-12 w-12 text-indigo-400" />
+          <div className="bg-emerald-500/10 p-4 rounded-full mb-6">
+            <Briefcase className="h-12 w-12 text-emerald-400" />
           </div>
           <motion.div
             initial={{ scale: 0.9, opacity: 0 }}
@@ -119,7 +119,7 @@ export function DashboardClient() {
             </p>
             <Button
               size="lg"
-              className="bg-indigo-600 hover:bg-indigo-700 text-white shadow-lg shadow-indigo-500/20 px-8 py-6 text-lg rounded-full transition-all hover:scale-105"
+              className="bg-gradient-to-r from-emerald-500 to-cyan-500 hover:from-emerald-400 hover:to-cyan-400 text-white shadow-lg shadow-emerald-500/25 px-8 py-6 text-lg rounded-full transition-all hover:scale-105"
               onClick={() => setIsCreateModalOpen(true)}
             >
               <Plus className="mr-2 h-5 w-5" /> Create First Portfolio
@@ -150,7 +150,7 @@ export function DashboardClient() {
           </div>
           <Button
             size="lg"
-            className="bg-indigo-600 hover:bg-indigo-700 text-white shadow-lg shadow-indigo-500/20 transition-all hover:scale-105 rounded-full font-medium"
+            className="bg-gradient-to-r from-emerald-500 to-cyan-500 hover:from-emerald-400 hover:to-cyan-400 text-white shadow-lg shadow-emerald-500/25 transition-all hover:scale-105 rounded-full font-medium"
             onClick={() => setIsCreateModalOpen(true)}
           >
             <Plus className="mr-2 h-4 w-4" /> New Portfolio
@@ -174,7 +174,7 @@ export function DashboardClient() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.4 }}
-            className="glass-card col-span-1 md:col-span-2 relative overflow-hidden p-6 md:p-8 group hover:border-indigo-500/30 transition-all duration-500"
+            className="glass-card col-span-1 md:col-span-2 relative overflow-hidden p-6 md:p-8 group hover:border-emerald-500/30 transition-all duration-500"
           >
             <div className="relative z-10 flex flex-col h-full justify-between">
               <div>
@@ -220,8 +220,8 @@ export function DashboardClient() {
                   >
                     <defs>
                       <linearGradient id="colorTotal" x1="0" y1="0" x2="0" y2="1">
-                        <stop offset="5%" stopColor="#6366f1" stopOpacity={0.3} />
-                        <stop offset="95%" stopColor="#6366f1" stopOpacity={0} />
+                        <stop offset="5%" stopColor="#10B981" stopOpacity={0.3} />
+                        <stop offset="95%" stopColor="#10B981" stopOpacity={0} />
                       </linearGradient>
                     </defs>
                     <CartesianGrid
@@ -254,7 +254,7 @@ export function DashboardClient() {
                     <Area
                       type="monotone"
                       dataKey="value"
-                      stroke="#818cf8"
+                      stroke="#34d399"
                       strokeWidth={3}
                       fillOpacity={1}
                       fill="url(#colorTotal)"
@@ -266,7 +266,7 @@ export function DashboardClient() {
             </div>
 
             {/* Background Decoration */}
-            <div className="absolute top-0 right-0 h-[400px] w-[400px] bg-indigo-600/10 blur-[120px] rounded-full pointer-events-none" />
+            <div className="absolute top-0 right-0 h-[400px] w-[400px] bg-emerald-600/10 blur-[120px] rounded-full pointer-events-none" />
           </motion.div>
 
           {/* Side Cards Column */}

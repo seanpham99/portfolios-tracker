@@ -27,7 +27,7 @@ import {
 import {
   LayoutDashboard,
   History,
-  TrendingUp,
+  Link2,
   Settings,
   Briefcase,
   LogOut,
@@ -49,7 +49,7 @@ export function AppSidebar({ user }: AppSidebarProps) {
   const menuItems = [
     { to: "/dashboard", icon: LayoutDashboard, label: "Dashboard" },
     { to: "/history", icon: History, label: "History" },
-    { to: "/analytics", icon: TrendingUp, label: "Analytics" },
+    { to: "/connections", icon: Link2, label: "Connections" },
     { to: "/settings", icon: Settings, label: "Settings" },
   ];
 

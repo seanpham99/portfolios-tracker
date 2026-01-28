@@ -8,9 +8,15 @@ import { cn } from "@workspace/ui/lib/utils";
 import { Button } from "@workspace/ui/components/button";
 import { apiFetch } from "@/lib/api";
 
-export function AssetAutocomplete({ onSelect }: { onSelect: (asset: Assets) => void }) {
+export function AssetAutocomplete({
+  onSelect,
+  defaultValue,
+}: {
+  onSelect: (asset: Assets) => void;
+  defaultValue?: Assets | null;
+}) {
   const [open, setOpen] = React.useState(false);
-  const [selectedAsset, setSelectedAsset] = React.useState<Assets | null>(null);
+  const [selectedAsset, setSelectedAsset] = React.useState<Assets | null>(defaultValue || null);
   const [query, setQuery] = React.useState("");
   const [assets, setAssets] = React.useState<Assets[]>([]);
   const [loading, setLoading] = React.useState(false);

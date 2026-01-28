@@ -1,7 +1,8 @@
 "use client";
 
-import { useParams } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
+import { useState } from "react";
 import { useAssetDetails } from "@/api/hooks/use-asset-details";
 import { usePortfolio } from "@/features/portfolio/hooks/use-portfolios";
 import {
@@ -18,7 +19,20 @@ import {
   Percent,
   Wallet,
   Activity,
+  Plus,
+  Minus,
+  Calendar,
+  PieChart,
+  Scale,
 } from "lucide-react";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@workspace/ui/components/dialog";
+import { TransactionForm } from "@/features/transactions/transaction-form";
+import { Assets } from "@workspace/shared-types/database";
 import {
   Breadcrumb,
   BreadcrumbList,
@@ -44,7 +58,10 @@ import { MetricInfoCard, MetricKeys, type MetricKey } from "@/features/metrics";
 export default function AssetDetailPage() {
   const params = useParams<{ id: string; symbol: string }>();
   const portfolioId = params.id;
+
   const symbol = params.symbol;
+  const [isTransactionModalOpen, setIsTransactionModalOpen] = useState(false);
+  const router = useRouter();
 
   const { data: portfolioResponse } = usePortfolio(portfolioId);
   const portfolio = portfolioResponse?.data;
@@ -102,6 +119,33 @@ export default function AssetDetailPage() {
 
   const isStale = new Date().getTime() - new Date(details.last_updated).getTime() > 3600000;
   const isPositiveReturn = details.total_return_pct >= 0;
+  
+  // Computed Metrics for Phase 1 Enrichment
+  const marketValue = details.current_value || (details.total_quantity * details.current_price);
+  const portfolioPercent = portfolio?.netWorth ? (marketValue / portfolio.netWorth) * 100 : 0;
+  
+  const firstTransactionDate = transactions.length > 0 
+    ? new Date(Math.min(...transactions.map(t => new Date(t.date).getTime())))
+    : null;
+    
+  const daysHeld = firstTransactionDate 
+    ? Math.floor((new Date().getTime() - firstTransactionDate.getTime()) / (1000 * 60 * 60 * 24))
+    : 0;
+
+  // Construct partial asset object for the form
+  const initialAsset: Assets = {
+    id: details.asset_id,
+    symbol: details.symbol,
+    name_en: details.name,
+    asset_class: details.asset_class,
+    currency: details.currency,
+    market: details.market,
+  } as Assets;
+
+  const handleTransactionSuccess = () => {
+    setIsTransactionModalOpen(false);
+    router.refresh();
+  };
 
   return (
     <div className="flex h-full flex-col">
@@ -218,15 +262,53 @@ export default function AssetDetailPage() {
       {/* Main Content */}
       <main className="flex-1 overflow-y-auto p-6">
         <div className="mx-auto max-w-7xl space-y-6">
-          {/* Stats Grid */}
-          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+          
+          {/* Quick Actions Row (Phase 1) */}
+          <div className="flex flex-wrap items-center justify-between gap-4">
+            <h2 className="text-lg font-semibold text-foreground">Position Overview</h2>
+            <div className="flex items-center gap-3">
+                <Button 
+                  onClick={() => setIsTransactionModalOpen(true)}
+                  className="gap-2 bg-primary hover:bg-primary/90 text-primary-foreground shadow-md transition-all hover:scale-105"
+                >
+                  <Plus className="h-4 w-4" /> Add Transaction
+                </Button>
+            </div>
+          </div>
+
+          {/* Expanded Stats Grid (Phase 1) */}
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-8">
+            <StatCard
+              icon={<Scale className="h-4 w-4" />}
+              label="Quantity"
+              value={details.total_quantity.toLocaleString()}
+              subValue="Units owned"
+              className="xl:col-span-2"
+            />
+            <StatCard
+              icon={<DollarSign className="h-4 w-4" />}
+              label="Market Value"
+              metricKey={MetricKeys.MARKET_VALUE}
+              value={formatCurrency(marketValue)}
+              subValue={`${portfolioPercent.toFixed(1)}% of Portfolio`}
+              className="xl:col-span-2"
+            />
             <StatCard
               icon={<DollarSign className="h-4 w-4" />}
               label="Average Cost"
               metricKey={MetricKeys.COST_BASIS}
               value={formatCurrency(details.avg_cost)}
-              subValue="Weighted average per unit"
+              subValue="Per unit"
+              className="xl:col-span-2"
             />
+            <StatCard
+             icon={<Calendar className="h-4 w-4" />}
+             label="Holding Period"
+             value={`${daysHeld} Days`}
+             subValue={`Since ${firstTransactionDate?.toLocaleDateString() ?? '-'}`}
+             className="xl:col-span-2"
+            />
+            
             <StatCard
               icon={<Activity className="h-4 w-4" />}
               label="Asset Gain"
@@ -234,6 +316,7 @@ export default function AssetDetailPage() {
               value={formatCurrency(details.asset_gain)}
               percentage={details.total_return_pct}
               variant="dynamic"
+              className="xl:col-span-2"
             />
             <StatCard
               icon={<Percent className="h-4 w-4" />}
@@ -241,13 +324,22 @@ export default function AssetDetailPage() {
               metricKey={MetricKeys.FX_GAIN}
               value={formatCurrency(details.fx_gain)}
               subValue="Currency impact"
+              className="xl:col-span-2"
             />
-            <StatCard
+             <StatCard
               icon={<Wallet className="h-4 w-4" />}
               label="Realized P/L"
               metricKey={MetricKeys.REALIZED_PL}
               value={formatCurrency(details.realized_pl || 0)}
               subValue="From closed positions"
+              className="xl:col-span-2"
+            />
+             <StatCard
+              icon={<PieChart className="h-4 w-4" />}
+              label="Allocation"
+              value={`${portfolioPercent.toFixed(1)}%`}
+              subValue="Of total net worth"
+              className="xl:col-span-2"
             />
           </div>
 
@@ -329,6 +421,20 @@ export default function AssetDetailPage() {
           </div>
         </div>
       </main>
+
+      {/* Transaction Modal */}
+      <Dialog open={isTransactionModalOpen} onOpenChange={setIsTransactionModalOpen}>
+        <DialogContent className="sm:max-w-[425px]">
+          <DialogHeader>
+            <DialogTitle>Add Transaction for {symbol}</DialogTitle>
+          </DialogHeader>
+          <TransactionForm
+            portfolioId={portfolioId}
+            initialAsset={initialAsset}
+            onSuccess={handleTransactionSuccess}
+          />
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
@@ -341,6 +447,7 @@ interface StatCardProps {
   percentage?: number;
   subValue?: string;
   variant?: "default" | "dynamic";
+  className?: string; // Phase 1: Support custom width/col-span
 }
 
 function StatCard({
@@ -351,11 +458,12 @@ function StatCard({
   percentage,
   subValue,
   variant = "default",
+  className,
 }: StatCardProps) {
   const isPositive = percentage !== undefined && percentage >= 0;
 
   return (
-    <div className="group relative rounded-xl border border-border bg-card p-5 transition-all duration-200 hover:border-primary/30 hover:shadow-md">
+    <div className={`group relative rounded-xl border border-border bg-card p-5 transition-all duration-200 hover:border-primary/30 hover:shadow-md ${className}`}>
       {/* Icon + Label Row */}
       <div className="flex items-center gap-2 mb-3">
         <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-primary/10 text-primary">

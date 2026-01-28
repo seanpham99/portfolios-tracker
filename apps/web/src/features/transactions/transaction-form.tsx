@@ -84,14 +84,18 @@ export function TransactionForm({
   portfolioId,
   onSuccess,
   existingTransactions = [],
+  initialAsset,
+  initialType = "BUY",
 }: {
   portfolioId: string;
   onSuccess?: (transaction: Transaction) => void;
   existingTransactions?: Transaction[];
+  initialAsset?: Assets | null;
+  initialType?: "BUY" | "SELL";
 }) {
   const [state, formAction, isPending] = useActionState(submitTransactionAction, null);
-  const [selectedAsset, setSelectedAsset] = useState<Assets | null>(null);
-  const [type, setType] = useState("BUY");
+  const [selectedAsset, setSelectedAsset] = useState<Assets | null>(initialAsset || null);
+  const [type, setType] = useState(initialType);
 
   // Optimistic UI: Show transaction immediately while API call is in flight
   const [optimisticTransactions, addOptimisticTransaction] = useOptimistic(
@@ -143,13 +147,17 @@ export function TransactionForm({
         <fieldset disabled={isPending} className="space-y-4">
           <div className="space-y-2">
             <Label>Asset</Label>
-            <AssetAutocomplete onSelect={setSelectedAsset} />
+            <AssetAutocomplete onSelect={setSelectedAsset} defaultValue={selectedAsset} />
           </div>
 
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
               <Label>Type</Label>
-              <Select value={type} onValueChange={setType} disabled={isPending}>
+              <Select
+                value={type}
+                onValueChange={(val) => setType(val as "BUY" | "SELL")}
+                disabled={isPending}
+              >
                 <SelectTrigger className="bg-white/5 border-white/10">
                   <SelectValue />
                 </SelectTrigger>

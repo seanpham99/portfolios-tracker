@@ -3,102 +3,28 @@
 import { useState } from "react";
 import { Button } from "@workspace/ui/components/button";
 import { Separator } from "@workspace/ui/components/separator";
-import { Plus, RefreshCw, Trash2 } from "lucide-react";
-import { useConnections, useDeleteConnection } from "@/features/connections/hooks/use-connections";
+import { Plus, RefreshCw, Link as LinkIcon, ShieldCheck, Activity } from "lucide-react";
+import { useConnections } from "@/features/connections/hooks/use-connections";
 import { ConnectionForm } from "@/features/connections/components/connection-form";
-import { ConnectionDto } from "@workspace/shared-types/api";
-
-/**
- * Exchange display configuration
- * Maps exchange IDs to their display properties
- */
-const EXCHANGE_CONFIG: Record<string, { letter: string; color: string }> = {
-  binance: { letter: "B", color: "text-amber-500 bg-amber-500/10" },
-  okx: { letter: "O", color: "text-blue-500 bg-blue-500/10" },
-};
-
-function ConnectionCard({
-  connection,
-  onDelete,
-}: {
-  connection: ConnectionDto;
-  onDelete: () => void;
-}) {
-  const deleteMutation = useDeleteConnection();
-
-  const handleDelete = () => {
-    if (confirm("Are you sure you want to remove this connection?")) {
-      deleteMutation.mutate(connection.id);
-      onDelete();
-    }
-  };
-
-  // Get exchange display config, fallback to generic if not found
-  const exchangeConfig = EXCHANGE_CONFIG[connection.exchange] || {
-    letter: connection.exchange.charAt(0).toUpperCase(),
-    color: "text-gray-500 bg-gray-500/10",
-  };
-
-  return (
-    <div className="glass-card p-4 flex items-center justify-between">
-      <div className="flex items-center gap-3">
-        <div
-          className={`h-10 w-10 rounded-full flex items-center justify-center ${exchangeConfig.color.split(" ")[1]}`}
-        >
-          <span className={`text-lg font-bold ${exchangeConfig.color.split(" ")[0]}`}>
-            {exchangeConfig.letter}
-          </span>
-        </div>
-        <div>
-          <p className="font-medium capitalize">{connection.exchange}</p>
-          <p className="text-sm text-muted-foreground font-mono">{connection.apiKeyMasked}</p>
-        </div>
-      </div>
-      <div className="flex items-center gap-2">
-        <span
-          className={`text-xs px-2 py-1 rounded-full ${
-            connection.status === "active"
-              ? "bg-emerald-500/10 text-emerald-500"
-              : "bg-red-500/10 text-red-500"
-          }`}
-        >
-          {connection.status}
-        </span>
-        {connection.lastSyncedAt && (
-          <span className="text-xs text-muted-foreground">
-            Synced: {new Date(connection.lastSyncedAt).toLocaleDateString()}
-          </span>
-        )}
-        <Button
-          variant="ghost"
-          size="icon"
-          onClick={handleDelete}
-          disabled={deleteMutation.isPending}
-          className="text-muted-foreground hover:text-red-500"
-        >
-          <Trash2 className="h-4 w-4" />
-        </Button>
-      </div>
-    </div>
-  );
-}
+import { ConnectionCard } from "@/features/connections/components/connection-card";
+import { Card } from "@workspace/ui/components/card";
 
 export default function ConnectionsPage() {
   const [isFormOpen, setIsFormOpen] = useState(false);
-  const { data: connections, isLoading, refetch } = useConnections();
+  const { data: connections, isLoading, refetch, isRefetching } = useConnections();
 
   return (
-    <div className="space-y-6 container mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-6">
+    <div className="space-y-8 container mx-auto max-w-6xl px-4 sm:px-6 lg:px-8 py-8 animate-in fade-in duration-500">
       <div className="flex items-center justify-between">
-        <div>
-          <h3 className="text-2xl font-bold font-sans tracking-tight">Connections</h3>
+        <div className="space-y-1">
+          <h3 className="text-3xl font-bold font-sans tracking-tight">Connections</h3>
           <p className="text-muted-foreground">
-            Connect your exchange accounts for automatic portfolio sync.
+            Manage your external API integrations and sync status.
           </p>
         </div>
         <div className="flex gap-2">
-          <Button variant="outline" size="sm" onClick={() => refetch()}>
-            <RefreshCw className="h-4 w-4 mr-2" />
+          <Button variant="outline" size="sm" onClick={() => refetch()} disabled={isRefetching}>
+            <RefreshCw className={`h-4 w-4 mr-2 ${isRefetching ? "animate-spin" : ""}`} />
             Refresh
           </Button>
           <Button size="sm" onClick={() => setIsFormOpen(true)}>
@@ -108,28 +34,73 @@ export default function ConnectionsPage() {
         </div>
       </div>
 
-      <Separator className="bg-border/50" />
+      <Separator />
 
-      <div className="space-y-4">
-        {isLoading ? (
-          <div className="text-center py-8 text-muted-foreground">Loading connections...</div>
-        ) : !connections || connections.length === 0 ? (
-          <div className="glass-card p-8 text-center">
-            <p className="text-lg font-medium mb-2">No connections yet</p>
-            <p className="text-muted-foreground mb-4">
-              Connect your Binance or OKX account to automatically sync your crypto holdings.
-            </p>
-            <Button onClick={() => setIsFormOpen(true)}>
-              <Plus className="h-4 w-4 mr-2" />
-              Add Your First Connection
-            </Button>
+      {isLoading ? (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          {[1, 2, 3].map((i) => (
+            <div key={i} className="h-48 rounded-xl bg-muted/20 animate-pulse" />
+          ))}
+        </div>
+      ) : !connections || connections.length === 0 ? (
+        <div className="flex flex-col items-center justify-center py-12 px-4 text-center border-2 border-dashed rounded-xl bg-muted/5">
+          <div className="bg-primary/10 p-4 rounded-full mb-4">
+            <LinkIcon className="h-8 w-8 text-primary" />
           </div>
-        ) : (
-          connections.map((conn) => (
-            <ConnectionCard key={conn.id} connection={conn} onDelete={() => refetch()} />
-          ))
-        )}
-      </div>
+          <h3 className="text-xl font-semibold mb-2">Connect Your Accounts</h3>
+          <p className="text-muted-foreground max-w-md mb-8">
+            Connect your exchange accounts to automatically sync holdings, transactions, and
+            performance data. We support <strong>Binance</strong> and <strong>OKX</strong> with
+            read-only permissions.
+          </p>
+
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 mb-8 w-full max-w-2xl text-left">
+            <div className="flex flex-col gap-2 p-4 rounded-lg bg-background border">
+              <ShieldCheck className="h-5 w-5 text-emerald-500" />
+              <span className="font-medium text-sm">Secure & Read-Only</span>
+              <span className="text-xs text-muted-foreground">
+                We encrypt your keys and never ask for withdrawal permissions.
+              </span>
+            </div>
+            <div className="flex flex-col gap-2 p-4 rounded-lg bg-background border">
+              <Activity className="h-5 w-5 text-blue-500" />
+              <span className="font-medium text-sm">Real-time Sync</span>
+              <span className="text-xs text-muted-foreground">
+                Balances are synced automatically on login and manual refresh.
+              </span>
+            </div>
+            <div className="flex flex-col gap-2 p-4 rounded-lg bg-background border">
+              <RefreshCw className="h-5 w-5 text-amber-500" />
+              <span className="font-medium text-sm">Auto-Reconciliation</span>
+              <span className="text-xs text-muted-foreground">
+                Transactions are matched against portfolio snapshots.
+              </span>
+            </div>
+          </div>
+
+          <Button size="lg" onClick={() => setIsFormOpen(true)}>
+            <Plus className="h-4 w-4 mr-2" />
+            Connect Exchange
+          </Button>
+        </div>
+      ) : (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {connections.map((conn) => (
+            <ConnectionCard key={conn.id} connection={conn} />
+          ))}
+
+          {/* Add New Card */}
+          <Card
+            className="flex flex-col items-center justify-center p-6 border-dashed hover:border-primary/50 hover:bg-muted/5 transition-colors cursor-pointer min-h-[200px]"
+            onClick={() => setIsFormOpen(true)}
+          >
+            <div className="bg-muted p-3 rounded-full mb-3">
+              <Plus className="h-6 w-6 text-muted-foreground" />
+            </div>
+            <p className="font-medium text-muted-foreground">Add Connection</p>
+          </Card>
+        </div>
+      )}
 
       <ConnectionForm isOpen={isFormOpen} onClose={() => setIsFormOpen(false)} />
     </div>

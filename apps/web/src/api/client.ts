@@ -304,6 +304,20 @@ export async function deleteConnection(id: string): Promise<void> {
   }
 }
 
+/**
+ * Trigger manual sync for a connection
+ */
+export async function syncConnection(id: string): Promise<ApiResponse<ConnectionDto>> {
+  const response = await apiFetch(`/connections/${id}/sync`, {
+    method: "POST",
+  });
+  if (!response.ok) {
+    const errorData = await response.json().catch(() => ({}));
+    throw new Error(errorData.message || "Failed to sync connection");
+  }
+  return response.json();
+}
+
 // ============ Market Data API ============
 
 /**

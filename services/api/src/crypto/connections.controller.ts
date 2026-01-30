@@ -15,6 +15,7 @@ import {
   HttpStatus,
   UseGuards,
 } from '@nestjs/common';
+import { ThrottlerGuard, Throttle } from '@nestjs/throttler';
 import {
   ApiTags,
   ApiOperation,
@@ -52,6 +53,48 @@ export class ConnectionsController {
   })
   async findAll(@UserId() userId: string): Promise<ConnectionDto[]> {
     return this.connectionsService.findAll(userId);
+  }
+
+  @Post(':id/sync')
+  @UseGuards(ThrottlerGuard)
+  @Throttle({ default: { limit: 1, ttl: 60000 } })
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: 'Trigger manual sync for a connection' })
+  @ApiParam({ name: 'id', description: 'Connection UUID' })
+  @ApiResponse({
+    status: 200,
+    description: 'Sync triggered successfully',
+    type: ConnectionDto,
+  })
+  @ApiResponse({
+    status: 429,
+    description: 'Too many requests (limit: 1 per 60s)',
+  })
+  async syncOne(
+    @UserId() userId: string,
+    @Param('id') id: string,
+  ): Promise<{
+    success: boolean;
+    data: ConnectionDto;
+    meta: { assetsSync: number };
+  }> {
+    // 1. Trigger sync
+    const result = await this.exchangeSyncService.syncHoldings(userId, id);
+
+    if (!result.success) {
+      // If error is "Connection not found", it throws NotFoundException which is handled globally
+      // Otherwise throw generic error
+      throw new Error(result.error || 'Sync failed');
+    }
+
+    // 2. Fetch updated connection to return latest lastSyncedAt
+    const connection = await this.connectionsService.findOne(userId, id);
+
+    return {
+      success: true,
+      data: connection,
+      meta: { assetsSync: result.assetsSync },
+    };
   }
 
   @Post()

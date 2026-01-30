@@ -39,6 +39,24 @@ export class ConnectionsService {
   }
 
   /**
+   * Find a specific connection by ID
+   */
+  async findOne(userId: string, id: string): Promise<ConnectionDto> {
+    const { data, error } = await this.supabase
+      .from('user_connections')
+      .select('*')
+      .eq('user_id', userId)
+      .eq('id', id)
+      .single();
+
+    if (error) {
+      this.handleError(error, id);
+    }
+
+    return this.toDto(data as UserConnections);
+  }
+
+  /**
    * Create a new connection
    */
   async create(

@@ -129,6 +129,51 @@ describe('ExchangeSyncService', () => {
       );
     });
 
+    it('should update last_synced_at on successful sync', async () => {
+      // Arrange
+      const mockBalances = [
+        { asset: 'BTC', free: '1', locked: '0', total: '1', usdValue: '50000' },
+      ];
+
+      const mockProvider: Partial<ExchangeProvider> = {
+        getName: () => 'binance',
+        fetchBalances: jest.fn().mockResolvedValue(mockBalances),
+      };
+
+      mockConnectionsService.getDecryptedCredentials.mockResolvedValue({
+        apiKey: 'key',
+        apiSecret: 'secret',
+        exchange: 'binance' as ExchangeId,
+      });
+
+      mockRegistry.get.mockReturnValue(mockProvider as ExchangeProvider);
+
+      // Mock portfolio lookup success
+      mockSupabase.single.mockResolvedValueOnce({
+        data: { id: mockPortfolioId },
+        error: null,
+      });
+
+      // Mock asset upsert success
+      mockSupabase.single.mockResolvedValueOnce({
+        data: { id: 'asset-id' },
+        error: null,
+      });
+
+      // Mock transaction insert (return this is fine for insert)
+
+      // Act
+      await service.syncHoldings(mockUserId, mockConnectionId, mockPortfolioId);
+
+      // Assert
+      expect(mockSupabase.update).toHaveBeenCalledWith(
+        expect.objectContaining({
+          last_synced_at: expect.any(String),
+        }),
+      );
+      expect(mockSupabase.eq).toHaveBeenCalledWith('id', mockConnectionId);
+    });
+
     it('should return error result on failure', async () => {
       // Arrange
       mockConnectionsService.getDecryptedCredentials.mockRejectedValue(

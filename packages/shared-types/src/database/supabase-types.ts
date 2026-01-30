@@ -247,6 +247,7 @@ export type Database = {
           created_at: string | null;
           exchange_id: Database["public"]["Enums"]["exchange_id"];
           id: string;
+          last_sync_at: string | null;
           last_synced_at: string | null;
           passphrase_encrypted: string | null;
           status: Database["public"]["Enums"]["connection_status"] | null;
@@ -259,6 +260,7 @@ export type Database = {
           created_at?: string | null;
           exchange_id: Database["public"]["Enums"]["exchange_id"];
           id?: string;
+          last_sync_at?: string | null;
           last_synced_at?: string | null;
           passphrase_encrypted?: string | null;
           status?: Database["public"]["Enums"]["connection_status"] | null;
@@ -271,6 +273,7 @@ export type Database = {
           created_at?: string | null;
           exchange_id?: Database["public"]["Enums"]["exchange_id"];
           id?: string;
+          last_sync_at?: string | null;
           last_synced_at?: string | null;
           passphrase_encrypted?: string | null;
           status?: Database["public"]["Enums"]["connection_status"] | null;

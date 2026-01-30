@@ -4,6 +4,7 @@ import {
   createConnection,
   validateConnection,
   deleteConnection,
+  syncConnection,
 } from "@/api/client";
 import { CreateConnectionDto } from "@workspace/shared-types/api";
 import { toast } from "sonner";
@@ -22,6 +23,21 @@ export const useCreateConnection = () => {
     mutationFn: (data: CreateConnectionDto) => createConnection(data),
     onSuccess: () => {
       toast.success("Connection added successfully");
+      queryClient.invalidateQueries({ queryKey: ["connections"] });
+    },
+    onError: (error: Error) => {
+      toast.error(error.message);
+    },
+  });
+};
+
+export const useSyncConnection = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (id: string) => syncConnection(id),
+    onSuccess: () => {
+      toast.success("Sync completed successfully");
       queryClient.invalidateQueries({ queryKey: ["connections"] });
     },
     onError: (error: Error) => {

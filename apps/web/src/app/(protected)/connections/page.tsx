@@ -5,8 +5,17 @@ import { Button } from "@workspace/ui/components/button";
 import { Separator } from "@workspace/ui/components/separator";
 import { Plus, RefreshCw, Trash2 } from "lucide-react";
 import { useConnections, useDeleteConnection } from "@/features/connections/hooks/use-connections";
-import { BinanceConnectionForm } from "@/features/connections/components/binance-connection-form";
+import { ConnectionForm } from "@/features/connections/components/connection-form";
 import { ConnectionDto } from "@workspace/shared-types/api";
+
+/**
+ * Exchange display configuration
+ * Maps exchange IDs to their display properties
+ */
+const EXCHANGE_CONFIG: Record<string, { letter: string; color: string }> = {
+  binance: { letter: "B", color: "text-amber-500 bg-amber-500/10" },
+  okx: { letter: "O", color: "text-blue-500 bg-blue-500/10" },
+};
 
 function ConnectionCard({
   connection,
@@ -24,11 +33,21 @@ function ConnectionCard({
     }
   };
 
+  // Get exchange display config, fallback to generic if not found
+  const exchangeConfig = EXCHANGE_CONFIG[connection.exchange] || {
+    letter: connection.exchange.charAt(0).toUpperCase(),
+    color: "text-gray-500 bg-gray-500/10",
+  };
+
   return (
     <div className="glass-card p-4 flex items-center justify-between">
       <div className="flex items-center gap-3">
-        <div className="h-10 w-10 rounded-full bg-amber-500/10 flex items-center justify-center">
-          <span className="text-lg font-bold text-amber-500">B</span>
+        <div
+          className={`h-10 w-10 rounded-full flex items-center justify-center ${exchangeConfig.color.split(" ")[1]}`}
+        >
+          <span className={`text-lg font-bold ${exchangeConfig.color.split(" ")[0]}`}>
+            {exchangeConfig.letter}
+          </span>
         </div>
         <div>
           <p className="font-medium capitalize">{connection.exchange}</p>
@@ -84,7 +103,7 @@ export default function ConnectionsPage() {
           </Button>
           <Button size="sm" onClick={() => setIsFormOpen(true)}>
             <Plus className="h-4 w-4 mr-2" />
-            Add Binance
+            Add Connection
           </Button>
         </div>
       </div>
@@ -98,7 +117,7 @@ export default function ConnectionsPage() {
           <div className="glass-card p-8 text-center">
             <p className="text-lg font-medium mb-2">No connections yet</p>
             <p className="text-muted-foreground mb-4">
-              Connect your Binance account to automatically sync your crypto holdings.
+              Connect your Binance or OKX account to automatically sync your crypto holdings.
             </p>
             <Button onClick={() => setIsFormOpen(true)}>
               <Plus className="h-4 w-4 mr-2" />
@@ -112,7 +131,7 @@ export default function ConnectionsPage() {
         )}
       </div>
 
-      <BinanceConnectionForm isOpen={isFormOpen} onClose={() => setIsFormOpen(false)} />
+      <ConnectionForm isOpen={isFormOpen} onClose={() => setIsFormOpen(false)} />
     </div>
   );
 }

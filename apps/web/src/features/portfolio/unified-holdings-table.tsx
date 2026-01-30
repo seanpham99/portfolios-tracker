@@ -233,7 +233,9 @@ export function UnifiedHoldingsTable({ portfolioId, onAddAsset }: UnifiedHolding
             key={f}
             onClick={() => setFilter(f)}
             className={`px-2.5 py-1 text-xs font-medium rounded-full transition-colors ${
-              filter === f ? "bg-muted text-foreground" : "text-muted-foreground hover:text-foreground"
+              filter === f
+                ? "bg-muted text-foreground"
+                : "text-muted-foreground hover:text-foreground"
             }`}
           >
             {f === "ALL" ? "All Assets" : f === "VN" ? "🇻🇳 VN" : f === "US" ? "🇺🇸 US" : "₿ Crypto"}
@@ -245,7 +247,10 @@ export function UnifiedHoldingsTable({ portfolioId, onAddAsset }: UnifiedHolding
         <table className="w-full text-left text-sm">
           <thead>
             {table.getHeaderGroups().map((headerGroup) => (
-              <tr key={headerGroup.id} className="border-b border-border-subtle text-xs text-muted-foreground">
+              <tr
+                key={headerGroup.id}
+                className="border-b border-border-subtle text-xs text-muted-foreground"
+              >
                 {headerGroup.headers.map((header) => (
                   <th
                     key={header.id}
@@ -275,12 +280,12 @@ export function UnifiedHoldingsTable({ portfolioId, onAddAsset }: UnifiedHolding
             ) : isError || holdings.length === 0 ? (
               <tr>
                 <td colSpan={6} className="p-0">
-                    <Empty className="py-12">
-                      <EmptyHeader>
-                        <EmptyMedia variant="icon" className="bg-muted text-muted-foreground">
-                          <Briefcase className="h-5 w-5" />
-                        </EmptyMedia>
-                        <EmptyTitle className="text-foreground">No holdings yet</EmptyTitle>
+                  <Empty className="py-12">
+                    <EmptyHeader>
+                      <EmptyMedia variant="icon" className="bg-muted text-muted-foreground">
+                        <Briefcase className="h-5 w-5" />
+                      </EmptyMedia>
+                      <EmptyTitle className="text-foreground">No holdings yet</EmptyTitle>
                       <EmptyDescription>
                         Start building your portfolio by adding your first transaction.
                       </EmptyDescription>

@@ -1,6 +1,6 @@
 import { Injectable, Inject, NotFoundException } from '@nestjs/common';
 import { SupabaseClient, PostgrestError } from '@supabase/supabase-js';
-import { BinanceService } from './binance.service';
+import { ExchangeRegistry } from './exchange.registry';
 import {
   Database,
   UserConnections,
@@ -18,7 +18,7 @@ export class ConnectionsService {
   constructor(
     @Inject('SUPABASE_CLIENT')
     private readonly supabase: SupabaseClient<Database>,
-    private readonly binanceService: BinanceService,
+    private readonly registry: ExchangeRegistry,
   ) {}
 
   /**
@@ -46,6 +46,7 @@ export class ConnectionsService {
     exchange: string,
     apiKey: string,
     apiSecret: string,
+    passphrase?: string,
   ): Promise<ConnectionDto> {
     const { data: connection, error } = await this.supabase
       .from('user_connections')
@@ -54,6 +55,7 @@ export class ConnectionsService {
         exchange_id: exchange as ExchangeId,
         api_key: apiKey,
         api_secret_encrypted: encryptSecret(apiSecret),
+        passphrase_encrypted: passphrase ? encryptSecret(passphrase) : null,
         status: 'active',
       })
       .select()
@@ -73,18 +75,17 @@ export class ConnectionsService {
     exchange: string,
     apiKey: string,
     apiSecret: string,
+    passphrase?: string,
   ): Promise<ValidationResultDto> {
-    // Currently only Binance is supported
-    if (exchange !== 'binance') {
+    try {
+      const provider = this.registry.get(exchange);
+      return await provider.validateKeys(apiKey, apiSecret, passphrase);
+    } catch (error) {
       return {
         valid: false,
-        error: `Exchange ${exchange} is not supported yet`,
+        error: (error as Error).message,
       };
     }
-
-    // Use real CCXT validation
-    const result = await this.binanceService.validateKeys(apiKey, apiSecret);
-    return result;
   }
 
   /**
@@ -106,12 +107,17 @@ export class ConnectionsService {
    * Get decrypted connection credentials for sync operations
    * @param userId - User ID for authorization
    * @param connectionId - Connection UUID
-   * @returns Object with apiKey and decrypted apiSecret
+   * @returns Object with apiKey, decrypted apiSecret and optional passphrase
    */
   async getDecryptedCredentials(
     userId: string,
     connectionId: string,
-  ): Promise<{ apiKey: string; apiSecret: string; exchange: ExchangeId }> {
+  ): Promise<{
+    apiKey: string;
+    apiSecret: string;
+    exchange: ExchangeId;
+    passphrase?: string;
+  }> {
     const { data: conn, error } = await this.supabase
       .from('user_connections')
       .select('*')
@@ -127,11 +133,22 @@ export class ConnectionsService {
       throw new Error('Connection credentials are incomplete');
     }
 
-    return {
+    const credentials: {
+      apiKey: string;
+      apiSecret: string;
+      exchange: ExchangeId;
+      passphrase?: string;
+    } = {
       apiKey: conn.api_key,
       apiSecret: decryptSecret(conn.api_secret_encrypted),
       exchange: conn.exchange_id as ExchangeId,
     };
+
+    if (conn.passphrase_encrypted) {
+      credentials.passphrase = decryptSecret(conn.passphrase_encrypted);
+    }
+
+    return credentials;
   }
 
   /**
@@ -173,9 +190,9 @@ export class ConnectionsService {
   private toDto(conn: UserConnections): ConnectionDto {
     return {
       id: conn.id,
-      exchange: (conn.exchange_id || 'binance') as any, // Using any for enum compatibility with DTO if needed
+      exchange: conn.exchange_id ?? 'binance',
       apiKeyMasked: maskApiKey(conn.api_key || ''),
-      status: (conn.status || 'active') as any,
+      status: (conn.status ?? 'active') as ConnectionStatus,
       lastSyncedAt: conn.last_synced_at || undefined,
       createdAt: conn.created_at || new Date().toISOString(),
     };

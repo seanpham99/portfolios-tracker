@@ -7,7 +7,7 @@
  * Use only plain TypeScript and framework-agnostic validation decorators.
  */
 
-import { IsEnum, IsNotEmpty, IsString } from "class-validator";
+import { IsEnum, IsNotEmpty, IsString, IsOptional } from "class-validator";
 // Import enums from database types (single source of truth)
 import { ConnectionStatus, ExchangeId } from "../database";
 
@@ -43,6 +43,10 @@ export class CreateConnectionDto {
   @IsString()
   @IsNotEmpty()
   apiSecret: string;
+
+  @IsString()
+  @IsOptional()
+  passphrase?: string;
 }
 
 /**
@@ -59,6 +63,10 @@ export class ValidateConnectionDto {
   @IsString()
   @IsNotEmpty()
   apiSecret: string;
+
+  @IsString()
+  @IsOptional()
+  passphrase?: string;
 }
 
 /**

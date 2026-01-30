@@ -25,12 +25,7 @@ import {
   PieChart,
   Scale,
 } from "lucide-react";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from "@workspace/ui/components/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@workspace/ui/components/dialog";
 import { TransactionForm } from "@/features/transactions/transaction-form";
 import { Assets } from "@workspace/shared-types/database";
 import {
@@ -119,16 +114,17 @@ export default function AssetDetailPage() {
 
   const isStale = new Date().getTime() - new Date(details.last_updated).getTime() > 3600000;
   const isPositiveReturn = details.total_return_pct >= 0;
-  
+
   // Computed Metrics for Phase 1 Enrichment
-  const marketValue = details.current_value || (details.total_quantity * details.current_price);
+  const marketValue = details.current_value || details.total_quantity * details.current_price;
   const portfolioPercent = portfolio?.netWorth ? (marketValue / portfolio.netWorth) * 100 : 0;
-  
-  const firstTransactionDate = transactions.length > 0 
-    ? new Date(Math.min(...transactions.map(t => new Date(t.date).getTime())))
-    : null;
-    
-  const daysHeld = firstTransactionDate 
+
+  const firstTransactionDate =
+    transactions.length > 0
+      ? new Date(Math.min(...transactions.map((t) => new Date(t.date).getTime())))
+      : null;
+
+  const daysHeld = firstTransactionDate
     ? Math.floor((new Date().getTime() - firstTransactionDate.getTime()) / (1000 * 60 * 60 * 24))
     : 0;
 
@@ -262,17 +258,16 @@ export default function AssetDetailPage() {
       {/* Main Content */}
       <main className="flex-1 overflow-y-auto p-6">
         <div className="mx-auto max-w-7xl space-y-6">
-          
           {/* Quick Actions Row (Phase 1) */}
           <div className="flex flex-wrap items-center justify-between gap-4">
             <h2 className="text-lg font-semibold text-foreground">Position Overview</h2>
             <div className="flex items-center gap-3">
-                <Button 
-                  onClick={() => setIsTransactionModalOpen(true)}
-                  className="gap-2 bg-primary hover:bg-primary/90 text-primary-foreground shadow-md transition-all hover:scale-105"
-                >
-                  <Plus className="h-4 w-4" /> Add Transaction
-                </Button>
+              <Button
+                onClick={() => setIsTransactionModalOpen(true)}
+                className="gap-2 bg-primary hover:bg-primary/90 text-primary-foreground shadow-md transition-all hover:scale-105"
+              >
+                <Plus className="h-4 w-4" /> Add Transaction
+              </Button>
             </div>
           </div>
 
@@ -302,13 +297,13 @@ export default function AssetDetailPage() {
               className="xl:col-span-2"
             />
             <StatCard
-             icon={<Calendar className="h-4 w-4" />}
-             label="Holding Period"
-             value={`${daysHeld} Days`}
-             subValue={`Since ${firstTransactionDate?.toLocaleDateString() ?? '-'}`}
-             className="xl:col-span-2"
+              icon={<Calendar className="h-4 w-4" />}
+              label="Holding Period"
+              value={`${daysHeld} Days`}
+              subValue={`Since ${firstTransactionDate?.toLocaleDateString() ?? "-"}`}
+              className="xl:col-span-2"
             />
-            
+
             <StatCard
               icon={<Activity className="h-4 w-4" />}
               label="Asset Gain"
@@ -326,7 +321,7 @@ export default function AssetDetailPage() {
               subValue="Currency impact"
               className="xl:col-span-2"
             />
-             <StatCard
+            <StatCard
               icon={<Wallet className="h-4 w-4" />}
               label="Realized P/L"
               metricKey={MetricKeys.REALIZED_PL}
@@ -334,7 +329,7 @@ export default function AssetDetailPage() {
               subValue="From closed positions"
               className="xl:col-span-2"
             />
-             <StatCard
+            <StatCard
               icon={<PieChart className="h-4 w-4" />}
               label="Allocation"
               value={`${portfolioPercent.toFixed(1)}%`}
@@ -463,7 +458,9 @@ function StatCard({
   const isPositive = percentage !== undefined && percentage >= 0;
 
   return (
-    <div className={`group relative rounded-xl border border-border bg-card p-5 transition-all duration-200 hover:border-primary/30 hover:shadow-md ${className}`}>
+    <div
+      className={`group relative rounded-xl border border-border bg-card p-5 transition-all duration-200 hover:border-primary/30 hover:shadow-md ${className}`}
+    >
       {/* Icon + Label Row */}
       <div className="flex items-center gap-2 mb-3">
         <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-primary/10 text-primary">

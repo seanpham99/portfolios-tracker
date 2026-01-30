@@ -1,5 +1,5 @@
 // Connections feature exports
-export { BinanceConnectionForm } from "./components/binance-connection-form";
+export { ConnectionForm } from "./components/connection-form";
 export {
   useConnections,
   useCreateConnection,

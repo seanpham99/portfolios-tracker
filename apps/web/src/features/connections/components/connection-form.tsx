@@ -12,31 +12,63 @@ import {
 import { Button } from "@workspace/ui/components/button";
 import { Input } from "@workspace/ui/components/input";
 import { Label } from "@workspace/ui/components/label";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@workspace/ui/components/select";
 import { useCreateConnection, useValidateConnection } from "../hooks/use-connections";
 import { Loader2, CheckCircle2, AlertCircle, Eye, EyeOff } from "lucide-react";
+import { ExchangeId } from "@workspace/shared-types/api";
 
-interface BinanceConnectionFormProps {
+interface ConnectionFormProps {
   isOpen: boolean;
   onClose: () => void;
+  initialExchange?: ExchangeId;
 }
 
-export function BinanceConnectionForm({ isOpen, onClose }: BinanceConnectionFormProps) {
+const EXCHANGE_OPTIONS = [
+  { value: "binance", label: "Binance", icon: "/icons/binance.svg" },
+  { value: "okx", label: "OKX", icon: "/icons/okx.svg" }, // Assuming icon exists or fallback
+];
+
+export function ConnectionForm({
+  isOpen,
+  onClose,
+  initialExchange = ExchangeId.binance,
+}: ConnectionFormProps) {
+  const [exchange, setExchange] = useState<string>(initialExchange);
   const [apiKey, setApiKey] = useState("");
   const [apiSecret, setApiSecret] = useState("");
+  const [passphrase, setPassphrase] = useState("");
   const [showSecret, setShowSecret] = useState(false);
+  const [showPassphrase, setShowPassphrase] = useState(false);
   const [isValidated, setIsValidated] = useState(false);
 
   const createMutation = useCreateConnection();
   const validateMutation = useValidateConnection();
 
+  const handleExchangeChange = (value: string) => {
+    setExchange(value);
+    setIsValidated(false);
+    // Reset specific fields if needed
+    if (value !== "okx") {
+      setPassphrase("");
+    }
+  };
+
   const handleValidate = () => {
     if (!apiKey || !apiSecret) return;
+    if (exchange === "okx" && !passphrase) return;
 
     validateMutation.mutate(
       {
-        exchange: "binance",
+        exchange: exchange as ExchangeId,
         apiKey,
         apiSecret,
+        passphrase: exchange === "okx" ? passphrase : undefined,
       },
       {
         onSuccess: (result) => {
@@ -51,9 +83,10 @@ export function BinanceConnectionForm({ isOpen, onClose }: BinanceConnectionForm
   const handleSubmit = () => {
     createMutation.mutate(
       {
-        exchange: "binance",
+        exchange: exchange as ExchangeId,
         apiKey,
         apiSecret,
+        passphrase: exchange === "okx" ? passphrase : undefined,
       },
       {
         onSuccess: () => {
@@ -67,8 +100,11 @@ export function BinanceConnectionForm({ isOpen, onClose }: BinanceConnectionForm
   const resetForm = () => {
     setApiKey("");
     setApiSecret("");
+    setPassphrase("");
     setIsValidated(false);
     setShowSecret(false);
+    setShowPassphrase(false);
+    setExchange(initialExchange);
   };
 
   const handleClose = () => {
@@ -76,21 +112,49 @@ export function BinanceConnectionForm({ isOpen, onClose }: BinanceConnectionForm
     resetForm();
   };
 
+  const selectedExchange = EXCHANGE_OPTIONS.find((e) => e.value === exchange);
+  const isOkx = exchange === "okx";
+
   return (
     <Dialog open={isOpen} onOpenChange={handleClose}>
       <DialogContent className="sm:max-w-[500px]">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
-            <img src="/icons/binance.svg" alt="Binance" className="h-6 w-6" />
-            Connect Binance
+            {selectedExchange?.icon && (
+              <img
+                src={selectedExchange.icon}
+                alt={selectedExchange.label}
+                className="h-6 w-6"
+                onError={(e) => (e.currentTarget.style.display = "none")}
+              />
+            )}
+            Connect {selectedExchange?.label || "Exchange"}
           </DialogTitle>
           <DialogDescription>
-            Enter your Binance API credentials. Use <strong>read-only</strong> permissions for
-            security.
+            Enter your API credentials. Use <strong>read-only</strong> permissions for security.
           </DialogDescription>
         </DialogHeader>
 
         <div className="grid gap-4 py-4">
+          <div className="grid gap-2">
+            <Label htmlFor="exchange-select">Exchange</Label>
+            <Select value={exchange} onValueChange={handleExchangeChange}>
+              <SelectTrigger id="exchange-select">
+                <SelectValue placeholder="Select Exchange" />
+              </SelectTrigger>
+              <SelectContent>
+                {EXCHANGE_OPTIONS.map((option) => (
+                  <SelectItem key={option.value} value={option.value}>
+                    <div className="flex items-center gap-2">
+                      {/* Placeholder for icon if needed */}
+                      {option.label}
+                    </div>
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+
           <div className="grid gap-2">
             <Label htmlFor="api-key">API Key</Label>
             <Input
@@ -100,7 +164,7 @@ export function BinanceConnectionForm({ isOpen, onClose }: BinanceConnectionForm
                 setApiKey(e.target.value);
                 setIsValidated(false);
               }}
-              placeholder="Your Binance API Key"
+              placeholder={`Your ${selectedExchange?.label} API Key`}
               className="font-mono text-sm"
             />
           </div>
@@ -116,7 +180,7 @@ export function BinanceConnectionForm({ isOpen, onClose }: BinanceConnectionForm
                   setApiSecret(e.target.value);
                   setIsValidated(false);
                 }}
-                placeholder="Your Binance API Secret"
+                placeholder={`Your ${selectedExchange?.label} API Secret`}
                 className="font-mono text-sm pr-10"
               />
               <button
@@ -129,11 +193,38 @@ export function BinanceConnectionForm({ isOpen, onClose }: BinanceConnectionForm
             </div>
           </div>
 
+          {isOkx && (
+            <div className="grid gap-2">
+              <Label htmlFor="passphrase">Passphrase</Label>
+              <div className="relative">
+                <Input
+                  id="passphrase"
+                  type={showPassphrase ? "text" : "password"}
+                  value={passphrase}
+                  onChange={(e) => {
+                    setPassphrase(e.target.value);
+                    setIsValidated(false);
+                  }}
+                  placeholder="Your OKX Passphrase"
+                  className="font-mono text-sm pr-10"
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPassphrase(!showPassphrase)}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                >
+                  {showPassphrase ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                </button>
+              </div>
+              <p className="text-xs text-muted-foreground">Required for OKX API authentication.</p>
+            </div>
+          )}
+
           {/* Status Messages */}
           {validateMutation.isPending && (
             <div className="flex items-center text-sm text-muted-foreground">
               <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-              Validating credentials with Binance...
+              Validating credentials...
             </div>
           )}
 
@@ -160,8 +251,8 @@ export function BinanceConnectionForm({ isOpen, onClose }: BinanceConnectionForm
 
           {/* Security Notice */}
           <div className="rounded-md bg-amber-50 dark:bg-amber-950/30 p-3 text-sm text-amber-800 dark:text-amber-200">
-            <strong>Security Tip:</strong> Create an API key with only "Read-Only" permissions.
-            Never grant withdrawal rights.
+            <strong>Security Tip:</strong> Create an API key with only &quot;Read-Only&quot;
+            permissions. Never grant withdrawal rights.
           </div>
         </div>
 
@@ -172,7 +263,9 @@ export function BinanceConnectionForm({ isOpen, onClose }: BinanceConnectionForm
           {!isValidated ? (
             <Button
               onClick={handleValidate}
-              disabled={!apiKey || !apiSecret || validateMutation.isPending}
+              disabled={
+                !apiKey || !apiSecret || (isOkx && !passphrase) || validateMutation.isPending
+              }
             >
               {validateMutation.isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
               Validate

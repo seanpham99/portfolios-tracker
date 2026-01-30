@@ -23,7 +23,7 @@ import {
   ApiParam,
 } from '@nestjs/swagger';
 import { ConnectionsService } from './connections.service';
-import { BinanceSyncService, SyncResult } from './binance-sync.service';
+import { ExchangeSyncService, SyncResult } from './exchange-sync.service';
 import {
   ConnectionDto,
   CreateConnectionDto,
@@ -40,7 +40,7 @@ import { UserId } from '../portfolios/decorators/user-id.decorator';
 export class ConnectionsController {
   constructor(
     private readonly connectionsService: ConnectionsService,
-    private readonly binanceSyncService: BinanceSyncService,
+    private readonly exchangeSyncService: ExchangeSyncService,
   ) {}
 
   @Get()
@@ -82,6 +82,7 @@ export class ConnectionsController {
       createDto.exchange,
       createDto.apiKey,
       createDto.apiSecret,
+      createDto.passphrase,
     );
 
     if (!validationResult.valid) {
@@ -94,20 +95,14 @@ export class ConnectionsController {
       createDto.exchange,
       createDto.apiKey,
       createDto.apiSecret,
+      createDto.passphrase,
     );
 
     // Trigger initial sync
-    let syncResult: SyncResult = {
-      success: true,
-      assetsSync: 0,
-      syncedBalances: [],
-    };
-    if (createDto.exchange === 'binance') {
-      syncResult = await this.binanceSyncService.syncHoldings(
-        userId,
-        connection.id,
-      );
-    }
+    const syncResult = await this.exchangeSyncService.syncHoldings(
+      userId,
+      connection.id,
+    );
 
     return {
       success: true,
@@ -131,6 +126,7 @@ export class ConnectionsController {
       validateDto.exchange,
       validateDto.apiKey,
       validateDto.apiSecret,
+      validateDto.passphrase,
     );
   }
 

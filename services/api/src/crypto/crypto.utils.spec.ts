@@ -59,6 +59,14 @@ describe('crypto.utils', () => {
       expect(decrypted).toBe(plaintext);
     });
 
+    it('should handle passphrase encryption round-trip', () => {
+      const passphrase = 'my-okx-passphrase-123!';
+      const encrypted = encryptSecret(passphrase);
+      const decrypted = decryptSecret(encrypted);
+
+      expect(decrypted).toBe(passphrase);
+    });
+
     it('should handle special characters', () => {
       const plaintext = 'key-with-special-chars!@#$%^&*()_+{}|:<>?';
       const encrypted = encryptSecret(plaintext);
